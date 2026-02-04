@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - EduSmart{% endblock %}
+
+{% block body %}
+    <div style="margin-bottom: var(--sp-8);">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--sp-4);">Gestion Cours</h2>
+        
+        <!-- Hero Banner style placeholder -->
+        <div style="background: linear-gradient(90deg, #6366F1 0%, #3B49A2 100%); border-radius: 16px; padding: var(--sp-8); color: white; margin-bottom: var(--sp-8); position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 2;">
+                <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Bienvenue sur EduSmart</h3>
+                <p style="opacity: 0.9; max-width: 400px;">Continuez votre apprentissage là où vous vous êtes arrêté ou explorez de nouveaux horizons.</p>
+            </div>
+            <!-- Decorative circles -->
+            <div style="position: absolute; right: -20px; top: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="position: absolute; right: 40px; bottom: -40px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+        </div>
+
+        <div class="courses-list">
+            {% for course in courses %}
+                <div class="card course-card">
+                    <div class="course-img">
+                        <i class="fas fa-laptop-code" style="font-size: 2rem; color: var(--text-secondary); opacity: 0.3;"></i>
+                    </div>
+                    <div class="course-info">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h4 class="course-title">{{ course.title }}</h4>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: var(--sp-2);">{{ course.author }}</p>
+                            </div>
+                            <span class="badge badge-{{ course.badge_type }}">{{ course.badge }}</span>
+                        </div>
+                        
+                        <div class="course-meta">
+                            <span><i class="fas fa-book-open"></i> {{ course.modules }} modules</span>
+                            <span><i class="fas fa-clock"></i> {{ course.duration }}</span>
+                        </div>
+
+                        {% if course.progress > 0 %}
+                            <div style="margin-top: var(--sp-3);">
+                                <div style="height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden;">
+                                    <div style="width: {{ course.progress }}%; height: 100%; background: var(--secondary-color);"></div>
+                                </div>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">{{ course.progress }}% complété</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div style="padding-left: var(--sp-4);">
+                        <button class="btn btn-outline" style="border-radius: 50%; width: 40px; height: 40px; padding: 0;">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
