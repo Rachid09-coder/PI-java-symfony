@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Connexion - EduSmart</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+    <body style="background: #F4F7FE; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: var(--sp-6);">
+        <div style="background: white; width: 100%; max-width: 500px; border-radius: 30px; padding: 50px; box-shadow: var(--shadow-md); position: relative; overflow: hidden;">
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 40px;">
+                <div style="width: 45px; height: 45px; background: #3B49A2; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.2rem;">E</div>
+                <span style="font-weight: 800; font-size: 1.5rem; color: #1E293B; letter-spacing: -0.5px;">EduSmart</span>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 35px;">
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #1E293B; margin-bottom: 8px;">Bienvenue!</h2>
+                <p style="color: #64748B;">Connectez-vous à votre compte pour continuer.</p>
+            </div>
+
+            <form action="{{ path('student_courses') }}" method="GET">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: #1E293B;">Email</label>
+                    <input type="email" placeholder="exemple@email.com" style="width: 100%; padding: 14px 18px; border: 1px solid #E2E8F0; border-radius: 12px; background: #F8FAFC; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='#3B49A2'; this.style.background='white';">
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="font-size: 0.9rem; font-weight: 600; color: #1E293B;">Mot de passe</label>
+                        <a href="#" style="font-size: 0.8rem; color: #3B49A2; font-weight: 600; text-decoration: none;">Oublié ?</a>
+                    </div>
+                    <div style="position: relative;">
+                        <input type="password" placeholder="••••••••" style="width: 100%; padding: 14px 18px; border: 1px solid #E2E8F0; border-radius: 12px; background: #F8FAFC; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='#3B49A2'; this.style.background='white';">
+                        <button type="button" style="position: absolute; right: 15px; top: 14px; border: none; background: none; color: #64748B; cursor: pointer;"><i class="far fa-eye"></i></button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; font-weight: 700; background: #3B49A2; border-radius: 12px; border: none; color: white; cursor: pointer; font-size: 1rem; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(59, 73, 162, 0.2);">Se connecter</button>
+            </form>
+
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                <div style="flex: 1; height: 1px; background: #E2E8F0;"></div>
+                <span style="color: #94A3B8; font-size: 0.85rem; font-weight: 500;">ou se connecter avec</span>
+                <div style="flex: 1; height: 1px; background: #E2E8F0;"></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+                <button class="btn btn-outline" style="padding: 12px; border-radius: 12px; border: 1px solid #E2E8F0; background: white; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
+                </button>
+                <button class="btn btn-outline" style="padding: 12px; border-radius: 12px; border: 1px solid #E2E8F0; background: white; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="18"> Microsoft
+                </button>
+            </div>
+
+            <div style="text-align: center;">
+                <p style="color: #64748B; font-size: 0.9rem;">Pas encore de compte ? <a href="{{ path('app_register') }}" style="color: #3B49A2; font-weight: 700; text-decoration: none;">Créer un compte</a></p>
+            </div>
+
+            <!-- Background Decoration -->
+            <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: #EEF2FF; border-radius: 50%; z-index: -1;"></div>
+        </div>
+    </body>
+</html>
