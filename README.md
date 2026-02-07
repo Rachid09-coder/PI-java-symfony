@@ -1,1 +1,2 @@
-# PI-java-symfony
+EduSmart Symfony Platform
+Exam Management System
