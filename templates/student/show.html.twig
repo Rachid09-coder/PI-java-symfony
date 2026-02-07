@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fiche élève - {{ student.name }} - EduSmart{% endblock %}
+{% block page_title %}Fiche Élève{% endblock %}
+
+{% block body %}
+    <div style="margin-bottom: var(--sp-6);">
+        <a href="{{ path('app_student_index') }}" style="color: var(--secondary-color); font-weight: 600;">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: var(--sp-6);">
+        <!-- Sidebar Profile -->
+        <div class="card" style="text-align: center;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; background: #E2E8F0; margin: 0 auto var(--sp-4); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user" style="font-size: 3rem; color: var(--text-secondary);"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700;">{{ student.name }}</h3>
+            <p style="color: var(--text-secondary); margin-bottom: var(--sp-4);">{{ student.class }}</p>
+            <span class="badge badge-success">{{ student.status }}</span>
+            
+            <hr style="margin: var(--sp-6) 0; border: none; border-top: 1px solid var(--border-color);">
+            
+            <div style="text-align: left;">
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Email</p>
+                <p style="font-weight: 600; margin-bottom: var(--sp-4);">{{ student.email }}</p>
+                
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Téléphone</p>
+                <p style="font-weight: 600; margin-bottom: var(--sp-4);">{{ student.phone }}</p>
+                
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Adresse</p>
+                <p style="font-weight: 600;">{{ student.address }}</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div>
+            <div class="card">
+                <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--sp-4);">Biographie</h4>
+                <p style="color: var(--text-secondary);">{{ student.bio }}</p>
+            </div>
+
+            <div class="card">
+                <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--sp-4);">Cours suivis</h4>
+                <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3); background: var(--bg-color); border-radius: 8px;">
+                        <span style="font-weight: 600;">Mathématiques Avancées</span>
+                        <span class="badge badge-primary">85%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3); background: var(--bg-color); border-radius: 8px;">
+                        <span style="font-weight: 600;">Physique Quantique</span>
+                        <span class="badge badge-primary">42%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3); background: var(--bg-color); border-radius: 8px;">
+                        <span style="font-weight: 600;">Histoire de l'Art</span>
+                        <span class="badge badge-success">Terminé</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="/css/exam-list.css">
+{% endblock %}
+
+{% block body %}
+
+<div class="exam-header">
+    <h2>Gestion des Examens</h2>
+    <a href="{{ path('admin_exam_new') }}" class="create-btn">+ Créer un Examen</a>
+</div>
+
+<div class="exam-card">
+<table class="exam-table">
+
+<thead>
+<tr>
+<th>Titre</th>
+<th>Type</th>
+<th>Durée</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+{% for exam in exams %}
+<tr>
+
+<td><strong>{{ exam.title }}</strong></td>
+
+<td>
+{% if exam.type == 'pdf' %}
+    <span class="badge badge-pdf">📄 PDF</span>
+{% elseif exam.type == 'link' %}
+    <span class="badge badge-link">🔗 Lien Quiz</span>
+{% elseif exam.type == 'word' %}
+    <span class="badge badge-word">📝 Word</span>
+{% endif %}
+</td>
+
+<td class="duration">
+    {{ exam.duration ? exam.duration ~ ' min' : '—' }}
+</td>
+
+<td>
+    <div class="actions">
+        <a href="{{ path('admin_exam_edit',{id:exam.id}) }}" class="action-btn edit-btn">
+            Modifier
+        </a>
+    </div>
+</td>
+
+</tr>
+
+{% else %}
+<tr>
+<td colspan="4" class="empty">
+    Aucun examen créé pour le moment 📚
+</td>
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+</div>
+
+{% endblock %}
