@@ -1,0 +1,60 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="/css/exam.css">
+{% endblock %}
+
+{% block body %}
+
+<div class="exam-container">
+
+    <h2>Créer / Modifier un examen</h2>
+
+    {{ form_start(form, {'attr': {'enctype':'multipart/form-data'}}) }}
+
+    <div class="form-group">
+        {{ form_label(form.title) }}
+        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.title) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.duration) }}
+        {{ form_widget(form.duration, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.duration) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.type) }}
+        {{ form_widget(form.type, {'attr': {'class': 'form-control', 'id':'exam_type'}}) }}
+    </div>
+
+    <div class="type-hint">
+        📄 PDF = sujet à télécharger<br>
+        🔗 Lien = Google Form / Moodle / Kahoot<br>
+        📝 Word = devoir à rendre par l'étudiant
+    </div>
+
+    <div class="form-group" id="link-field">
+        {{ form_label(form.externalLink) }}
+        {{ form_widget(form.externalLink, {'attr': {'class': 'form-control'}}) }}
+    </div>
+
+    <div class="form-group" id="file-field">
+        {{ form_label(form.filePath) }}
+        {{ form_widget(form.filePath, {'attr': {'class': 'form-control-file'}}) }}
+    </div>
+
+    <button class="exam-btn">Enregistrer l'examen</button>
+
+    {{ form_end(form) }}
+
+</div>
+
+{% endblock %}

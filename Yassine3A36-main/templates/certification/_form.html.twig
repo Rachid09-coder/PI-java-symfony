@@ -1,0 +1,26 @@
+<div class="admin-card">
+    <div class="admin-card-body">
+        {{ form_start(form, { attr: { class: 'admin-form' } }) }}
+
+        <div class="admin-form-grid">
+            {{ form_row(form.student) }}
+            {{ form_row(form.bulletin) }}
+            {{ form_row(form.type) }}
+            {{ form_row(form.issuedAt) }}
+            {{ form_row(form.verificationCode) }}
+            {{ form_row(form.status) }}
+            {{ form_row(form.pdfPath) }}
+        </div>
+
+        <div class="admin-form-actions">
+            <a href="{{ path('app_certification_index') }}" class="btn-secondary">
+                ← Retour à la liste
+            </a>
+            <button class="btn-primary">
+                {{ button_label|default('Enregistrer') }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>

@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des bulletins{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {% include 'bulletin/_styles.html.twig' %}
+{% endblock %}
+
+{% block header_content %}
+    <div class="admin-page-header">
+        <h1>Gestion des bulletins</h1>
+        <p class="text-muted">Consultez et gérez les bulletins académiques des étudiants.</p>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="admin-page">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <div>
+                    <h2 class="admin-card-title">Liste des bulletins</h2>
+                    <p class="admin-card-subtitle">Bulletins générés à partir des évaluations</p>
+                </div>
+                <a href="{{ path('admin_bulletin_new') }}" class="btn-primary">
+                    + Nouveau bulletin
+                </a>
+            </div>
+
+            <div class="admin-card-body">
+                {% if bulletins is empty %}
+                    <p class="text-muted mb-0">Aucun bulletin n’a encore été créé.</p>
+                {% else %}
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Étudiant</th>
+                                <th>Année</th>
+                                <th>Semestre</th>
+                                <th>Moyenne</th>
+                                <th>Statut</th>
+                                <th>Créé le</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for bulletin in bulletins %}
+                                <tr>
+                                    <td>#{{ bulletin.id }}</td>
+                                    <td>{{ bulletin.student ? bulletin.student.email : '—' }}</td>
+                                    <td>{{ bulletin.academicYear }}</td>
+                                    <td>{{ bulletin.semester }}</td>
+                                    <td>
+                                        {{ bulletin.average is not null ? bulletin.average|number_format(2, ',', ' ') : '—' }}
+                                    </td>
+                                    <td>
+                                        {% if bulletin.status == 'DRAFT' %}
+                                            <span class="badge-soft badge-gray">Brouillon</span>
+                                        {% elseif bulletin.status == 'VALIDATED' %}
+                                            <span class="badge-soft badge-green">Validé</span>
+                                        {% else %}
+                                            <span class="badge-soft badge-blue">{{ bulletin.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ bulletin.createdAt ? bulletin.createdAt|date('d/m/Y H:i') : '' }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ path('admin_bulletin_show', {id: bulletin.id}) }}" class="btn-icon">
+                                            👁
+                                        </a>
+                                        <a href="{{ path('admin_bulletin_edit', {id: bulletin.id}) }}" class="btn-icon">
+                                            ✏️
+                                        </a>
+                                        {{ include('bulletin/_delete_form.html.twig', {bulletin: bulletin}) }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
