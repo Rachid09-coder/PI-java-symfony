@@ -17,7 +17,13 @@
             </p>
         </div>
 
-        <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; color: #1E293B;">Cours disponibles</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+             <h3 style="font-size: 1.5rem; font-weight: 700; color: #1E293B; margin: 0;">Cours disponibles</h3>
+             <div style="position: relative; width: 300px;">
+                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 0.8rem;"></i>
+                <input type="text" id="courseSearch" placeholder="Rechercher un cours..." style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #E2E8F0; border-radius: 8px; outline: none; transition: border-color 0.2s; font-size: 0.9rem;">
+             </div>
+        </div>
 
         {% if module.courses is empty %}
             <div class="card" style="padding: 30px; text-align: center; color: #64748B;">
@@ -26,7 +32,7 @@
         {% else %}
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 {% for course in module.courses %}
-                    <a href="{{ path('student_course_details', {id: course.id}) }}" style="text-decoration: none; color: inherit; display: block;" class="fade-in stagger-{{ loop.index0 % 3 + 1 }}">
+                    <a href="{{ path('student_course_details', {id: course.id}) }}" style="text-decoration: none; color: inherit; display: block;" class="fade-in stagger-{{ loop.index0 % 3 + 1 }} course-link" data-title="{{ course.title|lower }}">
                         <div class="card course-item" style="padding: 25px; transition: all 0.2s ease; border: 1px solid transparent; border-bottom: 1px solid #F1F5F9;">
                             <div style="display: flex; gap: 20px; align-items: center;">
                                 <div style="width: 80px; height: 60px; background: #F8FAFC; border-radius: 8px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
@@ -53,4 +59,20 @@
             </div>
         {% endif %}
     </div>
+
+    <script>
+        document.getElementById('courseSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const courses = document.querySelectorAll('.course-link');
+            
+            courses.forEach(course => {
+                const title = course.getAttribute('data-title');
+                if (title.includes(searchTerm)) {
+                    course.style.display = 'block';
+                } else {
+                    course.style.display = 'none';
+                }
+            });
+        });
+    </script>
 {% endblock %}
