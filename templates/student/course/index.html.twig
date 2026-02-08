@@ -1,0 +1,45 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Mes Cours - EduSmart{% endblock %}
+
+{% block body %}
+    <div style="padding: 0 var(--sp-4);">
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: var(--sp-6); color: #1E293B;">Gestion Cours</h2>
+        
+        <div class="courses-container">
+            {% for course in courses %}
+                <div class="course-card">
+                    <div class="course-thumb">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <div class="course-content">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h4 class="course-title">{{ course.title }}</h4>
+                                <p class="course-info">{{ course.instructor }}</p>
+                            </div>
+                            <span class="badge-pill" style="background: {{ course.badge_bg }}; color: {{ course.badge_color }};">
+                                {{ course.badge }}
+                            </span>
+                        </div>
+                        <div class="course-meta">
+                            <span><i class="fas fa-book-open" style="margin-right: 5px;"></i> {{ course.modules }} modules</span>
+                            <span><i class="fas fa-clock" style="margin-right: 5px;"></i> {{ course.hours }} heures</span>
+                        </div>
+                        {% if course.progress > 0 %}
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ course.progress }}%;"></div>
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 5px;">{{ course.progress }}% complété</p>
+                        {% endif %}
+                    </div>
+                    <div style="padding-left: 20px;">
+                        <a href="{{ path('student_exams_index') }}" class="btn btn-outline" style="width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 1px solid #E2E8F0;">
+                            <i class="fas fa-chevron-right" style="color: #64748B;"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
