@@ -1,0 +1,55 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}{{ course is defined ? 'Modifier' : 'Ajouter' }} un Cours - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_courses_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ course is defined ? 'Modifier le Cours' : 'Créer un Nouveau Cours' }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px;">
+        <form action="{{ path('admin_courses_manage') }}" method="GET">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Titre du cours</label>
+                        <input type="text" value="{{ course.title ?? '' }}" placeholder="Ex: Masterclass Symfony 6" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Description détaillée</label>
+                        <textarea rows="6" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;" placeholder="Décrivez le contenu du cours...">{{ course.description ?? '' }}</textarea>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Catégorie</label>
+                        <select style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;">
+                            <option>Développement Web</option>
+                            <option>Intelligence Artificielle</option>
+                            <option>Design</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Niveau</label>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="btn btn-outline" style="flex: 1; font-size: 0.8rem; padding: 10px;">Débutant</button>
+                            <button type="button" class="btn btn-primary" style="flex: 1; font-size: 0.8rem; padding: 10px; background: #6366F1;">Avancé</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Prix (€)</label>
+                        <input type="number" value="{{ course.price ?? '0' }}" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                    </div>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px;">
+                <a href="{{ path('admin_courses_manage') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">Enregistrer les Modifications</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

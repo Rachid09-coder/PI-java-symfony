@@ -1,0 +1,44 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Gérer les Cours - Professeur{% endblock %}
+
+{% block body %}
+<div class="card" style="padding: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h3 style="font-size: 1.5rem; font-weight: 800; color: #1E293B;">Administration des Cours</h3>
+        <a href="{{ path('admin_course_new') }}" class="btn btn-primary" style="background: #3B49A2; padding: 12px 25px; border-radius: 12px;">+ Nouveau Cours</a>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                    <th style="padding: 20px;">Titre du Cours</th>
+                    <th style="padding: 20px;">Modules</th>
+                    <th style="padding: 20px;">Prix</th>
+                    <th style="padding: 20px;">Statut</th>
+                    <th style="padding: 20px; text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #F8FAFC;">
+                    <td style="padding: 20px;">
+                        <div style="font-weight: 700; color: #1E293B;">Introduction à l'IA</div>
+                        <div style="font-size: 0.8rem; color: #94A3B8;">Créé le 15 Janv. 2026</div>
+                    </td>
+                    <td style="padding: 20px; font-weight: 600; color: #64748B;">12 Modules</td>
+                    <td style="padding: 20px; font-weight: 700; color: #3B49A2;">49.99 €</td>
+                    <td style="padding: 20px;"><span style="background: #D1FAE5; color: #10B981; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">Publié</span></td>
+                    <td style="padding: 20px; text-align: right;">
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <a href="{{ path('admin_course_modules', {id: 1}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #3B49A2; font-size: 0.8rem; font-weight: 700;">Gérer Modules</a>
+                            <a href="{{ path('admin_course_edit', {id: 1}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #64748B;"><i class="fas fa-edit"></i></a>
+                            <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

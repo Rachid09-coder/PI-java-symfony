@@ -1,0 +1,56 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}{{ id is defined and id ? 'Modifier' : 'Ajouter' }} Module - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_modules_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ id is defined and id ? 'Modifier le Module' : 'Ajouter un Nouveau Module' }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px;">
+        <form action="{{ path('admin_modules_manage') }}" method="GET">
+            <div style="display: flex; flex-direction: column; gap: 25px;">
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Titre du Module</label>
+                    <input type="text" placeholder="Ex: Introduction aux Tableaux" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; font-weight: 600;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Cours Parent</label>
+                    <select style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white; font-weight: 600;">
+                        <option>Programmation Python</option>
+                        <option>Développement Web</option>
+                        <option>Algèbre Linéaire</option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Ordre d'affichage</label>
+                        <input type="number" value="1" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Statut</label>
+                        <select style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;">
+                            <option>Publié</option>
+                            <option>Brouillon</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Contenu du Module (Description/Texte)</label>
+                    <textarea rows="6" placeholder="Rédigez le contenu ici..." style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;"></textarea>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
+                <a href="{{ path('admin_modules_manage') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">Enregistrer le Module</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

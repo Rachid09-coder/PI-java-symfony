@@ -1,0 +1,44 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Configuration Examen - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_exams_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ id is defined and id ? 'Modifier l\'Examen' : 'Créer un Nouvel Examen' }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px;">
+        <form action="{{ path('admin_exams_manage') }}" method="GET">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Titre de l'examen</label>
+                    <input type="text" placeholder="Ex: Contrôle Final Algèbre" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Durée (minutes)</label>
+                        <input type="number" placeholder="60" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Coefficient</label>
+                        <input type="number" step="0.5" value="1" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Consignes</label>
+                    <textarea rows="3" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;" placeholder="Calculatrice autorisée, etc."></textarea>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
+                <a href="{{ path('admin_exams_manage') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">Enregistrer et Ajouter des Questions</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

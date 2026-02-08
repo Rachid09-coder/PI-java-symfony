@@ -1,0 +1,53 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}{{ product.id is defined and product.id ? 'Modifier' : 'Ajouter' }} un Produit - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_shop_index') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ product.id is defined and product.id ? 'Modifier le Produit' : 'Ajouter un Nouveau Produit' }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        {{ form_start(form) }}
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Nom du produit</label>
+                    {{ form_widget(form.name, {'attr': {'placeholder': 'Ex: Casque Audio', 'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
+                    <div style="color: #EF4444; font-size: 0.8rem; margin-top: 5px;">{{ form_errors(form.name) }}</div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Catégorie</label>
+                        {{ form_widget(form.category, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white; outline: none;'}}) }}
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Prix (€)</label>
+                        {{ form_widget(form.price, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Stock initial</label>
+                        {{ form_widget(form.stock, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Photo du produit</label>
+                        {{ form_widget(form.image, {'attr': {'style': 'width: 100%; padding: 10px; border: 1px solid #E2E8F0; border-radius: 12px; background: white; outline: none;'}}) }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
+                <a href="{{ path('admin_shop_index') }}" style="padding: 12px 30px; border: 1px solid #E2E8F0; border-radius: 12px; text-decoration: none; color: #64748B; font-weight: 600;">Annuler</a>
+                <button type="submit" style="padding: 12px 40px; background: #3B49A2; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">
+                    {{ product.id is defined and product.id ? 'Enregistrer les modifications' : 'Créer le Produit' }}
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
