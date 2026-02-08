@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Inscription - EduSmart</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+    <body style="background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: var(--sp-6);">
+        <div class="card" style="width: 100%; max-width: 450px; padding: var(--sp-8); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+            <div style="text-align: center; margin-bottom: var(--sp-6);">
+                <div style="width: 50px; height: 50px; background: var(--primary-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem; margin: 0 auto var(--sp-4);">E</div>
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">Créer un compte</h2>
+                <p style="color: var(--text-secondary);">Rejoignez la communauté EduSmart</p>
+            </div>
+
+         {{ form_start(form, {
+    action: path('app_register'),
+    method: 'POST'
+}) }}
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); margin-bottom: var(--sp-4);">
+    <div>
+        <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: var(--sp-2);">Prénom</label>
+        {{ form_widget(form.prenom, {
+            attr: {
+                placeholder: 'Jean',
+                style: 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;',
+                required: 'required'
+            }
+        }) }}
+        {{ form_errors(form.prenom) }}
+    </div>
+
+    <div>
+        <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: var(--sp-2);">Nom</label>
+        {{ form_widget(form.name, {
+            attr: {
+                placeholder: 'Dupont',
+                style: 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;',
+                required: 'required'
+            }
+        }) }}
+        {{ form_errors(form.name) }}
+    </div>
+</div>
+
+<div style="margin-bottom: var(--sp-4);">
+    <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: var(--sp-2);">Email</label>
+    {{ form_widget(form.email, {
+        attr: {
+            placeholder: 'jean.dupont@exemple.com',
+            style: 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;',
+            required: 'required'
+        }
+    }) }}
+    {{ form_errors(form.email) }}
+</div>
+
+<div style="margin-bottom: var(--sp-4);">
+    <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: var(--sp-2);">Numéro de portable</label>
+    {{ form_widget(form.numtel, {
+        attr: {
+            placeholder: '06 12 34 56 78',
+            style: 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;',
+            required: 'required'
+        }
+    }) }}
+    {{ form_errors(form.numtel) }}
+</div>
+
+<div style="margin-bottom: var(--sp-4);">
+    <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: var(--sp-2);">Rôle</label>
+    {{ form_widget(form.role, {
+        attr: {
+            style: 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: white;'
+        }
+    }) }}
+    {{ form_errors(form.role) }}
+</div>
+
+<div style="margin-bottom: var(--sp-6);">
+    <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: var(--sp-2);">Mot de passe</label>
+    {{ form_widget(form.password, {
+        attr: {
+            placeholder: '••••••••',
+            style: 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;',
+            required: 'required'
+        }
+    }) }}
+    {{ form_errors(form.password) }}
+</div>
+
+<button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 600; font-size: 1rem; margin-bottom: var(--sp-4);">
+    S'inscrire
+</button>
+
+{{ form_end(form) }}
+
+            <div style="text-align: center; font-size: 0.875rem; color: var(--text-secondary);">
+                Déjà un compte ? <a href="{{ path('app_login') }}" style="color: var(--secondary-color); font-weight: 600;">Se connecter</a>
+            </div>
+        </div>
+    </body>
+</html>
