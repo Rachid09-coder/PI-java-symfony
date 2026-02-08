@@ -6,15 +6,20 @@
     <div style="padding: 0 var(--sp-4);">
         <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: var(--sp-6); color: #1E293B;">Mes Modules</h2>
         
+        <div style="margin-bottom: var(--sp-6); position: relative;">
+            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
+            <input type="text" id="moduleSearch" placeholder="Rechercher un module..." style="width: 100%; padding: 12px 12px 12px 45px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; transition: border-color 0.2s; font-size: 1rem;">
+        </div>
+
         {% if modules is empty %}
             <div class="card" style="text-align: center; padding: 50px; color: #64748B;">
                 <i class="fas fa-book-open" style="font-size: 3rem; margin-bottom: 20px; color: #CBD5E1;"></i>
                 <p>Aucun module disponible pour le moment.</p>
             </div>
         {% else %}
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            <div id="modulesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
                 {% for module in modules %}
-                    <a href="{{ path('student_module_details', {id: module.id}) }}" style="text-decoration: none; color: inherit;" class="fade-in stagger-{{ loop.index0 % 3 + 1 }}">
+                    <a href="{{ path('student_module_details', {id: module.id}) }}" style="text-decoration: none; color: inherit;" class="fade-in stagger-{{ loop.index0 % 3 + 1 }} module-link" data-title="{{ module.title|lower }}">
                         <div class="card module-card hover-scale glow-effect" style="padding: 0; overflow: hidden; height: 100%; transition: all 0.3s ease; border: 1px solid #E2E8F0;">
                             <div style="height: 160px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
                                 {% if module.thumbnail %}
@@ -41,4 +46,20 @@
             </div>
         {% endif %}
     </div>
+
+    <script>
+        document.getElementById('moduleSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const modules = document.querySelectorAll('.module-link');
+            
+            modules.forEach(module => {
+                const title = module.getAttribute('data-title');
+                if (title.includes(searchTerm)) {
+                    module.style.display = 'block';
+                } else {
+                    module.style.display = 'none';
+                }
+            });
+        });
+    </script>
 {% endblock %}
