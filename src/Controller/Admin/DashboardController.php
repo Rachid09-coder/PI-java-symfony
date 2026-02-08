@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Repository\CourseRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,9 +24,11 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/courses/manage', name: 'admin_courses_manage')]
-    public function manageCourses(): Response
+    public function manageCourses(CourseRepository $courseRepository): Response
     {
-        return $this->render('admin/course/manage.html.twig');
+        return $this->render('admin/course/manage.html.twig', [
+            'courses' => $courseRepository->findAllOrderedByTitle(),
+        ]);
     }
 
     #[Route('/exams/manage', name: 'admin_exams_manage')]

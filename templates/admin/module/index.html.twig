@@ -8,28 +8,55 @@
     <a href="{{ path('admin_module_new') }}" class="btn btn-primary" style="background: #3B49A2; border-radius: 12px; padding: 10px 25px;">+ Nouveau Module</a>
 </div>
 
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px 20px; background: #D1FAE5; color: #065F46; border-radius: 8px;">{{ message }}</div>
+{% endfor %}
+
 <div class="card" style="padding: 0; overflow: hidden;">
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
+                <th style="padding: 20px;">Image</th>
                 <th style="padding: 20px;">Module</th>
                 <th style="padding: 20px;">Cours Parent</th>
-                <th style="padding: 20px;">Ordre</th>
                 <th style="padding: 20px; text-align: right;">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for mod in modules %}
-                <tr style="border-bottom: 1px solid #F1F5F9; transition: 0.2s;" onmouseover="this.style.background='#FBFDFF'" onmouseout="this.style.background='transparent'">
+                <tr style="border-bottom: 1px solid #F1F5F9;">
+                    <td style="padding: 20px;">
+                        {% if mod.thumbnail %}
+                            <img src="{{ asset('uploads/' ~ mod.thumbnail) }}" alt="{{ mod.title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+                        {% else %}
+                            <div style="width: 50px; height: 50px; background: #F1F5F9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94A3B8; font-size: 0.8rem;">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                    </td>
                     <td style="padding: 20px; font-weight: 700; color: #1E293B;">{{ mod.title }}</td>
-                    <td style="padding: 20px;"><span style="background: #EEF2FF; color: #6366F1; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{{ mod.course }}</span></td>
-                    <td style="padding: 20px; font-weight: 600; color: #64748B;">#{{ mod.order }}</td>
+                    <td style="padding: 20px;">
+                        {% if mod.courses|length > 0 %}
+                            {% for c in mod.courses %}
+                                <a href="{{ path('admin_course_modules', {id: c.id}) }}" style="background: #EEF2FF; color: #6366F1; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-decoration: none; margin-right: 5px;">{{ c.title }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: #94A3B8;">—</span>
+                        {% endif %}
+                    </td>
                     <td style="padding: 20px; text-align: right;">
                         <div style="display: flex; gap: 10px; justify-content: flex-end;">
                             <a href="{{ path('admin_module_edit', {id: mod.id}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #64748B;"><i class="fas fa-edit"></i></a>
-                            <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                            <form method="post" action="{{ path('admin_module_delete', {id: mod.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce module ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mod.id) }}">
+                                <button type="submit" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                            </form>
                         </div>
                     </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 40px; text-align: center; color: #64748B;">Aucun module. <a href="{{ path('admin_module_new') }}">Créer un module</a></td>
                 </tr>
             {% endfor %}
         </tbody>
