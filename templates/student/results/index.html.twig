@@ -1,0 +1,54 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Mes Notes{% endblock %}
+
+{% block body %}
+
+<h2>Mes Résultats d'Examens</h2>
+
+<table class="table" style="width:100%; margin-top:20px;">
+    <thead>
+        <tr>
+            <th>Examen</th>
+            <th>Note</th>
+            <th>Statut</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+    {% for submission in submissions %}
+
+        <tr>
+            <td>{{ submission.exam.title }}</td>
+
+            <td>
+                {% if submission.grade is not null %}
+                    <strong>{{ submission.grade }}/20</strong>
+                {% else %}
+                    En attente
+                {% endif %}
+            </td>
+
+            <td>
+                {% if submission.grade is null %}
+                    ⏳ Non corrigé
+                {% elseif submission.isPassed %}
+                    <span style="color:green;font-weight:bold;">✔ Réussi</span>
+                {% else %}
+                    <span style="color:red;font-weight:bold;">❌ Échoué</span>
+                {% endif %}
+            </td>
+
+        </tr>
+
+    {% else %}
+        <tr>
+            <td colspan="3">Aucun examen passé</td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
+</table>
+
+{% endblock %}

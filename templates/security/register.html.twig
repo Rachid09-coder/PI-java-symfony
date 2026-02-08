@@ -1,0 +1,23 @@
+{% extends 'security/security_base.html.twig' %}
+
+
+{% block body %}
+
+<h2 style="text-align:center">Créer un compte</h2>
+
+<div style="width:350px;margin:auto">
+
+{{ form_start(registrationForm) }}
+
+{{ form_row(registrationForm.email) }}
+{{ form_row(registrationForm.plainPassword) }}
+
+<button style="margin-top:15px;width:100%;padding:10px;background:#3B49A2;color:white;border:none;border-radius:8px;">
+Créer
+</button>
+
+{{ form_end(registrationForm) }}
+
+</div>
+
+{% endblock %}

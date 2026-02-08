@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Corrections{% endblock %}
+
+{% block body %}
+
+<h2>Copies des étudiants</h2>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Etudiant</th>
+        <th>Email</th>
+        <th>Examen</th>
+        <th>Copie</th>
+        <th>Statut</th>
+        <th>Corriger</th>
+    </tr>
+
+    {% for s in submissions %}
+        <tr>
+            <td>{{ s.student.email|split('@')[0] }}</td>
+            <td>{{ s.student.email }}</td>
+            <td>{{ s.exam.title }}</td>
+
+            <td>
+                <a href="{{ asset('uploads/submissions/' ~ s.filePath) }}" target="_blank">
+                    Télécharger
+                </a>
+            </td>
+
+            <td>
+                {% if s.grade is not null %}
+                    Noté ({{ s.grade }}/20)
+                {% else %}
+                    Non corrigé
+                {% endif %}
+            </td>
+
+            <td>
+                <a href="{{ path('teacher_grade', {id: s.id}) }}">
+                    Corriger
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

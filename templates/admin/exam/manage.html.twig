@@ -7,27 +7,59 @@
 {% block body %}
 
 <div class="exam-header">
+
     <h2>Gestion des Examens</h2>
-    <a href="{{ path('admin_exam_new') }}" class="create-btn">+ Créer un Examen</a>
+
+    <div style="display:flex; gap:12px;">
+
+        {# ===== BUTTON TEACHER CORRECTIONS ===== #}
+        <a href="{{ path('teacher_corrections') }}"
+           class="create-btn"
+           style="background:#10b981;">
+            📑 Corrections
+        </a>
+
+        {# ===== CREATE EXAM ===== #}
+        <a href="{{ path('admin_exam_new') }}"
+           class="create-btn">
+            + Créer un Examen
+        </a>
+
+    </div>
+
 </div>
 
+
 <div class="exam-card">
+
+    {# Flash messages #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash flash-{{ label }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
 <table class="exam-table">
 
 <thead>
 <tr>
-<th>Titre</th>
-<th>Type</th>
-<th>Durée</th>
-<th>Action</th>
+    <th>Titre</th>
+    <th>Type</th>
+    <th>Durée</th>
+    <th>Actions</th>
 </tr>
 </thead>
 
 <tbody>
+
 {% for exam in exams %}
 <tr>
 
-<td><strong>{{ exam.title }}</strong></td>
+<td>
+    <strong>{{ exam.title }}</strong>
+</td>
 
 <td>
 {% if exam.type == 'pdf' %}
@@ -45,9 +77,26 @@
 
 <td>
     <div class="actions">
-        <a href="{{ path('admin_exam_edit',{id:exam.id}) }}" class="action-btn edit-btn">
+
+        {# VIEW EXAM AS STUDENT #}
+        <a href="{{ path('student_exam_show',{id:exam.id}) }}"
+           class="action-btn view-btn">
+            Voir
+        </a>
+
+        {# EDIT #}
+        <a href="{{ path('admin_exam_edit',{id:exam.id}) }}"
+           class="action-btn edit-btn">
             Modifier
         </a>
+
+        {# DELETE #}
+        <a href="{{ path('admin_exam_delete',{id:exam.id}) }}"
+           class="action-btn delete-btn"
+           onclick="return confirm('Supprimer cet examen ?');">
+            Supprimer
+        </a>
+
     </div>
 </td>
 
@@ -60,9 +109,10 @@
 </td>
 </tr>
 {% endfor %}
-</tbody>
 
+</tbody>
 </table>
+
 </div>
 
 {% endblock %}

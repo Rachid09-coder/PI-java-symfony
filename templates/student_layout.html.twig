@@ -18,7 +18,7 @@
                 <nav style="margin-top: 30px;">
                     <ul style="list-style: none;">
                         <li><a href="{{ path('student_courses') }}" class="nav-item {{ app.request.get('_route') == 'student_courses' ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> <span>Mes Cours</span></a></li>
-                        <li><a href="{{ path('student_exams_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_exam' ? 'active' : '' }}"><i class="fas fa-tasks"></i> <span>Examens</span></a></li>
+                        <li><a href="{{ path('student_exams') }}" class="nav-item {{ app.request.get('_route') starts with 'student_exam' ? 'active' : '' }}"><i class="fas fa-tasks"></i> <span>Examens</span></a></li>
                         <li><a href="{{ path('student_shop_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_shop' ? 'active' : '' }}"><i class="fas fa-shopping-bag"></i> <span>Boutique</span></a></li>
                         <li><a href="{{ path('student_shop_cart') }}" class="nav-item {{ app.request.get('_route') == 'student_shop_cart' ? 'active' : '' }}"><i class="fas fa-shopping-cart"></i> <span>Mon Panier</span></a></li>
                     </ul>

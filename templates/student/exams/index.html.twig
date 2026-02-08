@@ -5,41 +5,59 @@
 {% block body %}
 
 <h2>Mes Examens</h2>
+<div style="margin-bottom:20px;">
+    <a href="{{ path('student_results') }}" class="btn btn-success"
+       style="padding:10px 18px; border-radius:8px; background:#2ecc71; color:white; text-decoration:none; font-weight:bold;">
+        📊 Voir mes notes
+    </a>
+</div>
 
 {% for exam in exams %}
 
-    {% set submission = null %}
-    {% for s in submissions %}
-        {% if s.exam.id == exam.id %}
-            {% set submission = s %}
-        {% endif %}
-    {% endfor %}
+    {% set submission = submissionMap[exam.id] ?? null %}
 
     <div style="border:1px solid #ddd;padding:20px;margin-bottom:20px;border-radius:10px;">
 
         <h3>{{ exam.title }}</h3>
         <p>{{ exam.description }}</p>
 
-        {% if submission %}
-            
-            {% if submission.isPassed %}
-                <p style="color:green;font-weight:bold;">✔ Réussi</p>
-            {% else %}
-                <p style="color:red;font-weight:bold;">❌ Échoué</p>
-            {% endif %}
+        {# 1️⃣ Student never passed the exam #}
+        {% if submission is null %}
 
-            <p>Note : {{ submission.grade ?? 'En attente' }}</p>
+            <a href="{{ path('student_exam_show',{id:exam.id}) }}"
+               style="background:#3B49A2;color:white;padding:10px 18px;border-radius:8px;text-decoration:none;">
+                Commencer l'examen
+            </a>
 
         {% else %}
 
-            <a href="{{ path('student_exam_show',{id:exam.id}) }}">
-                Commencer l'examen
-            </a>
+            {# 2️⃣ Submitted but not corrected yet #}
+            {% if submission.grade is null %}
+                <p style="color:orange;font-weight:bold;">
+                    ⏳ Copie envoyée — En attente de correction
+                </p>
+
+            {# 3️⃣ Corrected #}
+            {% else %}
+
+                {% if submission.isPassed %}
+                    <p style="color:green;font-weight:bold;">✔ Réussi</p>
+                {% else %}
+                    <p style="color:red;font-weight:bold;">❌ Échoué</p>
+                {% endif %}
+
+                <p style="font-size:18px;">
+                    <b>Note :</b> {{ submission.grade }}/20
+                </p>
+
+            {% endif %}
 
         {% endif %}
 
     </div>
 
+{% else %}
+    <p>Aucun examen disponible.</p>
 {% endfor %}
 
 {% endblock %}

@@ -19,9 +19,10 @@ class ExamSubmission
     #[ORM\JoinColumn(nullable: false)]
     private ?User $student = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Exam $exam = null;
+   #[ORM\ManyToOne(inversedBy: 'submissions')]
+#[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+private ?Exam $exam = null;
+
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $filePath = null;
@@ -32,8 +33,8 @@ class ExamSubmission
     #[ORM\Column(nullable: true)]
     private ?bool $isPassed = null;
 
-    #[ORM\Column]
-    private ?\DateTimeInterface $submittedAt = null;
+   #[ORM\Column(type: 'datetime')]
+private ?\DateTimeInterface $submittedAt = null;
 
 
     public function getId(): ?int

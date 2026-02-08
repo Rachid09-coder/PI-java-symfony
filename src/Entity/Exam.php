@@ -3,7 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\ExamRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\ExamSubmission;
 
 #[ORM\Entity(repositoryClass: ExamRepository::class)]
 class Exam
@@ -31,7 +34,50 @@ class Exam
     #[ORM\Column(nullable: true)]
     private ?int $duration = null;
 
-    // getters setters
+    /*
+    ======================================================
+    🔴 VERY IMPORTANT PART (RELATION WITH SUBMISSIONS)
+    ======================================================
+    */
+
+    #[ORM\OneToMany(mappedBy: 'exam', targetEntity: ExamSubmission::class, orphanRemoval: true, cascade: ['remove'])]
+    private Collection $submissions;
+
+    public function __construct()
+    {
+        $this->submissions = new ArrayCollection();
+    }
+
+    public function getSubmissions(): Collection
+    {
+        return $this->submissions;
+    }
+
+    public function addSubmission(ExamSubmission $submission): static
+    {
+        if (!$this->submissions->contains($submission)) {
+            $this->submissions->add($submission);
+            $submission->setExam($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubmission(ExamSubmission $submission): static
+    {
+        if ($this->submissions->removeElement($submission)) {
+            if ($submission->getExam() === $this) {
+                $submission->setExam(null);
+            }
+        }
+
+        return $this;
+    }
+
+    // ======================================================
+    // Getters & Setters
+    // ======================================================
+
     public function getId(): ?int { return $this->id; }
 
     public function getTitle(): ?string { return $this->title; }

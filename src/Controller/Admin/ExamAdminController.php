@@ -10,55 +10,128 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/admin/exam')]
 class ExamAdminController extends AbstractController
 {
-    #[Route('/manage', name: 'admin_exams_manage')]
-    public function manage(ExamRepository $repo): Response
+
+    // =========================
+    // LIST ALL EXAMS
+    // =========================
+    #[Route('/', name: 'admin_exam_manage')]
+    public function manage(ExamRepository $examRepository): Response
     {
+        $exams = $examRepository->findBy([], ['id' => 'DESC']);
+
         return $this->render('admin/exam/manage.html.twig', [
-            'exams' => $repo->findAll()
+            'exams' => $exams,
         ]);
     }
 
-    #[Route('/new', name: 'admin_exam_new')]
-    #[Route('/{id}/edit', name: 'admin_exam_edit')]
-    public function form(
-        Request $request,
-        EntityManagerInterface $em,
-        SluggerInterface $slugger,
-        ?Exam $exam = null
-    ): Response {
 
-        if(!$exam){
-            $exam = new Exam();
-        }
+    // =========================
+    // CREATE NEW EXAM
+    // =========================
+  #[Route('/new', name: 'admin_exam_new')]
+public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+{
+    $exam = new Exam();
 
-        $form = $this->createForm(ExamType::class,$exam);
-        $form->handleRequest($request);
+    $form = $this->createForm(ExamType::class, $exam);
+    $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid()){
+    if ($form->isSubmitted() && $form->isValid()) {
 
-            $file = $form->get('filePath')->getData();
+        /** @var UploadedFile $uploadedFile */
+        $uploadedFile = $form->get('filePath')->getData();
 
-            if($file){
-                $filename = pathinfo($file->getClientOriginalName(),PATHINFO_FILENAME);
-                $safe = $slugger->slug($filename);
-                $new = $safe.'-'.uniqid().'.'.$file->guessExtension();
-                $file->move($this->getParameter('exams_directory'),$new);
-                $exam->setFilePath($new);
+        if ($uploadedFile) {
+
+            $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename.'-'.uniqid().'.'.$uploadedFile->guessExtension();
+
+            try {
+                $uploadedFile->move(
+                    $this->getParameter('kernel.project_dir').'/public/uploads/exams',
+                    $newFilename
+                );
+            } catch (FileException $e) {
+                dd($e);
             }
 
-            $em->persist($exam);
-            $em->flush();
-
-            return $this->redirectToRoute('admin_exams_manage');
+            // SAVE FILE NAME IN DATABASE
+            $exam->setFilePath($newFilename);
         }
 
-        return $this->render('admin/exam/form.html.twig',[
-            'form'=>$form->createView()
-        ]);
+        $em->persist($exam);
+        $em->flush();
+
+        $this->addFlash('success', 'Examen créé avec succès');
+
+        return $this->redirectToRoute('admin_exam_manage');
     }
+
+    return $this->render('admin/exam/form.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
+// =========================
+// EDIT EXAM
+// =========================
+#[Route('/edit/{id}', name: 'admin_exam_edit')]
+public function edit(Exam $exam, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+{
+    $form = $this->createForm(ExamType::class, $exam);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+
+        /** @var UploadedFile $uploadedFile */
+        $uploadedFile = $form->get('filePath')->getData();
+
+        if ($uploadedFile) {
+
+            $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename.'-'.uniqid().'.'.$uploadedFile->guessExtension();
+
+            $uploadedFile->move(
+                $this->getParameter('kernel.project_dir').'/public/uploads/exams',
+                $newFilename
+            );
+
+            $exam->setFilePath($newFilename);
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', 'Examen modifié avec succès');
+        return $this->redirectToRoute('admin_exam_manage');
+    }
+
+    return $this->render('admin/exam/form.html.twig', [
+        'form' => $form->createView(),
+        'exam' => $exam
+    ]);
+}
+
+
+    // =========================
+    // DELETE EXAM
+    // =========================
+    #[Route('/delete/{id}', name: 'admin_exam_delete')]
+    public function delete(Exam $exam, EntityManagerInterface $em): Response
+    {
+        $em->remove($exam);
+        $em->flush();
+
+        $this->addFlash('danger', 'Examen supprimé');
+
+        return $this->redirectToRoute('admin_exam_manage');
+    }
+
 }

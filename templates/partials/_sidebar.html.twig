@@ -1,82 +1,129 @@
 <aside class="sidebar" id="sidebar">
+
     <div class="sidebar-header">
         <div class="logo-icon">E</div>
         <h2 style="font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px;">EduSmart</h2>
     </div>
-    
+
+
+    {# ========================================================= #}
+    {# ====================== STUDENT SPACE ===================== #}
+    {# ========================================================= #}
+    {% if is_granted('ROLE_STUDENT') %}
+
     <div style="padding: 0 var(--sp-6); margin-bottom: 20px;">
-        <p style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Espace Étudiant</p>
+        <p style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+            Espace Étudiant
+        </p>
+
         <ul style="list-style: none;">
+
             <li>
-                <a href="{{ path('student_courses') }}" class="nav-item {{ app.request.get('_route') == 'student_courses' ? 'active' : '' }}">
+                <a href="{{ path('student_courses') }}"
+                   class="nav-item {{ app.request.get('_route') == 'student_courses' ? 'active' : '' }}">
                     <i class="fas fa-graduation-cap"></i>
                     <span>Mes Cours</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ path('student_exams_index') }}"
-                   class="nav-item {{ app.request.get('_route') in ['student_exams_index', 'student_exam_show'] ? 'active' : '' }}">
+                <a href="{{ path('student_exams') }}"
+                   class="nav-item {{ app.request.get('_route') starts with 'student_exam' ? 'active' : '' }}">
                     <i class="fas fa-file-alt"></i>
                     <span>Mes Examens</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ path('student_shop_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_shop' ? 'active' : '' }}">
+                <a href="{{ path('student_shop_index') }}"
+                   class="nav-item {{ app.request.get('_route') starts with 'student_shop' ? 'active' : '' }}">
                     <i class="fas fa-shopping-bag"></i>
                     <span>Boutique</span>
                 </a>
             </li>
+
         </ul>
     </div>
 
-    <div style="padding: 0 var(--sp-6); margin-bottom: 20px;">
-        <p style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Espace Professeur</p>
-        <ul style="list-style: none;">
-            <li>
-                <a href="{{ path('admin_courses_manage') }}" class="nav-item {{ app.request.get('_route') == 'admin_courses_manage' ? 'active' : '' }}">
-                    <i class="fas fa-edit"></i>
-                    <span>Gérer les Cours</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('admin_exams_manage') }}" class="nav-item {{ app.request.get('_route') == 'admin_exams_manage' ? 'active' : '' }}">
-                    <i class="fas fa-tasks"></i>
-                    <span>Gérer Examens</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ path('admin_shop_index') }}" class="nav-item {{ app.request.get('_route') == 'admin_shop_index' ? 'active' : '' }}">
-                    <i class="fas fa-store-cog"></i>
-                    <span>Gérer Boutique</span>
-                </a>
-            </li>
+    {% endif %}
 
-            {# Bulletins : routes admin_bulletin_* #}
-            <li>
-                <a href="{{ path('admin_bulletin_index') }}"
-                   class="nav-item {{ app.request.get('_route') starts with 'admin_bulletin_' ? 'active' : '' }}">
-                    <i class="fas fa-clipboard-list"></i>
-                    <span>Bulletins</span>
-                </a>
-            </li>
 
-            {# Certifications : routes app_certification_* (CRUD que tu as fait) #}
-            <li>
-                <a href="{{ path('app_certification_index') }}"
-                   class="nav-item {{ app.request.get('_route') starts with 'app_certification_' ? 'active' : '' }}">
-                    <i class="fas fa-certificate"></i>
-                    <span>Certifications</span>
-                </a>
-            </li>
-        </ul>
-    </div>
 
+    {# ========================================================= #}
+    {# ====================== TEACHER SPACE ===================== #}
+    {# ========================================================= #}
+   {% if is_granted('ROLE_TEACHER') %}
+
+<div style="padding: 0 var(--sp-6); margin-bottom: 20px;">
+    <p style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+        Espace Professeur
+    </p>
+
+    <ul style="list-style: none;">
+
+        <li>
+            <a href="{{ path('admin_courses_manage') }}"
+               class="nav-item {{ app.request.get('_route') == 'admin_courses_manage' ? 'active' : '' }}">
+                <i class="fas fa-edit"></i>
+                <span>Gérer les Cours</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ path('admin_exam_manage') }}"
+               class="nav-item {{ app.request.get('_route') == 'admin_exam_manage' ? 'active' : '' }}">
+                <i class="fas fa-tasks"></i>
+                <span>Gérer Examens</span>
+            </a>
+        </li>
+
+        {# ================= CORRECTIONS ================= #}
+        <li>
+            <a href="{{ path('teacher_corrections') }}"
+class="nav-item {{ app.request.get('_route') starts with 'teacher_' ? 'active' : '' }}"
+
+                <span>Corrections</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ path('admin_shop_index') }}"
+               class="nav-item {{ app.request.get('_route') == 'admin_shop_index' ? 'active' : '' }}">
+                <i class="fas fa-store-cog"></i>
+                <span>Gérer Boutique</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ path('admin_bulletin_index') }}"
+               class="nav-item {{ app.request.get('_route') starts with 'admin_bulletin_' ? 'active' : '' }}">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Bulletins</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ path('app_certification_index') }}"
+               class="nav-item {{ app.request.get('_route') starts with 'app_certification_' ? 'active' : '' }}">
+                <i class="fas fa-certificate"></i>
+                <span>Certifications</span>
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+{% endif %}
+
+
+    {# ====================== LOGOUT ====================== #}
     <div style="margin-top: auto; padding: var(--sp-6);">
-        <a href="{{ path('app_login') }}" class="nav-item" style="border: none; background: rgba(255,255,255,0.1); border-radius: 12px; justify-content: center;">
+        <a href="{{ path('app_logout') }}"
+           class="nav-item"
+           style="border: none; background: rgba(255,255,255,0.1); border-radius: 12px; justify-content: center;">
             <i class="fas fa-sign-out-alt"></i>
             <span>Déconnexion</span>
         </a>
     </div>
+
 </aside>

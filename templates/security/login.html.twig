@@ -1,0 +1,48 @@
+{% extends 'security/security_base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+
+<div class="logo">
+    <div class="logo-box">E</div>
+    <h2>Connexion à EduSmart</h2>
+</div>
+
+{% if error %}
+    <div class="error">
+        {{ error.messageKey|trans(error.messageData, 'security') }}
+    </div>
+{% endif %}
+
+<form method="post" action="{{ path('app_login') }}">
+
+    <label>Email</label>
+    <input
+        type="email"
+        name="_username"
+        value="{{ last_username }}"
+        required
+        autofocus
+    >
+
+    <label>Mot de passe</label>
+    <input
+        type="password"
+        name="_password"
+        required
+    >
+
+    {# VERY IMPORTANT FOR SYMFONY SECURITY #}
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+    <button class="btn-login">Se connecter</button>
+
+</form>
+
+<div class="bottom-link">
+    Pas de compte ?
+    <a href="{{ path('app_register') }}">Créer un compte</a>
+</div>
+
+{% endblock %}

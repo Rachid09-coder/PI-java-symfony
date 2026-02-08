@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class ExamType extends AbstractType
 {
@@ -17,8 +18,13 @@ class ExamType extends AbstractType
     {
         $builder
             ->add('title')
-            ->add('description', TextareaType::class, ['required'=>false])
+
+            ->add('description', TextareaType::class, [
+                'required' => false
+            ])
+
             ->add('duration')
+
             ->add('type', ChoiceType::class, [
                 'choices' => [
                     'PDF (Sujet écrit)' => 'pdf',
@@ -26,10 +32,28 @@ class ExamType extends AbstractType
                     'Fichier Word' => 'word'
                 ]
             ])
-            ->add('externalLink', UrlType::class, ['required'=>false])
+
+            ->add('externalLink', UrlType::class, [
+                'required' => false
+            ])
+
             ->add('filePath', FileType::class, [
-                'mapped'=>false,
-                'required'=>false
+                'label' => 'Sujet de l\'examen (PDF ou Word)',
+                'mapped' => false,      // VERY IMPORTANT
+                'required' => false,
+
+                // THIS IS THE FIX
+                'constraints' => [
+                    new File([
+                        'maxSize' => '10M',
+                        'mimeTypes' => [
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader un PDF ou un fichier Word valide',
+                    ])
+                ],
             ]);
     }
 

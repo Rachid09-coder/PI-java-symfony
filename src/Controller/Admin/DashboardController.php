@@ -28,9 +28,10 @@ class DashboardController extends AbstractController
         return $this->render('admin/course/manage.html.twig');
     }
 
-    #[Route('/exams/manage', name: 'admin_exams_manage')]
-    public function manageExams(): Response
-    {
-        return $this->render('admin/exam/manage.html.twig');
-    }
+  #[Route('/exams/manage', name: 'admin_exams_manage')]
+public function manageExams(): Response
+{
+    return $this->redirectToRoute('admin_exam_manage');
+}
+
 }

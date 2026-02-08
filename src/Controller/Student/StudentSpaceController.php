@@ -70,15 +70,5 @@ class StudentSpaceController extends AbstractController
         ]);
     }
 
-    #[Route('/exams', name: 'student_exams_index')]
-    public function exams(): Response
-    {
-        return $this->render('student/exam/index.html.twig');
-    }
-
-    #[Route('/exam', name: 'student_exam_show')]
-    public function exam(): Response
-    {
-        return $this->render('student/exam/show.html.twig');
-    }
+   
 }

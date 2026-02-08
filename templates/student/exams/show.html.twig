@@ -1,26 +1,52 @@
 {% extends 'student_layout.html.twig' %}
 
+{% block title %}Passer l'examen{% endblock %}
+
 {% block body %}
 
 <h2>{{ exam.title }}</h2>
+
 <p>{{ exam.description }}</p>
 
-{% if exam.type == 'pdf' %}
-    <a href="/uploads/exams/{{ exam.filePath }}" target="_blank" class="btn btn-primary">
-        Télécharger le sujet
+<hr>
+
+{# ================= EXAM SUBJECT ================= #}
+
+{% if exam.type == 'pdf' or exam.type == 'word' %}
+
+    <a href="{{ asset('uploads/exams/' ~ exam.filePath) }}" target="_blank" style="font-size:18px;">
+        📥 Télécharger le sujet
     </a>
+
 {% elseif exam.type == 'link' %}
-    <a href="{{ exam.externalLink }}" target="_blank" class="btn btn-success">
-        Ouvrir le Quiz
+
+    <a href="{{ exam.externalLink }}" target="_blank">
+        🔗 Ouvrir le quiz
     </a>
+
 {% endif %}
 
 <hr>
 
+{# ================= SUBMISSION ================= #}
+
 <h3>Envoyer votre copie</h3>
 
-<form method="post">
-    <button class="btn btn-primary">Marquer comme terminé</button>
+<form method="POST" enctype="multipart/form-data" style="margin-top:30px;">
+
+    <label><b>Uploader votre copie :</b></label>
+    <br><br>
+
+    <input type="file" name="submission_file" required
+           style="padding:10px;border:1px solid #ccc;border-radius:8px;">
+
+    <br><br>
+
+    <button style="padding:12px 20px;background:#3B49A2;color:white;border:none;border-radius:8px;">
+        Envoyer participation
+    </button>
+
 </form>
+
 
 {% endblock %}
