@@ -6,6 +6,7 @@ use App\Repository\ExamSubmissionRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
 use App\Entity\Exam;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ExamSubmissionRepository::class)]
 class ExamSubmission
@@ -15,27 +16,49 @@ class ExamSubmission
     #[ORM\Column]
     private ?int $id = null;
 
+
+    // ================= STUDENT =================
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $student = null;
 
-   #[ORM\ManyToOne(inversedBy: 'submissions')]
-#[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-private ?Exam $exam = null;
+
+    // ================= EXAM =================
+    #[ORM\ManyToOne(inversedBy: 'submissions')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Exam $exam = null;
 
 
+    // ================= FICHIER =================
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "Vous devez envoyer votre copie.")]
     private ?string $filePath = null;
 
+
+    // ================= NOTE =================
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(
+        min: 0,
+        max: 20,
+        notInRangeMessage: "La note doit être entre 0 et 20"
+    )]
     private ?float $grade = null;
 
+
+    // ================= VALIDATION RÉUSSITE =================
     #[ORM\Column(nullable: true)]
     private ?bool $isPassed = null;
 
-   #[ORM\Column(type: 'datetime')]
-private ?\DateTimeInterface $submittedAt = null;
 
+    // ================= DATE =================
+    #[ORM\Column(type: 'datetime')]
+    #[Assert\NotNull(message: "Date d'envoi invalide")]
+    private ?\DateTimeInterface $submittedAt = null;
+
+
+    // =====================================================
+    // GETTERS / SETTERS
+    // =====================================================
 
     public function getId(): ?int
     {

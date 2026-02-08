@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\ExamSubmission;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ExamRepository::class)]
 class Exam
@@ -16,27 +17,63 @@ class Exam
     #[ORM\Column]
     private ?int $id = null;
 
+
+    // ================= VALIDATION TITRE =================
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre de l'examen est obligatoire")]
+    #[Assert\Length(
+        min: 4,
+        max: 100,
+        minMessage: "Le titre doit contenir au moins 4 caractères",
+        maxMessage: "Le titre ne doit pas dépasser 100 caractères"
+    )]
     private ?string $title = null;
 
+
+    // ================= VALIDATION DESCRIPTION =================
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: "La description est trop longue (1000 caractères max)"
+    )]
     private ?string $description = null;
 
+
+    // ================= VALIDATION TYPE =================
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: "Le type d'examen est obligatoire")]
+    #[Assert\Choice(
+        choices: ['pdf', 'link', 'word'],
+        message: "Type d'examen invalide (pdf, link ou word seulement)"
+    )]
     private ?string $type = null; // pdf | link | word
 
+
+    // ================= FICHIER =================
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $filePath = null;
 
+
+    // ================= VALIDATION LIEN =================
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: "Veuillez entrer un lien valide (https://...)")]
     private ?string $externalLink = null;
 
+
+    // ================= VALIDATION DURÉE =================
     #[ORM\Column(nullable: true)]
+    #[Assert\NotBlank(message: "La durée de l'examen est obligatoire")]
+    #[Assert\Positive(message: "La durée doit être positive")]
+    #[Assert\LessThanOrEqual(
+        value: 300,
+        message: "La durée maximale autorisée est 300 minutes"
+    )]
     private ?int $duration = null;
+
 
     /*
     ======================================================
-    🔴 VERY IMPORTANT PART (RELATION WITH SUBMISSIONS)
+    RELATION AVEC LES COPIES DES ÉTUDIANTS
     ======================================================
     */
 
@@ -74,9 +111,7 @@ class Exam
         return $this;
     }
 
-    // ======================================================
-    // Getters & Setters
-    // ======================================================
+    // ================= GETTERS & SETTERS =================
 
     public function getId(): ?int { return $this->id; }
 
