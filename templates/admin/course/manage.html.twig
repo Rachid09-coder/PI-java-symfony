@@ -9,10 +9,15 @@
         <a href="{{ path('admin_course_new') }}" class="btn btn-primary" style="background: #3B49A2; padding: 12px 25px; border-radius: 12px;">+ Nouveau Cours</a>
     </div>
 
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px 20px; background: #D1FAE5; color: #065F46; border-radius: 8px;">{{ message }}</div>
+    {% endfor %}
+
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr style="text-align: left; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                    <th style="padding: 20px;">Image</th>
                     <th style="padding: 20px;">Titre du Cours</th>
                     <th style="padding: 20px;">Modules</th>
                     <th style="padding: 20px;">Prix</th>
@@ -21,22 +26,49 @@
                 </tr>
             </thead>
             <tbody>
+                {% for course in courses %}
                 <tr style="border-bottom: 1px solid #F8FAFC;">
                     <td style="padding: 20px;">
-                        <div style="font-weight: 700; color: #1E293B;">Introduction à l'IA</div>
-                        <div style="font-size: 0.8rem; color: #94A3B8;">Créé le 15 Janv. 2026</div>
+                        {% if course.thumbnailPath %}
+                            <img src="{{ asset('uploads/' ~ course.thumbnailPath) }}" alt="{{ course.title }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 6px;">
+                        {% else %}
+                            <div style="width: 60px; height: 40px; background: #F1F5F9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94A3B8; font-size: 0.8rem;">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
                     </td>
-                    <td style="padding: 20px; font-weight: 600; color: #64748B;">12 Modules</td>
-                    <td style="padding: 20px; font-weight: 700; color: #3B49A2;">49.99 €</td>
-                    <td style="padding: 20px;"><span style="background: #D1FAE5; color: #10B981; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">Publié</span></td>
+                    <td style="padding: 20px;">
+                        <div style="font-weight: 700; color: #1E293B;">{{ course.title }}</div>
+                        <div style="font-size: 0.8rem; color: #94A3B8;">Créé le {{ course.createdAt|date('d M Y') }}</div>
+                    </td>
+                    <td style="padding: 20px; font-weight: 600; color: #64748B;">
+                        {% if course.modules|length > 0 %}
+                            {% for module in course.modules %}
+                                <span style="display: inline-block; background: #EEF2FF; color: #6366F1; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-bottom: 2px;">{{ module.title }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: #94A3B8;">Aucun module</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 20px; font-weight: 700; color: #3B49A2;">{{ course.price|number_format(2, ',', ' ') }} €</td>
+                    <td style="padding: 20px;">
+                        <span style="background: {{ course.status == 'PUBLISHED' ? '#D1FAE5' : '#FEF3C7' }}; color: {{ course.status == 'PUBLISHED' ? '#10B981' : '#D97706' }}; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{{ course.status == 'PUBLISHED' ? 'Publié' : 'Brouillon' }}</span>
+                    </td>
                     <td style="padding: 20px; text-align: right;">
                         <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                            <a href="{{ path('admin_course_modules', {id: 1}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #3B49A2; font-size: 0.8rem; font-weight: 700;">Gérer Modules</a>
-                            <a href="{{ path('admin_course_edit', {id: 1}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #64748B;"><i class="fas fa-edit"></i></a>
-                            <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                            <a href="{{ path('admin_course_edit', {id: course.id}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #64748B;"><i class="fas fa-edit"></i></a>
+                            <form method="post" action="{{ path('admin_course_delete', {id: course.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce cours et ses modules ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ course.id) }}">
+                                <button type="submit" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                            </form>
                         </div>
                     </td>
                 </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="padding: 40px; text-align: center; color: #64748B;">Aucun cours. <a href="{{ path('admin_course_new') }}">Créer un cours</a></td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

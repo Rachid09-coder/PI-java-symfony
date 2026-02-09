@@ -1,64 +1,52 @@
 {% extends 'admin_layout.html.twig' %}
 
-{% block title %}Gestion des Modules - EduSmart{% endblock %}
+{% block title %}Modules - {{ course.title }}{% endblock %}
 
 {% block body %}
 <div style="max-width: 1000px; margin: 0 auto;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <div style="display: flex; align-items: center; gap: 15px;">
             <a href="{{ path('admin_courses_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
-            <h2 style="font-size: 1.5rem; font-weight: 800;">Modules du cours : Introduction à l'IA</h2>
+            <h2 style="font-size: 1.5rem; font-weight: 800;">Modules du cours : {{ course.title }}</h2>
         </div>
-        <button class="btn btn-primary" style="background: #3B49A2; border-radius: 12px;" onclick="document.getElementById('module-modal').style.display='flex'">+ Nouveau Module</button>
+        <a href="{{ path('admin_module_new', {course_id: course.id}) }}" class="btn btn-primary" style="background: #3B49A2; border-radius: 12px; padding: 10px 25px;">+ Nouveau Module</a>
     </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px 20px; background: #D1FAE5; color: #065F46; border-radius: 8px;">{{ message }}</div>
+    {% endfor %}
 
     <div style="display: flex; flex-direction: column; gap: 20px;">
+        {% for module in modules %}
         <div class="card" style="padding: 25px; border-left: 5px solid #6366F1;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <span style="font-size: 0.75rem; font-weight: 800; color: #6366F1; text-transform: uppercase;">Module 1</span>
-                    <h4 style="font-size: 1.1rem; font-weight: 700; margin-top: 5px;">Les bases du Machine Learning</h4>
-                </div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        {% if module.thumbnail %}
+                            <img src="{{ asset('uploads/' ~ module.thumbnail) }}" alt="{{ module.title }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;">
+                        {% else %}
+                            <div style="width: 60px; height: 60px; background: #F1F5F9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94A3B8; font-size: 1rem;">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #6366F1; text-transform: uppercase;">Module {{ loop.index }}</span>
+                            <h4 style="font-size: 1.1rem; font-weight: 700; margin-top: 5px;">{{ module.title }}</h4>
+                        </div>
+                    </div>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-outline" style="padding: 8px 15px; font-size: 0.8rem;">Modifier</button>
-                    <button class="btn btn-outline" style="padding: 8px 15px; font-size: 0.8rem; color: #EF4444;">Supprimer</button>
+                    <a href="{{ path('admin_module_edit', {id: module.id}) }}" class="btn btn-outline" style="padding: 8px 15px; font-size: 0.8rem;">Modifier</a>
+                    <form method="post" action="{{ path('admin_module_delete', {id: module.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce module ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ module.id) }}">
+                        <button type="submit" class="btn btn-outline" style="padding: 8px 15px; font-size: 0.8rem; color: #EF4444;">Supprimer</button>
+                    </form>
                 </div>
             </div>
         </div>
-
-        <div class="card" style="padding: 25px; border-left: 5px solid #3B49A2;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <span style="font-size: 0.75rem; font-weight: 800; color: #3B49A2; text-transform: uppercase;">Module 2</span>
-                    <h4 style="font-size: 1.1rem; font-weight: 700; margin-top: 5px;">Réseaux de Neurones</h4>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-outline" style="padding: 8px 15px; font-size: 0.8rem;">Modifier</button>
-                    <button class="btn btn-outline" style="padding: 8px 15px; font-size: 0.8rem; color: #EF4444;">Supprimer</button>
-                </div>
-            </div>
+        {% else %}
+        <div class="card" style="padding: 40px; text-align: center; color: #64748B;">
+            Aucun module pour ce cours. <a href="{{ path('admin_module_new', {course_id: course.id}) }}">Créer un module</a>
         </div>
-    </div>
-</div>
-
-<!-- Simple Modal for Module Creation -->
-<div id="module-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="card" style="width: 500px; padding: 40px;">
-        <h3 style="margin-bottom: 25px;">Créer un Nouveau Module</h3>
-        <form onsubmit="event.preventDefault(); document.getElementById('module-modal').style.display='none';">
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-weight: 700; margin-bottom: 8px;">Titre du module</label>
-                <input type="text" placeholder="Ex: Deep Learning Avancé" style="width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 10px; outline: none;">
-            </div>
-            <div style="margin-bottom: 30px;">
-                <label style="display: block; font-weight: 700; margin-bottom: 8px;">Ordre d'affichage</label>
-                <input type="number" value="3" style="width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 10px; outline: none;">
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 15px;">
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('module-modal').style.display='none'">Annuler</button>
-                <button type="submit" class="btn btn-primary" style="background: #3B49A2;">Créer le Module</button>
-            </div>
-        </form>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
