@@ -6,12 +6,18 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
     <h2 style="font-size: 1.5rem; font-weight: 800; color: #1E293B;">Gestion de la Boutique</h2>
     <div style="display: flex; gap: 15px;">
-        <a href="{{ path('admin_shop_categories') }}" class="btn btn-outline" style="border-radius: 12px; padding: 10px 20px; text-decoration: none;">Gérer Catégories</a>
-        <a href="{{ path('admin_shop_product_new') }}" class="btn btn-primary" style="background: #3B49A2; border-radius: 12px; padding: 10px 25px;">+ Nouveau Produit</a>
+        <a href="{{ path('admin_shop_categories') }}" class="btn btn-outline" style="border-radius: 12px; padding: 10px 20px; text-decoration: none; border: 1px solid #E2E8F0; color: #64748B;">Gérer Catégories</a>
+        <a href="{{ path('admin_shop_product_new') }}" class="btn btn-primary" style="background: #3B49A2; color: white; border-radius: 12px; padding: 10px 25px; text-decoration: none;">+ Nouveau Produit</a>
     </div>
 </div>
 
-<div class="card" style="padding: 0; overflow: hidden;">
+{% for message in app.flashes('success') %}
+    <div style="padding: 15px; background: #DEF7EC; color: #03543F; border-radius: 10px; margin-bottom: 20px;">
+        {{ message }}
+    </div>
+{% endfor %}
+
+<div class="card" style="padding: 0; overflow: hidden; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
@@ -25,44 +31,40 @@
         <tbody>
             {% for prod in products %}
                 <tr style="border-bottom: 1px solid #F1F5F9; transition: 0.2s;" onmouseover="this.style.background='#FBFDFF'" onmouseout="this.style.background='transparent'">
-                    <td style="padding: 20px; font-weight: 700; color: #1E293B;">{{ prod.name }}</td>
-                    <td style="padding: 20px;"><span style="background: #EEF2FF; color: #6366F1; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{{ prod.category }}</span></td>
-                    <td style="padding: 20px; font-weight: 700; color: #3B49A2;">{{ prod.price|number_format(2) }} €</td>
+                    <td style="padding: 20px; font-weight: 700; color: #1E293B;">{{ prod.name }} [cite: 25]</td>
+                    <td style="padding: 20px;">
+                        <span style="background: {{ prod.category.color|default('#EEF2FF') }}; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                            {{ prod.category.name }} [cite: 26]
+                        </span>
+                    </td>
+                    <td style="padding: 20px; font-weight: 700; color: #3B49A2;">{{ prod.price|number_format(2) }} € [cite: 27]</td>
                     <td style="padding: 20px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ prod.stock > 10 ? '#10B981' : '#F59E0B' }};"></div>
-                            <span style="font-weight: 600;">{{ prod.stock }}</span>
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ prod.stock > 10 ? '#10B981' : '#F59E0B' }};"></div> [cite: 29, 30]
+                            <span style="font-weight: 600;">{{ prod.stock }}</span> [cite: 30]
                         </div>
                     </td>
                     <td style="padding: 20px; text-align: right;">
-                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                            <a href="{{ path('admin_shop_product_edit', {id: prod.id}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #64748B;"><i class="fas fa-edit"></i></a>
-                            <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
+                            <a href="{{ path('admin_shop_product_edit', {id: prod.id}) }}" style="padding: 8px 12px; border-radius: 8px; color: #64748B; border: 1px solid #E2E8F0; text-decoration: none;"> [cite: 32, 33]
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            <form method="post" action="{{ path('admin_shop_product_delete', {id: prod.id}) }}" onsubmit="return confirm('Supprimer ce produit ?');" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ prod.id) }}">
+                                <button style="padding: 8px 12px; border-radius: 8px; color: #EF4444; border: 1px solid #E2E8F0; background: white; cursor: pointer;"> 
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" style="padding: 40px; text-align: center; color: #64748B;">Aucun produit en boutique.</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-</div>
-
-<!-- Modal Catégories -->
-<div id="cat-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="card" style="width: 450px; padding: 30px;">
-        <h3 style="margin-bottom: 20px;">Gérer les Catégories</h3>
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-            {% for cat in categories %}
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #F8FAFC; border-radius: 10px;">
-                    <span style="font-weight: 600;">{{ cat }}</span>
-                    <button style="border: none; background: none; color: #EF4444; cursor: pointer;"><i class="fas fa-times"></i></button>
-                </div>
-            {% endfor %}
-        </div>
-        <div style="display: flex; gap: 10px; margin-bottom: 25px;">
-            <input type="text" placeholder="Nouvelle catégorie..." style="flex: 1; padding: 10px; border: 1px solid #E2E8F0; border-radius: 8px;">
-            <button class="btn btn-primary" style="background: #3B49A2; padding: 10px 15px;">Ajouter</button>
-        </div>
-        <button class="btn btn-outline" style="width: 100%;" onclick="document.getElementById('cat-modal').style.display='none'">Fermer</button>
-    </div>
 </div>
 {% endblock %}
