@@ -1,0 +1,49 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Mes Examens - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 1100px; margin: 0 auto; padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+        <div>
+            <h2 style="font-size: 1.8rem; font-weight: 800; color: #1E293B; margin-bottom: 8px;">Mes Examens & Évaluations</h2>
+            <p style="color: #64748B;">Consultez vos épreuves à venir et vos résultats passés.</p>
+        </div>
+        <div style="background: white; padding: 10px 20px; border-radius: 15px; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 15px;">
+            <div style="text-align: right;">
+                <p style="font-size: 0.75rem; color: #64748B; font-weight: 700; text-transform: uppercase;">Moyenne Générale</p>
+                <p style="font-size: 1.2rem; font-weight: 800; color: #3B49A2;">16.5/20</p>
+            </div>
+            <div style="width: 45px; height: 45px; border-radius: 12px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; color: #6366F1;">
+                <i class="fas fa-graduation-cap" style="font-size: 1.2rem;"></i>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;">
+        {% for exam in exams %}
+        <div class="card" style="padding: 25px; transition: 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div style="width: 50px; height: 50px; border-radius: 15px; background: #F0FDF4; display: flex; align-items: center; justify-content: center; color: #10B981;">
+                    <i class="fas fa-file-contract" style="font-size: 1.4rem;"></i>
+                </div>
+                <span style="background: #D1FAE5; color: #10B981; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">{{ exam.type }}</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 800; color: #1E293B; margin-bottom: 10px;">{{ exam.title }}</h3>
+            <p style="font-size: 0.9rem; color: #64748B; margin-bottom: 20px; line-height: 1.5;">{{ exam.description|slice(0, 100) ~ '...' }}</p>
+            
+            <div style="display: flex; gap: 15px; margin-bottom: 25px; font-size: 0.85rem; color: #94A3B8; font-weight: 600;">
+                <span style="display: flex; align-items: center; gap: 6px;"><i class="far fa-clock"></i> {{ exam.duration }} min</span>
+                {# <span style="display: flex; align-items: center; gap: 6px;"><i class="far fa-file-alt"></i> 12 Questions</span> #}
+            </div>
+            
+            <a href="{{ path('student_exam_show', {id: exam.id}) }}" class="btn btn-primary" style="width: 100%; background: #3B49A2; padding: 12px; border-radius: 12px; font-weight: 700;">Commencer l'Examen</a>
+        </div>
+        {% else %}
+        <div class="card" style="padding: 25px; grid-column: 1 / -1; text-align: center;">
+             <p class="text-muted">Aucun examen disponible pour le moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }}" style="padding: var(--sp-4); border-radius: 8px; margin-bottom: var(--sp-6); border: 1px solid transparent; 
+            {% if label == 'success' %} background-color: #DCFCE7; color: #166534; border-color: #BBF7D0;
+            {% elseif label == 'danger' %} background-color: #FEE2E2; color: #991B1B; border-color: #FECACA;
+            {% else %} background-color: #DBEAFE; color: #1E40AF; border-color: #BFDBFE; {% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}

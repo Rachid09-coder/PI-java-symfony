@@ -1,0 +1,169 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Gestion Certifications - EduSmart{% endblock %}
+
+{% block body %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 style="font-size: 1.5rem; font-weight: 800; color: #1E293B;">Certifications & Bulletins</h2>
+    <div style="display: flex; gap: 15px;">
+        <a href="{{ path('admin_bulletin_new') }}" class="btn btn-outline" style="border-radius: 12px; padding: 10px 20px;">+ Nouveau Bulletin</a>
+        <a href="{{ path('admin_certification_new') }}" class="btn btn-primary" style="background: #3B49A2; border-radius: 12px; padding: 10px 25px;">+ Délivrer Certificat</a>
+    </div>
+</div>
+
+{# Bulletins Section #}
+<div class="card" style="padding: 25px; margin-bottom: 30px;">
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: #1E293B; margin-bottom: 20px;">📋 Bulletins</h3>
+    
+    {# Search Bar for Bulletins #}
+    <div style="margin-bottom: 20px;">
+        <div style="position: relative;">
+            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
+            <input type="text" id="searchBulletins" placeholder="Rechercher un bulletin par étudiant..." style="width: 100%; padding: 12px 12px 12px 45px; border: 1px solid var(--border-color); border-radius: 12px; outline: none; background: var(--bg-secondary); color: var(--text-primary);" onkeyup="filterBulletins()">
+        </div>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse;" id="bulletinsTable">
+        <thead>
+            <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #E2E8F0; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
+                <th style="padding: 15px;">Étudiant</th>
+                <th style="padding: 15px;">Année</th>
+                <th style="padding: 15px;">Semestre</th>
+                <th style="padding: 15px;">Moyenne</th>
+                <th style="padding: 15px;">Statut</th>
+                <th style="padding: 15px; text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bulletin in bulletins %}
+                <tr style="border-bottom: 1px solid #F1F5F9;">
+                    <td style="padding: 15px; font-weight: 600;">{{ bulletin.student.email }}</td>
+                    <td style="padding: 15px; color: #64748B;">{{ bulletin.academicYear }}</td>
+                    <td style="padding: 15px; color: #64748B;">{{ bulletin.semester }}</td>
+                    <td style="padding: 15px; font-weight: 700; color: {{ bulletin.average >= 10 ? '#10B981' : '#EF4444' }};">{{ bulletin.average }}/20</td>
+                    <td style="padding: 15px;">
+                        <span style="background: {% if bulletin.status == 'PUBLISHED' %}#D1FAE5{% elseif bulletin.status == 'VALIDATED' %}#DBEAFE{% else %}#F3F4F6{% endif %}; color: {% if bulletin.status == 'PUBLISHED' %}#10B981{% elseif bulletin.status == 'VALIDATED' %}#3B82F6{% else %}#6B7280{% endif %}; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                            {{ bulletin.status }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px; text-align: right;">
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <a href="{{ path('admin_bulletin_edit', {id: bulletin.id}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px;"><i class="fas fa-edit"></i></a>
+                            <form method="post" action="{{ path('admin_bulletin_delete', {id: bulletin.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce bulletin ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_bulletin_' ~ bulletin.id) }}">
+                                <button type="submit" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="padding: 30px; text-align: center; color: #94A3B8;">Aucun bulletin disponible</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# Certifications Section #}
+<div class="card" style="padding: 25px;">
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: #1E293B; margin-bottom: 20px;">🎓 Certifications</h3>
+    
+    {# Search Bar for Certifications #}
+    <div style="margin-bottom: 20px;">
+        <div style="position: relative;">
+            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
+            <input type="text" id="searchCertifications" placeholder="Rechercher une certification par étudiant ou code..." style="width: 100%; padding: 12px 12px 12px 45px; border: 1px solid var(--border-color); border-radius: 12px; outline: none; background: var(--bg-secondary); color: var(--text-primary);" onkeyup="filterCertifications()">
+        </div>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse;" id="certificationsTable">
+        <thead>
+            <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #E2E8F0; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
+                <th style="padding: 15px;">Étudiant</th>
+                <th style="padding: 15px;">Type</th>
+                <th style="padding: 15px;">Code</th>
+                <th style="padding: 15px;">Date</th>
+                <th style="padding: 15px;">Statut</th>
+                <th style="padding: 15px; text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cert in certifications %}
+                <tr style="border-bottom: 1px solid #F1F5F9;">
+                    <td style="padding: 15px; font-weight: 600;">{{ cert.student.email }}</td>
+                    <td style="padding: 15px; color: #64748B;">{{ cert.type }}</td>
+                    <td style="padding: 15px; font-family: monospace; color: #3B49A2; font-weight: 700;">{{ cert.verificationCode }}</td>
+                    <td style="padding: 15px; color: #64748B;">{{ cert.issuedAt|date('d/m/Y') }}</td>
+                    <td style="padding: 15px;">
+                        <span style="background: {% if cert.status == 'ACTIVE' %}#D1FAE5{% elseif cert.status == 'REVOKED' %}#FEE2E2{% else %}#F3F4F6{% endif %}; color: {% if cert.status == 'ACTIVE' %}#10B981{% elseif cert.status == 'REVOKED' %}#EF4444{% else %}#6B7280{% endif %}; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                            {{ cert.status }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px; text-align: right;">
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            {% if cert.pdfPath %}
+                                <a href="{{ asset(cert.pdfPath) }}" target="_blank" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #3B49A2;"><i class="fas fa-file-pdf"></i></a>
+                            {% endif %}
+                            <a href="{{ path('admin_certification_edit', {id: cert.id}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px;"><i class="fas fa-edit"></i></a>
+                            <form method="post" action="{{ path('admin_certification_delete', {id: cert.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer cette certification ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_cert_' ~ cert.id) }}">
+                                <button type="submit" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="padding: 30px; text-align: center; color: #94A3B8;">Aucune certification disponible</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+// Filter Bulletins
+function filterBulletins() {
+    const input = document.getElementById('searchBulletins');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('bulletinsTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const studentCell = rows[i].getElementsByTagName('td')[0];
+        if (studentCell) {
+            const studentText = studentCell.textContent || studentCell.innerText;
+            if (studentText.toLowerCase().indexOf(filter) > -1) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+}
+
+// Filter Certifications
+function filterCertifications() {
+    const input = document.getElementById('searchCertifications');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('certificationsTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const studentCell = rows[i].getElementsByTagName('td')[0];
+        const codeCell = rows[i].getElementsByTagName('td')[2];
+        if (studentCell && codeCell) {
+            const studentText = studentCell.textContent || studentCell.innerText;
+            const codeText = codeCell.textContent || codeCell.innerText;
+            const combinedText = studentText + ' ' + codeText;
+            if (combinedText.toLowerCase().indexOf(filter) > -1) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

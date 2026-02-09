@@ -1,0 +1,96 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Mon Panier - EduSmart{% endblock %}
+
+{% block body %}
+<div style="margin-bottom: 40px;">
+    <h2 style="font-size: 1.8rem; font-weight: 800; color: #1E293B;">Votre Panier</h2>
+</div>
+
+<div id="cart-container" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+    <div class="card" style="padding: 30px;">
+        <div id="cart-items" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Items will be injected here by JS -->
+        </div>
+        <div id="empty-cart" style="display: none; text-align: center; padding: 40px;">
+            <i class="fas fa-shopping-basket" style="font-size: 4rem; color: #E2E8F0; margin-bottom: 20px;"></i>
+            <p style="color: #64748B;">Votre panier est vide.</p>
+            <a href="{{ path('student_shop_index') }}" class="btn btn-primary" style="margin-top: 20px; display: inline-block; background: #3B49A2;">Aller à la boutique</a>
+        </div>
+    </div>
+
+    <div class="card" style="height: fit-content; padding: 30px;">
+        <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 25px;">Résumé de la commande</h3>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span style="color: #64748B;">Sous-total</span>
+            <span id="subtotal" style="font-weight: 700;">0.00 €</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <span style="color: #64748B;">Livraison</span>
+            <span style="color: #10B981; font-weight: 700;">Gratuit</span>
+        </div>
+        <hr style="border: none; border-top: 1px solid #F1F5F9; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+            <span style="font-size: 1.1rem; font-weight: 800;">Total</span>
+            <span id="total" style="font-size: 1.3rem; font-weight: 800; color: #6366F1;">0.00 €</span>
+        </div>
+        <button class="btn btn-primary" style="width: 100%; padding: 16px; border-radius: 12px; background: #3B49A2; font-weight: 700;">Passer au paiement</button>
+    </div>
+</div>
+
+{% block javascripts %}
+<script>
+    function renderCart() {
+        const cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
+        const itemsContainer = document.getElementById('cart-items');
+        const emptyCart = document.getElementById('empty-cart');
+        const cartContainer = document.getElementById('cart-container');
+        
+        if (cart.length === 0) {
+            itemsContainer.style.display = 'none';
+            emptyCart.style.display = 'block';
+            document.getElementById('subtotal').innerText = '0.00 €';
+            document.getElementById('total').innerText = '0.00 €';
+            return;
+        }
+
+        itemsContainer.style.display = 'flex';
+        emptyCart.style.display = 'none';
+        itemsContainer.innerHTML = '';
+        
+        let total = 0;
+        cart.forEach((item, index) => {
+            total += item.price;
+            itemsContainer.innerHTML += `
+                <div style="display: flex; align-items: center; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid #F8FAFC;">
+                    <div style="width: 70px; height: 70px; background: #F8FAFC; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #3B49A2;">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="font-weight: 700; font-size: 1rem;">${item.name}</h4>
+                        <p style="color: #64748B; font-size: 0.85rem;">Quantité: 1</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-weight: 800; color: #1E293B;">${item.price.toFixed(2)} €</p>
+                        <button onclick="removeItem(${index})" style="border: none; background: none; color: #EF4444; font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 0; margin-top: 5px;">Supprimer</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('subtotal').innerText = total.toFixed(2) + ' €';
+        document.getElementById('total').innerText = total.toFixed(2) + ' €';
+    }
+
+    function removeItem(index) {
+        let cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
+        cart.splice(index, 1);
+        localStorage.setItem('edusmart_cart', JSON.stringify(cart));
+        renderCart();
+        updateCartCount();
+    }
+
+    document.addEventListener('DOMContentLoaded', renderCart);
+</script>
+{% endblock %}
+{% endblock %}

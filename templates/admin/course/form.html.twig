@@ -1,0 +1,49 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}{{ course.id ? 'Modifier' : 'Ajouter' }} un Cours - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_courses_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ course.id ? 'Modifier le Cours' : 'Créer un Nouveau Cours' }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px;">
+        {{ form_start(form) }}
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    {{ form_row(form.title) }}
+                </div>
+                <div>
+                    {{ form_row(form.description) }}
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    {{ form_row(form.price) }}
+                </div>
+                <div>
+                    {{ form_row(form.thumbnail) }}
+                </div>
+                <div>
+                    {{ form_row(form.pdf) }}
+                </div>
+                <div>
+                    {{ form_row(form.status) }}
+                </div>
+                <div>
+                    {{ form_row(form.modules) }}
+                </div>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px;">
+            <a href="{{ path('admin_courses_manage') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+            <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">Enregistrer</button>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

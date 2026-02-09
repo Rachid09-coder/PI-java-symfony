@@ -1,0 +1,73 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}{{ certification.id ? 'Modifier' : 'Nouvelle' }} Certification - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_certification_index') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ certification.id ? 'Modifier la Certification' : 'Nouvelle Certification' }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -20px; right: -20px; opacity: 0.05;">
+            <i class="fas fa-certificate" style="font-size: 15rem; color: #3B49A2;"></i>
+        </div>
+
+        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+            <div style="display: flex; flex-direction: column; gap: 25px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        {{ form_label(form.student, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.student, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                        {{ form_errors(form.student) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.bulletin, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.bulletin, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                        {{ form_errors(form.bulletin) }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        {{ form_label(form.type, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.type, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                        {{ form_errors(form.type) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.status, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.status, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                        {{ form_errors(form.status) }}
+                    </div>
+                </div>
+
+                <div>
+                    {{ form_label(form.verificationCode, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                    {{ form_widget(form.verificationCode, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; font-family: monospace; background: #F8FAFC;'}}) }}
+                    {{ form_errors(form.verificationCode) }}
+                    <small style="color: #64748B; font-size: 0.85rem;">Laissez vide pour générer automatiquement</small>
+                </div>
+
+                <div>
+                    {{ form_label(form.pdfFile, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                    {{ form_widget(form.pdfFile, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px;'}}) }}
+                    {{ form_errors(form.pdfFile) }}
+                    {% if certification.pdfPath %}
+                        <div style="margin-top: 10px;">
+                            <a href="{{ asset(certification.pdfPath) }}" target="_blank" style="color: #3B49A2; font-weight: 600;">
+                                <i class="fas fa-file-pdf"></i> Voir le PDF actuel
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px;">
+                <a href="{{ path('admin_certification_index') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">{{ certification.id ? 'Mettre à jour' : 'Créer' }} la Certification</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

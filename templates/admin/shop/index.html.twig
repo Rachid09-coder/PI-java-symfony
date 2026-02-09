@@ -1,0 +1,99 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Gestion Boutique - EduSmart{% endblock %}
+
+{% block body %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 style="font-size: 1.5rem; font-weight: 800; color: #1E293B;">Gestion de la Boutique</h2>
+    <div style="display: flex; gap: 15px;">
+        <a href="{{ path('admin_shop_categories') }}" class="btn btn-outline" style="border-radius: 12px; padding: 10px 20px; text-decoration: none; border: 1px solid #E2E8F0; color: #64748B;">Gérer Catégories</a>
+        <a href="{{ path('admin_shop_product_new') }}" class="btn btn-primary" style="background: #3B49A2; color: white; border-radius: 12px; padding: 10px 25px; text-decoration: none;">+ Nouveau Produit</a>
+    </div>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div style="padding: 15px; background: #DEF7EC; color: #03543F; border-radius: 10px; margin-bottom: 20px;">
+        {{ message }}
+    </div>
+{% endfor %}
+
+{# Search Bar #}
+<div style="margin-bottom: 25px;">
+    <div style="position: relative;">
+        <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
+        <input type="text" id="searchInput" placeholder="Rechercher un produit..." style="width: 100%; padding: 14px 14px 14px 45px; border: 1px solid var(--border-color); border-radius: 12px; outline: none; background: var(--bg-secondary); color: var(--text-primary);" onkeyup="filterTable()">
+    </div>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
+                <th style="padding: 20px;">Produit</th>
+                <th style="padding: 20px;">Catégorie</th>
+                <th style="padding: 20px;">Prix</th>
+                <th style="padding: 20px;">Stock</th>
+                <th style="padding: 20px; text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+                <tr style="border-bottom: 1px solid #F1F5F9; transition: 0.2s;" onmouseover="this.style.background='#FBFDFF'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 20px; font-weight: 700; color: #1E293B;">{{ product.name }}</td>
+                    <td style="padding: 20px;">
+                        <span style="background: {{ product.category.color|default('#EEF2FF') }}; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                            {{ product.category.name }}
+                        </span>
+                    </td>
+                    <td style="padding: 20px; font-weight: 700; color: #3B49A2;">{{ product.price|number_format(2) }} €</td>
+                    <td style="padding: 20px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ product.stock > 10 ? '#10B981' : '#F59E0B' }};"></div>
+                            <span style="font-weight: 600;">{{ product.stock }}</span>
+                        </div>
+                    </td>
+                    <td style="padding: 20px; text-align: right;">
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
+                            <a href="{{ path('admin_shop_product_edit', {id: product.id}) }}" style="padding: 8px 12px; border-radius: 8px; color: #64748B; border: 1px solid #E2E8F0; text-decoration: none;">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            <form method="post" action="{{ path('admin_shop_product_delete', {id: product.id}) }}" onsubmit="return confirm('Supprimer ce produit ?');" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                                <button style="padding: 8px 12px; border-radius: 8px; color: #EF4444; border: 1px solid #E2E8F0; background: white; cursor: pointer;"> 
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" style="padding: 40px; text-align: center; color: #64748B;">Aucun produit en boutique.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function filterTable() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase();
+    const table = document.querySelector('table tbody');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const nameCell = rows[i].getElementsByTagName('td')[0];
+        if (nameCell) {
+            const nameText = nameCell.textContent || nameCell.innerText;
+            if (nameText.toLowerCase().indexOf(filter) > -1) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

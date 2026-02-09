@@ -1,0 +1,75 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}{{ course.title }} - EduSmart{% endblock %}
+
+{% block body %}
+    <div style="padding: 0 var(--sp-4);">
+        <!-- Breadcrumb / Back Navigation -->
+        <div style="margin-bottom: 30px;">
+           <button onclick="history.back()" style="background: none; border: none; cursor: pointer; color: #64748B; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-family: inherit;">
+                <i class="fas fa-arrow-left"></i> Retour
+            </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;" class="fade-in">
+            <!-- Main Content -->
+            <div>
+                <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 30px;">
+                    <div style="height: 300px; background: #0F172A; display: flex; align-items: center; justify-content: center; position: relative;">
+                         {% if course.thumbnailPath %}
+                            <img src="{{ asset('uploads/' ~ course.thumbnailPath) }}" alt="{{ course.title }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;">
+                        {% else %}
+                            <i class="fas fa-play-circle" style="font-size: 5rem; color: white; opacity: 0.8;"></i>
+                        {% endif %}
+                    </div>
+                    <div style="padding: 40px;">
+                        <h1 style="font-size: 2rem; font-weight: 800; color: #1E293B; margin-bottom: 15px;">{{ course.title }}</h1>
+                        
+                        <div style="margin-top: 30px;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 15px;">Description du cours</h3>
+                            <p style="color: #475569; line-height: 1.7;">
+                                {{ course.description }}
+                            </p>
+                        </div>
+
+                        {% if course.pdfPath %}
+                            <div style="margin-top: 40px;">
+                                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; color: #1E293B;">Contenu du cours</h3>
+                                <div style="border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; height: 800px; background: #F8FAFC; display: flex; align-items: center; justify-content: center;">
+                                    <iframe src="{{ asset('uploads/' ~ course.pdfPath) }}" width="100%" height="100%" style="border: none;">
+                                        <p>Votre navigateur ne supporte pas l'affichage direct de PDF. <a href="{{ asset('uploads/' ~ course.pdfPath) }}">Cliquez ici pour le télécharger</a>.</p>
+                                    </iframe>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div>
+                <div class="card hover-scale" style="padding: 30px; position: sticky; top: 100px; border: 1px solid #E2E8F0;">
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: #1E293B; margin-bottom: 10px;">{{ course.price > 0 ? course.price ~ ' €' : 'Gratuit' }}</h3>
+                    <div style="margin-bottom: 20px; color: #64748B; font-size: 0.9rem;">
+                        Accès complet au contenu du cours
+                    </div>
+
+                    {% if course.pdfPath %}
+                        <a href="{{ asset('uploads/' ~ course.pdfPath) }}" target="_blank" class="btn btn-primary" style="display: block; width: 100%; text-align: center; margin-bottom: 15px; background: #EF4444; border: none;">
+                            <i class="fas fa-file-pdf" style="margin-right: 8px;"></i> Télécharger le PDF
+                        </a>
+                    {% endif %}
+
+                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #F1F5F9;">
+                        <div style="font-weight: 600; margin-bottom: 10px; color: #1E293B;">Ce cours inclut :</div>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: #64748B; font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px;">
+                            <li><i class="fas fa-file-alt" style="width: 20px; color: #94A3B8;"></i> {{ course.pdfPath ? 'Support PDF inclus' : 'Aucun document' }}</li>
+                            <li><i class="fas fa-infinity" style="width: 20px; color: #94A3B8;"></i> Accès illimité</li>
+                            <li><i class="fas fa-mobile-alt" style="width: 20px; color: #94A3B8;"></i> Accès sur mobiles</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
