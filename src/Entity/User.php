@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -17,22 +18,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
     private ?string $name = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")]
     private ?string $email = null;
 
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: "Le rôle est obligatoire")]
     private ?string $role = null; // etudiant | professeur
 
     #[ORM\Column(length: 200)]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères")]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le numéro de téléphone est obligatoire")]
+    #[Assert\Regex(pattern: "/^[0-9]{8,15}$/", message: "Numéro de téléphone invalide")]
     private ?string $numtel = null;
+
+    // --- MÉTHODES REQUISES PAR USERINTERFACE ---
+
+    /**
+     * ✅ INDISPENSABLE : Cette méthode identifie l'utilisateur (ici par l'email)
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    public function getRoles(): array
+    {
+        $roles = [];
+        if ($this->role === 'professeur') {
+            $roles[] = 'ROLE_PROFESSEUR';
+        } else {
+            $roles[] = 'ROLE_ETUDIANT';
+        }
+        $roles[] = 'ROLE_USER'; 
+        return array_unique($roles);
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Nettoyage des données sensibles temporaires si nécessaire
+    }
+
+    // --- GETTERS & SETTERS ---
 
     public function getId(): ?int { return $this->id; }
 
@@ -48,32 +87,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRole(): ?string { return $this->role; }
     public function setRole(string $role): static { $this->role = $role; return $this; }
 
-    // ✅ obligatoire pour PasswordAuthenticatedUserInterface
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(string $password): static { $this->password = $password; return $this; }
 
     public function getNumtel(): ?string { return $this->numtel; }
     public function setNumtel(string $numtel): static { $this->numtel = $numtel; return $this; }
-
-    // ✅ obligatoire pour UserInterface (Symfony 6)
-    public function getUserIdentifier(): string
-    {
-        return (string) $this->email;
-    }
-
-    // ✅ Symfony veut un tableau de rôles
-    public function getRoles(): array
-    {
-        // On mappe ton champ string -> format Symfony
-        if ($this->role === 'professeur') {
-            return ['ROLE_PROFESSEUR'];
-        }
-
-        return ['ROLE_ETUDIANT'];
-    }
-
-    public function eraseCredentials(): void
-    {
-        // rien à faire ici
-    }
 }

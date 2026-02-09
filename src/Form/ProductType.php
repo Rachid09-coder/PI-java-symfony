@@ -11,6 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class ProductType extends AbstractType
 {
@@ -18,17 +19,23 @@ class ProductType extends AbstractType
     {
         $builder
             ->add('name', TextType::class)
-            ->add('price', NumberType::class, [
-                'scale' => 2,
-            ])
+            ->add('price', NumberType::class, ['scale' => 2])
             ->add('stock', NumberType::class)
             ->add('category', EntityType::class, [
                 'class' => Category::class,
-                'choice_label' => 'name', // Affiche le nom de la catégorie
+                'choice_label' => 'name',
             ])
             ->add('image', FileType::class, [
-                'mapped' => false, // On gérera l'upload manuellement plus tard
+                'label' => 'Image (Fichier JPEG ou PNG)',
+                'mapped' => false, // Important : ce n'est pas lié directement à l'entité
                 'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => ['image/jpeg', 'image/png'],
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPG, PNG)',
+                    ])
+                ],
             ])
         ;
     }
