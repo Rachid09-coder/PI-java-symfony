@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}EduSmart - Espace Étudiant{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        <div class="app-container">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-icon">E</div>
+                    <h2 style="font-size: 1.3rem; font-weight: 800;">EduSmart</h2>
+                </div>
+                <nav style="margin-top: 30px;">
+                    <ul style="list-style: none;">
+                        <li><a href="{{ path('student_courses') }}" class="nav-item {{ app.request.get('_route') == 'student_courses' ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> <span>Mes Cours</span></a></li>
+                        <li><a href="{{ path('student_exams_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_exam' ? 'active' : '' }}"><i class="fas fa-tasks"></i> <span>Examens</span></a></li>
+                        <li><a href="{{ path('student_shop_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_shop' ? 'active' : '' }}"><i class="fas fa-shopping-bag"></i> <span>Boutique</span></a></li>
+                        <li><a href="{{ path('student_certifications_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_certifications' ? 'active' : '' }}"><i class="fas fa-certificate"></i> <span>Certifications</span></a></li>
+                        <li><a href="{{ path('student_shop_cart') }}" class="nav-item {{ app.request.get('_route') == 'student_shop_cart' ? 'active' : '' }}"><i class="fas fa-shopping-cart"></i> <span>Mon Panier</span></a></li>
+                    </ul>
+                </nav>
+                <div style="margin-top: auto; padding: 20px;">
+                    <a href="{{ path('admin_dashboard') }}" class="btn btn-outline" style="width: 100%; font-size: 0.8rem; border-color: rgba(255,255,255,0.2); color: white;">Mode Professeur</a>
+                    <a href="{{ path('app_logout') }}" class="nav-item" style="margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                {% block header_content %}
+                    <div class="header">
+                        <div class="page-title">Espace Étudiant</div>
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <a href="{{ path('student_shop_cart') }}" style="position: relative; color: var(--text-secondary); text-decoration: none;">
+                                <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
+                                <span id="cart-count" style="position: absolute; top: -8px; right: -8px; background: var(--danger-color); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 700;">0</span>
+                            </a>
+                            <a href="{{ path('app_profile') }}" title="Mon Compte" style="width: 40px; height: 40px; border-radius: 12px; background: #3B49A2; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="fas fa-user"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endblock %}
+                <div style="padding: 20px;">{% block body %}{% endblock %}</div>
+            </main>
+        </div>
+        <script>
+            // Simple Cart Logic
+            function updateCartCount() {
+                const cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
+                document.getElementById('cart-count').innerText = cart.length;
+            }
+            document.addEventListener('DOMContentLoaded', updateCartCount);
+        </script>
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>

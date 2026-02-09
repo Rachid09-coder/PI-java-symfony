@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le bulletin #{{ bulletin.id }}{% endblock %}
+
+{% block header_content %}
+    <div class="page-header">
+        <h1>Modifier le bulletin</h1>
+        <p class="text-muted">Ajustez les informations du bulletin sélectionné.</p>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="page-content">
+        {{ include('bulletin/_form.html.twig', {form: form, button_label: 'Mettre à jour'}) }}
+    </div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Gestion Examens & Évaluations - EduSmart{% endblock %}
+
+{% block body %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 style="font-size: 1.5rem; font-weight: 800; color: #1E293B;">Examens & Évaluations</h2>
+    <div style="display: flex; gap: 15px;">
+        <button class="btn btn-outline" style="border-radius: 12px; padding: 10px 20px;" onclick="document.getElementById('eval-modal').style.display='flex'">+ Ajouter une Évaluation</button>
+        <a href="{{ path('admin_exam_new') }}" class="btn btn-primary" style="background: #3B49A2; border-radius: 12px; padding: 10px 25px;">+ Créer un Examen</a>
+    </div>
+</div>
+
+{# Search Bar #}
+<div style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center;">
+    <div style="position: relative; flex: 1;">
+        <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
+        <input type="text" id="searchInput" placeholder="Rechercher un examen..." style="width: 100%; padding: 14px 14px 14px 45px; border: 1px solid var(--border-color); border-radius: 12px; outline: none; background: var(--bg-secondary); color: var(--text-primary);" onkeyup="filterTable()">
+    </div>
+    <button onclick="sortTable()" id="sortBtn" style="padding: 14px 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: 0.3s;" onmouseover="this.style.background='var(--bg-primary)'" onmouseout="this.style.background='var(--bg-secondary)'">
+        <i class="fas fa-sort-alpha-down" id="sortIcon"></i>
+        <span>Trier A-Z</span>
+    </button>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
+                <th style="padding: 20px;">Titre de l'Examen</th>
+                <th style="padding: 20px;">Type</th>
+                <th style="padding: 20px;">Questions</th>
+                <th style="padding: 20px;">Durée</th>
+                <th style="padding: 20px; text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exam in exams %}
+            <tr style="border-bottom: 1px solid #F1F5F9;">
+                <td style="padding: 20px; font-weight: 700; color: #1E293B;">{{ exam.title }}</td>
+                <td style="padding: 20px;">
+                    <span style="background: #EEF2FF; color: #6366F1; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                        {{ exam.type }}
+                    </span>
+                </td>
+                <td style="padding: 20px; font-weight: 600; color: #64748B;">
+                    {{ exam.questions|length }} Questions
+                </td>
+                <td style="padding: 20px; color: #64748B;">{{ exam.duration ? exam.duration ~ ' min' : '—' }}</td>
+                <td style="padding: 20px; text-align: right;">
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
+                        <a href="{{ path('admin_exam_questions', {id: exam.id}) }}" class="btn btn-outline" title="Gérer Questions" style="padding: 8px 12px; border-radius: 8px; color: #3B49A2;"><i class="fas fa-list-ol"></i></a>
+                        <a href="{{ path('admin_exam_edit', {id: exam.id}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #64748B;"><i class="fas fa-edit"></i></a>
+                        <form method="post" action="{{ path('admin_exam_delete', {'id': exam.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet examen ?');" style="margin: 0;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
+                            <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444; border: none; background: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="padding: 20px; text-align: center; color: #64748B;">Aucun examen trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Ajout Évaluation Rapide -->
+<div id="eval-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 550px; padding: 35px;">
+        <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; color: #1E293B;">Ajouter une Évaluation</h3>
+        <form>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.9rem;">Sélectionner l'Examen cible</label>
+                <select style="width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 10px; background: white;">
+                    <option>Contrôle Final: Algèbre</option>
+                    <option>QCM: Introduction IA</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.9rem;">Énoncé de la Question</label>
+                <textarea rows="3" placeholder="Tapez votre question ici..." style="width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 10px; outline: none;"></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <input type="text" placeholder="Réponse A (Correcte)" style="padding: 12px; border: 1px solid #10B981; border-radius: 10px;">
+                <input type="text" placeholder="Réponse B" style="padding: 12px; border: 1px solid #E2E8F0; border-radius: 10px;">
+                <input type="text" placeholder="Réponse C" style="padding: 12px; border: 1px solid #E2E8F0; border-radius: 10px;">
+                <input type="text" placeholder="Réponse D" style="padding: 12px; border: 1px solid #E2E8F0; border-radius: 10px;">
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button type="button" class="btn btn-outline" style="flex: 1; padding: 12px;" onclick="document.getElementById('eval-modal').style.display='none'">Annuler</button>
+                <button type="button" class="btn btn-primary" style="flex: 2; background: #3B49A2; padding: 12px;">Enregistrer l'Évaluation</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase();
+    const table = document.querySelector('table tbody');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const titleCell = rows[i].getElementsByTagName('td')[0];
+        if (titleCell) {
+            const titleText = titleCell.textContent || titleCell.innerText;
+            if (titleText.toLowerCase().indexOf(filter) > -1) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+}
+
+let sortAscending = true;
+function sortTable() {
+    const table = document.querySelector('table tbody');
+    const rows = Array.from(table.getElementsByTagName('tr'));
+    const sortBtn = document.getElementById('sortBtn');
+    const sortIcon = document.getElementById('sortIcon');
+    
+    rows.sort((a, b) => {
+        const aText = a.getElementsByTagName('td')[0]?.textContent.trim() || '';
+        const bText = b.getElementsByTagName('td')[0]?.textContent.trim() || '';
+        
+        if (sortAscending) {
+            return aText.localeCompare(bText, 'fr', { sensitivity: 'base' });
+        } else {
+            return bText.localeCompare(aText, 'fr', { sensitivity: 'base' });
+        }
+    });
+    
+    rows.forEach(row => table.appendChild(row));
+    
+    sortAscending = !sortAscending;
+    if (sortAscending) {
+        sortIcon.className = 'fas fa-sort-alpha-down';
+        sortBtn.querySelector('span').textContent = 'Trier A-Z';
+    } else {
+        sortIcon.className = 'fas fa-sort-alpha-up';
+        sortBtn.querySelector('span').textContent = 'Trier Z-A';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}{{ bulletin.id ? 'Modifier' : 'Nouveau' }} Bulletin - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_certification_index') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ bulletin.id ? 'Modifier le Bulletin' : 'Nouveau Bulletin' }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px;">
+        {{ form_start(form) }}
+            <div style="display: flex; flex-direction: column; gap: 25px;">
+                <div>
+                    {{ form_label(form.student, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                    {{ form_widget(form.student, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                    {{ form_errors(form.student) }}
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        {{ form_label(form.academicYear, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.academicYear, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px;'}}) }}
+                        {{ form_errors(form.academicYear) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.semester, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.semester, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                        {{ form_errors(form.semester) }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        {{ form_label(form.average, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.average, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px;'}}) }}
+                        {{ form_errors(form.average) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.status, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.status, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                        {{ form_errors(form.status) }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px;">
+                <a href="{{ path('admin_certification_index') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">{{ bulletin.id ? 'Mettre à jour' : 'Créer' }} le Bulletin</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,340 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Mes Cours - EduSmart{% endblock %}
+
+{% block body %}
+<style>
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    padding: 0 20px;
+}
+
+.course-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+}
+
+.course-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(59, 73, 162, 0.2);
+}
+
+.course-header {
+    height: 180px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.course-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.course-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.9);
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover .course-icon {
+    transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
+}
+
+.course-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.course-body {
+    padding: 25px;
+}
+
+.course-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1E293B;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    transition: color 0.3s ease;
+}
+
+.course-card:hover .course-title {
+    color: #667eea;
+}
+
+.course-instructor {
+    font-size: 0.9rem;
+    color: #64748B;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.course-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+    padding: 12px 0;
+    border-top: 1px solid #F1F5F9;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #64748B;
+    font-weight: 600;
+}
+
+.stat-item i {
+    color: #667eea;
+}
+
+.progress-section {
+    margin-top: 15px;
+}
+
+.progress-bar-container {
+    height: 8px;
+    background: #F1F5F9;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    transition: width 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-text {
+    font-size: 0.8rem;
+    color: #64748B;
+    font-weight: 600;
+}
+
+.course-action {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-view-course {
+    flex: 1;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-view-course:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.page-header {
+    padding: 0 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.search-box {
+    position: relative;
+    width: 300px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border: 2px solid #E2E8F0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.search-box input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.search-box i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748B;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #CBD5E1;
+    margin-bottom: 20px;
+}
+</style>
+
+<div style="padding: 30px 0;">
+    <div class="page-header">
+        <h2 class="page-title">📚 Mes Cours</h2>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Rechercher un cours..." id="courseSearch">
+        </div>
+    </div>
+    
+    <div class="courses-grid">
+        {% for course in courses %}
+            <div class="course-card">
+                <div class="course-header" style="background: linear-gradient(135deg, {{ ['#667eea 0%, #764ba2', '#f093fb 0%, #f5576c', '#4facfe 0%, #00f2fe', '#43e97b 0%, #38f9d7', '#fa709a 0%, #fee140'][loop.index0 % 5] }} 100%);">
+                    <div class="course-icon">
+                        <i class="fas fa-{{ ['laptop-code', 'book-open', 'graduation-cap', 'brain', 'code'][loop.index0 % 5] }}"></i>
+                    </div>
+                    {% if course.badge is defined %}
+                        <div class="course-badge" style="color: {{ course.badge_color|default('#667eea') }};">
+                            {{ course.badge }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="course-body">
+                    <h4 class="course-title">{{ course.title }}</h4>
+                    
+                    <div class="course-instructor">
+                        <i class="fas fa-user-tie"></i>
+                        <span>{{ course.instructor|default('Instructeur') }}</span>
+                    </div>
+                    
+                    <div class="course-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-book-open"></i>
+                            <span>{{ course.modules|default(0) }} modules</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ course.hours|default(0) }}h</span>
+                        </div>
+                    </div>
+                    
+                    {% if course.progress is defined and course.progress > 0 %}
+                        <div class="progress-section">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: {{ course.progress }}%;"></div>
+                            </div>
+                            <div class="progress-text">{{ course.progress }}% complété</div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="course-action">
+                        <a href="{{ path('student_exams_index') }}" class="btn-view-course">
+                            <i class="fas fa-play-circle"></i> Continuer le cours
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fas fa-book-open"></i>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #1E293B; margin-bottom: 10px;">Aucun cours disponible</h3>
+                <p>Vous n'êtes inscrit à aucun cours pour le moment.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+// Search functionality
+document.getElementById('courseSearch')?.addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.course-card');
+    
+    cards.forEach(card => {
+        const title = card.querySelector('.course-title').textContent.toLowerCase();
+        if (title.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}
