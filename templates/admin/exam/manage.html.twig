@@ -16,13 +16,18 @@
         <thead>
             <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
                 <th style="padding: 20px;">Titre de l'Examen</th>
+<<<<<<< HEAD
                 <th style="padding: 20px;">Cours associé</th>
+=======
+                <th style="padding: 20px;">Type</th>
+>>>>>>> origin/hazem
                 <th style="padding: 20px;">Questions</th>
                 <th style="padding: 20px;">Durée</th>
                 <th style="padding: 20px; text-align: right;">Actions</th>
             </tr>
         </thead>
         <tbody>
+<<<<<<< HEAD
             <tr style="border-bottom: 1px solid #F1F5F9;">
                 <td style="padding: 20px; font-weight: 700; color: #1E293B;">Contrôle Final: Algèbre</td>
                 <td style="padding: 20px;"><span style="background: #EEF2FF; color: #6366F1; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">Mathématiques</span></td>
@@ -36,6 +41,37 @@
                     </div>
                 </td>
             </tr>
+=======
+            {% for exam in exams %}
+            <tr style="border-bottom: 1px solid #F1F5F9;">
+                <td style="padding: 20px; font-weight: 700; color: #1E293B;">{{ exam.title }}</td>
+                <td style="padding: 20px;">
+                    <span style="background: #EEF2FF; color: #6366F1; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                        {{ exam.type }}
+                    </span>
+                </td>
+                <td style="padding: 20px; font-weight: 600; color: #64748B;">
+                    {# Questions count placeholder, logic to be added if relation exists #}
+                    —
+                </td>
+                <td style="padding: 20px; color: #64748B;">{{ exam.duration ? exam.duration ~ ' min' : '—' }}</td>
+                <td style="padding: 20px; text-align: right;">
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
+                        <a href="{{ path('admin_exam_questions', {id: exam.id}) }}" class="btn btn-outline" title="Gérer Questions" style="padding: 8px 12px; border-radius: 8px; color: #3B49A2;"><i class="fas fa-list-ol"></i></a>
+                        <a href="{{ path('admin_exam_edit', {id: exam.id}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #64748B;"><i class="fas fa-edit"></i></a>
+                        <form method="post" action="{{ path('admin_exam_delete', {'id': exam.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet examen ?');" style="margin: 0;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exam.id) }}">
+                            <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444; border: none; background: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="padding: 20px; text-align: center; color: #64748B;">Aucun examen trouvé.</td>
+            </tr>
+            {% endfor %}
+>>>>>>> origin/hazem
         </tbody>
     </table>
 </div>
