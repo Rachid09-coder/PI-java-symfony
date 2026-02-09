@@ -1,53 +1,70 @@
 {% extends 'admin_layout.html.twig' %}
 
-{% block title %}{{ product.id is defined and product.id ? 'Modifier' : 'Ajouter' }} un Produit - EduSmart{% endblock %}
+{% block title %}Gestion Boutique - EduSmart{% endblock %}
 
 {% block body %}
-<div style="max-width: 800px; margin: 0 auto;">
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
-        <a href="{{ path('admin_shop_index') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
-        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ product.id is defined and product.id ? 'Modifier le Produit' : 'Ajouter un Nouveau Produit' }}</h2>
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h2 style="font-size: 1.8rem; font-weight: 800; color: #1E293B;">Produits en vente</h2>
+            <p style="color: #64748B;">Gérez votre catalogue et vos stocks.</p>
+        </div>
+        <a href="{{ path('admin_shop_product_new') }}" style="background: #3B49A2; color: white; padding: 12px 25px; border-radius: 12px; text-decoration: none; font-weight: 600;">
+            <i class="fas fa-plus"></i> Nouveau Produit
+        </a>
     </div>
 
-    <div class="card" style="padding: 40px; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-        {{ form_start(form) }}
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div>
-                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Nom du produit</label>
-                    {{ form_widget(form.name, {'attr': {'placeholder': 'Ex: Casque Audio', 'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
-                    <div style="color: #EF4444; font-size: 0.8rem; margin-top: 5px;">{{ form_errors(form.name) }}</div>
-                </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px;">
+        {% for product in products %}
+            <div style="background: white; border-radius: 20px; border: 1px solid #F1F5F9; padding: 20px; position: relative; transition: 0.3s;">
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Catégorie</label>
-                        {{ form_widget(form.category, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white; outline: none;'}}) }}
-                    </div>
-                    <div>
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Prix (€)</label>
-                        {{ form_widget(form.price, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
-                    </div>
+                {# ZONE IMAGE #}
+                <div style="height: 180px; background: #F8FAFC; border-radius: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #F1F5F9;">
+                    {% if product.image %}
+                        {# Le chemin concaténé correctement #}
+                        <img src="{{ asset('uploads/produit/' ~ product.image) }}" 
+                             alt="{{ product.name }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=Image+Introuvable';">
+                    {% else %}
+                        <div style="text-align: center; color: #CBD5E1;">
+                            <i class="fas fa-image" style="font-size: 3rem;"></i>
+                            <p style="font-size: 0.8rem;">Aucune image</p>
+                        </div>
+                    {% endif %}
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Stock initial</label>
-                        {{ form_widget(form.stock, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
-                    </div>
-                    <div>
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Photo du produit</label>
-                        {{ form_widget(form.image, {'attr': {'style': 'width: 100%; padding: 10px; border: 1px solid #E2E8F0; border-radius: 12px; background: white; outline: none;'}}) }}
-                    </div>
+                {# INFOS #}
+                <div style="margin-bottom: 20px;">
+                    <span style="font-size: 0.75rem; color: #6366F1; background: #EEF2FF; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                        {{ product.category ? product.category.name : 'Sans catégorie' }}
+                    </span>
+                    <h4 style="font-size: 1.1rem; margin-top: 8px; font-weight: 700; color: #1E293B;">{{ product.name }}</h4>
+                    <p style="font-size: 1.2rem; font-weight: 800; color: #3B49A2; margin: 10px 0;">{{ product.price }} €</p>
+                    <p style="font-size: 0.85rem; color: {{ product.stock > 5 ? '#10B981' : '#EF4444' }};">
+                        Stock : {{ product.stock }} unités
+                    </p>
+                </div>
+
+                {# ACTIONS #}
+                <div style="display: flex; gap: 10px; border-top: 1px solid #F1F5F9; padding-top: 15px;">
+                    <a href="{{ path('admin_shop_product_edit', {id: product.id}) }}" style="flex: 1; text-align: center; padding: 10px; background: #F8FAFC; border-radius: 8px; text-decoration: none; color: #1E293B; font-weight: 600; font-size: 0.9rem;">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    
+                    <form method="post" action="{{ path('admin_shop_product_delete', {id: product.id}) }}" style="flex: 1;" onsubmit="return confirm('Supprimer ce produit ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                        <button style="width: 100%; padding: 10px; background: #FFF1F2; border-radius: 8px; border: none; color: #E11D48; font-weight: 600; font-size: 0.9rem; cursor: pointer;">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </form>
                 </div>
             </div>
-
-            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
-                <a href="{{ path('admin_shop_index') }}" style="padding: 12px 30px; border: 1px solid #E2E8F0; border-radius: 12px; text-decoration: none; color: #64748B; font-weight: 600;">Annuler</a>
-                <button type="submit" style="padding: 12px 40px; background: #3B49A2; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">
-                    {{ product.id is defined and product.id ? 'Enregistrer les modifications' : 'Créer le Produit' }}
-                </button>
+        {% else %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px; background: #F8FAFC; border-radius: 20px;">
+                <p style="color: #64748B;">Votre boutique est vide pour le moment.</p>
             </div>
-        {{ form_end(form) }}
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

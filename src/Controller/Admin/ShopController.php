@@ -2,7 +2,6 @@
 
 namespace App\Controller\Admin;
 
-
 use App\Entity\Product;
 use App\Form\ProductType;
 use App\Repository\ProductRepository;
@@ -13,58 +12,38 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/admin/shop')]
 class ShopController extends AbstractController
 {
-
-
-  
-   
-
-    // --- LA PARTIE CORRIGÉE ---
-    #[Route('/categories', name: 'admin_shop_categories')]
-    public function categories(
-        Request $request, 
-        EntityManagerInterface $entityManager, 
-        CategoryRepository $categoryRepository
-    ): Response {
-        // 1. Création d'une nouvelle entité Category
-        $category = new Category();
-        
-        // 2. Création du formulaire
-        $form = $this->createForm(CategoryType::class, $category);
-        
-        // 3. Analyse de la requête (est-ce que l'utilisateur a cliqué sur "Créer")
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Sauvegarde en base de données
-            $entityManager->persist($category);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'La catégorie a été ajoutée avec succès !');
-
-            // Redirection pour éviter de renvoyer le formulaire en rafraîchissant la page
-            return $this->redirectToRoute('admin_shop_categories');
-        }
-
-        // 4. On envoie le formulaire ET la liste réelle des catégories à la vue
-        return $this->render('admin/shop/categories.html.twig', [
-            'form' => $form->createView(),
-            'categories' => $categoryRepository->findAll(),
-        ]);
-    }
-    #[Route('/admin/shop')]
-
-
     #[Route('/', name: 'admin_shop_index')]
     public function index(ProductRepository $productRepository, CategoryRepository $categoryRepository): Response
     {
         return $this->render('admin/shop/index.html.twig', [
             'products' => $productRepository->findAll(),
-            'categories' => $categoryRepository->findAll(), // Pour ton modal
+            'categories' => $categoryRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/categories', name: 'admin_shop_categories')]
+    public function categories(Request $request, EntityManagerInterface $entityManager, CategoryRepository $categoryRepository): Response 
+    {
+        $category = new Category();
+        $form = $this->createForm(CategoryType::class, $category);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($category);
+            $entityManager->flush();
+            $this->addFlash('success', 'La catégorie a été ajoutée avec succès !');
+            return $this->redirectToRoute('admin_shop_categories');
+        }
+
+        return $this->render('admin/shop/categories.html.twig', [
+            'form' => $form->createView(),
+            'categories' => $categoryRepository->findAll(),
         ]);
     }
 
@@ -80,6 +59,28 @@ class ShopController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile $imageFile */
+            $imageFile = $form->get('image')->getData();
+
+            // SI UNE IMAGE EST POSTÉE
+            if ($imageFile) {
+                // On crée un nom unique (ex: 65c8f...jpg)
+                $newFilename = uniqid().'.'.$imageFile->guessExtension();
+
+                try {
+                    // On déplace physiquement le fichier
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/produit',
+                        $newFilename
+                    );
+                    
+                    // ON FORCE LE NOM DANS L'ENTITÉ (C'est ça qui enlève le NULL)
+                    $product->setImage($newFilename);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', "Erreur lors de l'upload");
+                }
+            }
+
             $em->persist($product);
             $em->flush();
 

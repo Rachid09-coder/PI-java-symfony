@@ -10,63 +10,28 @@ use Symfony\Component\Routing\Annotation\Route;
 class StudentSpaceController extends AbstractController
 {
     #[Route('/courses', name: 'student_courses')]
-    public function courses(): Response
+    public function courses(\App\Repository\ModuleRepository $moduleRepository): Response
     {
-        $courses = [
-            [
-                'title' => 'Introduction à l\'Intelligence Artificielle',
-                'instructor' => 'Dr. Dupont',
-                'modules' => 2,
-                'hours' => 4,
-                'progress' => 65,
-                'badge' => 'Continuer',
-                'badge_color' => '#3B49A2',
-                'badge_bg' => '#DBEAFE'
-            ],
-            [
-                'title' => 'Développement Web et CSS Avancé',
-                'instructor' => 'Mme Lefevre',
-                'modules' => 8,
-                'hours' => 6,
-                'progress' => 0,
-                'badge' => 'GRATUIT',
-                'badge_color' => '#10B981',
-                'badge_bg' => '#D1FAE5'
-            ],
-            [
-                'title' => 'Algèbre Linéaire pour Débutants',
-                'instructor' => 'Prof. Bernard',
-                'modules' => 10,
-                'hours' => 8,
-                'progress' => 0,
-                'badge' => 'GRATUIT',
-                'badge_color' => '#10B981',
-                'badge_bg' => '#D1FAE5'
-            ],
-            [
-                'title' => 'Programmation Python',
-                'instructor' => 'Niueeu Intermédiaire',
-                'modules' => 12,
-                'hours' => 10,
-                'progress' => 40,
-                'badge' => 'Premium',
-                'badge_color' => '#B45309',
-                'badge_bg' => '#FEF3C7'
-            ],
-            [
-                'title' => 'Marketing Digital en 2024',
-                'instructor' => 'Juile Cohen',
-                'modules' => 7,
-                'hours' => 5,
-                'progress' => 0,
-                'badge' => 'GRATUIT',
-                'badge_color' => '#10B981',
-                'badge_bg' => '#D1FAE5'
-            ]
-        ];
+        $modules = $moduleRepository->findBy([], ['id' => 'ASC']);
 
-        return $this->render('student/course/index.html.twig', [
-            'courses' => $courses
+        return $this->render('student/module/index.html.twig', [
+            'modules' => $modules
+        ]);
+    }
+
+    #[Route('/modules/{id}', name: 'student_module_details')]
+    public function moduleDetails(\App\Entity\Module $module): Response
+    {
+        return $this->render('student/module/show.html.twig', [
+            'module' => $module
+        ]);
+    }
+
+    #[Route('/course/{id}', name: 'student_course_details')]
+    public function courseDetails(\App\Entity\Course $course): Response
+    {
+        return $this->render('student/course/show.html.twig', [
+            'course' => $course
         ]);
     }
 
