@@ -1,78 +1,63 @@
-{% extends 'student_layout.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}{{ module.title }} - EduSmart{% endblock %}
+{% block title %}Fiche élève - {{ student.name }} - EduSmart{% endblock %}
+{% block page_title %}Fiche Élève{% endblock %}
 
 {% block body %}
-    <div style="padding: 0 var(--sp-4);">
-        <div style="margin-bottom: 30px;">
-            <a href="{{ path('student_courses') }}" style="color: #64748B; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 500;">
-                <i class="fas fa-arrow-left"></i> Retour aux modules
-            </a>
-        </div>
-
-        <div class="card" style="margin-bottom: 30px; padding: 40px; border-left: 5px solid #3B49A2;">
-            <h1 style="font-size: 2rem; font-weight: 800; color: #1E293B; margin-bottom: 15px;">{{ module.title }}</h1>
-            <p style="font-size: 1rem; color: #475569; line-height: 1.6; max-width: 800px;">
-                {{ module.description }}
-            </p>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-             <h3 style="font-size: 1.5rem; font-weight: 700; color: #1E293B; margin: 0;">Cours disponibles</h3>
-             <div style="position: relative; width: 300px;">
-                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 0.8rem;"></i>
-                <input type="text" id="courseSearch" placeholder="Rechercher un cours..." style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #E2E8F0; border-radius: 8px; outline: none; transition: border-color 0.2s; font-size: 0.9rem;">
-             </div>
-        </div>
-
-        {% if module.courses is empty %}
-            <div class="card" style="padding: 30px; text-align: center; color: #64748B;">
-                <p>Aucun cours disponible dans ce module pour le moment.</p>
-            </div>
-        {% else %}
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                {% for course in module.courses %}
-                    <a href="{{ path('student_course_details', {id: course.id}) }}" style="text-decoration: none; color: inherit; display: block;" class="fade-in stagger-{{ loop.index0 % 3 + 1 }} course-link" data-title="{{ course.title|lower }}">
-                        <div class="card course-item" style="padding: 25px; transition: all 0.2s ease; border: 1px solid transparent; border-bottom: 1px solid #F1F5F9;">
-                            <div style="display: flex; gap: 20px; align-items: center;">
-                                <div style="width: 80px; height: 60px; background: #F8FAFC; border-radius: 8px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                                    {% if course.thumbnailPath %}
-                                        <img src="{{ asset('uploads/' ~ course.thumbnailPath) }}" alt="{{ course.title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                    {% else %}
-                                        <i class="fas fa-video" style="color: #CBD5E1;"></i>
-                                    {% endif %}
-                                </div>
-                                <div style="flex-grow: 1;">
-                                    <h4 style="font-size: 1.1rem; font-weight: 700; color: #1E293B; margin-bottom: 5px;">{{ course.title }}</h4>
-                                    <div style="display: flex; gap: 15px; font-size: 0.85rem; color: #64748B;">
-                                        <span><i class="fas fa-tag" style="margin-right: 5px;"></i> {{ course.price > 0 ? course.price ~ ' €' : 'Gratuit' }}</span>
-                                        <span><i class="fas fa-calendar-alt" style="margin-right: 5px;"></i> {{ course.createdAt|date('d/m/Y') }}</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <span class="btn btn-primary" style="background: #3B49A2; font-size: 0.9rem; padding: 8px 15px;">Accéder au cours</span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        {% endif %}
+    <div style="margin-bottom: var(--sp-6);">
+        <a href="{{ path('app_student_index') }}" style="color: var(--secondary-color); font-weight: 600;">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
     </div>
 
-    <script>
-        document.getElementById('courseSearch').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const courses = document.querySelectorAll('.course-link');
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: var(--sp-6);">
+        <!-- Sidebar Profile -->
+        <div class="card" style="text-align: center;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; background: #E2E8F0; margin: 0 auto var(--sp-4); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user" style="font-size: 3rem; color: var(--text-secondary);"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700;">{{ student.name }}</h3>
+            <p style="color: var(--text-secondary); margin-bottom: var(--sp-4);">{{ student.class }}</p>
+            <span class="badge badge-success">{{ student.status }}</span>
             
-            courses.forEach(course => {
-                const title = course.getAttribute('data-title');
-                if (title.includes(searchTerm)) {
-                    course.style.display = 'block';
-                } else {
-                    course.style.display = 'none';
-                }
-            });
-        });
-    </script>
+            <hr style="margin: var(--sp-6) 0; border: none; border-top: 1px solid var(--border-color);">
+            
+            <div style="text-align: left;">
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Email</p>
+                <p style="font-weight: 600; margin-bottom: var(--sp-4);">{{ student.email }}</p>
+                
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Téléphone</p>
+                <p style="font-weight: 600; margin-bottom: var(--sp-4);">{{ student.phone }}</p>
+                
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 4px;">Adresse</p>
+                <p style="font-weight: 600;">{{ student.address }}</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div>
+            <div class="card">
+                <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--sp-4);">Biographie</h4>
+                <p style="color: var(--text-secondary);">{{ student.bio }}</p>
+            </div>
+
+            <div class="card">
+                <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--sp-4);">Cours suivis</h4>
+                <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3); background: var(--bg-color); border-radius: 8px;">
+                        <span style="font-weight: 600;">Mathématiques Avancées</span>
+                        <span class="badge badge-primary">85%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3); background: var(--bg-color); border-radius: 8px;">
+                        <span style="font-weight: 600;">Physique Quantique</span>
+                        <span class="badge badge-primary">42%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-3); background: var(--bg-color); border-radius: 8px;">
+                        <span style="font-weight: 600;">Histoire de l'Art</span>
+                        <span class="badge badge-success">Terminé</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
