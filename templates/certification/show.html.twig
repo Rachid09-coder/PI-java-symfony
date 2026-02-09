@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Certification #{{ certification.id }}{% endblock %}
+
+{% block header_content %}
+    <div class="page-header">
+        <h1>Certification #{{ certification.id }}</h1>
+        <p class="text-muted">Vue détaillée de la certification académique.</p>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="page-content">
+        <div class="card">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Étudiant</dt>
+                    <dd class="col-sm-9">
+                        {{ certification.student ? certification.student.email : '—' }}
+                    </dd>
+
+                    <dt class="col-sm-3">Bulletin</dt>
+                    <dd class="col-sm-9">
+                        {% if certification.bulletin %}
+                            Bulletin #{{ certification.bulletin.id }}
+                            ({{ certification.bulletin.academicYear }} – {{ certification.bulletin.semester }})
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-3">Type</dt>
+                    <dd class="col-sm-9">{{ certification.type }}</dd>
+
+                    <dt class="col-sm-3">Code de vérification</dt>
+                    <dd class="col-sm-9"><code>{{ certification.verificationCode }}</code></dd>
+
+                    <dt class="col-sm-3">Statut</dt>
+                    <dd class="col-sm-9">
+                        {% if certification.status == 'ACTIVE' %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ certification.status }}</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-3">Émise le</dt>
+                    <dd class="col-sm-9">
+                        {{ certification.issuedAt ? certification.issuedAt|date('d/m/Y H:i') : '' }}
+                    </dd>
+
+                    <dt class="col-sm-3">Fichier PDF</dt>
+                    <dd class="col-sm-9">
+                        {% if certification.pdfPath %}
+                            <a href="{{ asset('uploads/certifications/' ~ certification.pdfPath) }}" target="_blank">
+                                Télécharger la certification
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Aucun fichier généré</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{{ path('app_certification_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
+                <div>
+                    <a href="{{ path('app_certification_edit', {id: certification.id}) }}" class="btn btn-primary me-2">
+                        <i class="fas fa-edit me-1"></i> Modifier
+                    </a>
+                    {{ include('certification/_delete_form.html.twig', {certification: certification}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Détails Examen - {{ exam.title }}{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto; padding: 40px;">
+    <div style="margin-bottom: 30px;">
+        <a href="{{ path('student_exams_index') }}" style="color: #64748B; text-decoration: none; font-weight: 600;">
+            <i class="fas fa-arrow-left"></i> Retour aux examens
+        </a>
+    </div>
+
+    <div class="card" style="padding: 40px; border-radius: 20px; box-shadow: var(--shadow-md);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <h1 style="font-size: 2rem; font-weight: 800; color: #1E293B; margin: 0;">{{ exam.title }}</h1>
+            <span style="background: #EEF2FF; color: #6366F1; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">
+                {{ exam.type }}
+            </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="background: #F8FAFC; padding: 20px; border-radius: 15px;">
+                <p style="color: #64748B; font-size: 0.9rem; margin-bottom: 5px;">Durée</p>
+                <p style="color: #1E293B; font-weight: 700; font-size: 1.1rem; margin: 0;">{{ exam.duration }} min</p>
+            </div>
+            <div style="background: #F8FAFC; padding: 20px; border-radius: 15px;">
+                <p style="color: #64748B; font-size: 0.9rem; margin-bottom: 5px;">Questions</p>
+                <p style="color: #1E293B; font-weight: 700; font-size: 1.1rem; margin: 0;">{{ exam.questions|length > 0 ? exam.questions|length : 'N/A' }}</p>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: #1E293B; margin-bottom: 15px;">Consignes</h3>
+            <div style="color: #475569; line-height: 1.6; background: #F8FAFC; padding: 20px; border-radius: 15px; border-left: 4px solid #3B49A2;">
+                {{ exam.description|nl2br }}
+            </div>
+        </div>
+
+        {% if exam.filePath or (submission and submission.filePath) %}
+            <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+                {% if exam.filePath %}
+                    <a href="{{ asset(exam.filePath) }}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center; padding: 15px; border-radius: 12px; font-weight: 700; border: 2px solid #E2E8F0; color: #1E293B; text-decoration: none;">
+                        <i class="fas fa-download margin-right-5"></i> Sujet de l'examen
+                    </a>
+                {% endif %}
+                
+                {% if submission and submission.filePath %}
+                    <a href="{{ asset(submission.filePath) }}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center; padding: 15px; border-radius: 12px; font-weight: 700; border: 2px solid #3B49A2; color: #3B49A2; text-decoration: none;">
+                        <i class="fas fa-file-pdf margin-right-5"></i> Ma copie
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if exam.filePath and exam.filePath|lower|slice(-4) == '.pdf' %}
+            <div style="margin-bottom: 30px; border: 1px solid #E2E8F0; border-radius: 15px; overflow: hidden; background: #F8FAFC;">
+                <div style="padding: 10px 20px; border-bottom: 1px solid #E2E8F0; font-weight: 700; color: #475569;">Aperçu du Sujet</div>
+                <iframe src="{{ asset(exam.filePath) }}" width="100%" height="800px" style="border: none;">
+                    <p>Votre navigateur ne permet pas de prévisualiser ce fichier PDF. <a href="{{ asset(exam.filePath) }}">Cliquez ici pour le télécharger.</a></p>
+                </iframe>
+            </div>
+        {% endif %}
+
+        {% if not submission %}
+            <form action="{{ path('student_exam_start', {id: exam.id}) }}" method="post">
+                <button type="submit" class="btn btn-primary" style="width: 100%; background: #3B49A2; padding: 15px; border-radius: 12px; font-weight: 700; font-size: 1.1rem;">
+                    Commencer l'Examen
+                </button>
+            </form>
+        {% elseif (exam.type == 'QCM' and submission.grade is null) or (exam.type != 'QCM' and submission.filePath is null and submission.grade is null) %}
+            <div style="background: #fff; border: 2px solid #E2E8F0; border-radius: 20px; padding: 30px; margin-top: 30px;">
+                <h3 style="margin-bottom: 20px;">Épreuve en cours</h3>
+                <form action="{{ path('student_exam_submit', {id: exam.id}) }}" method="post" enctype="multipart/form-data">
+                    
+                    {% if exam.type == 'QCM' %}
+                        {% for question in exam.questions %}
+                            <div style="margin-bottom: 25px;">
+                                <p style="font-weight: 700; color: #1E293B; margin-bottom: 15px;">{{ loop.index }}. {{ question.text }} <span style="font-size: 0.8rem; color: #64748B;">({{ question.points }} pts)</span></p>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    {% for choice in question.choices %}
+                                        <label style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid #E2E8F0; border-radius: 10px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='white'">
+                                            <input type="radio" name="answers[{{ question.id }}]" value="{{ choice.id }}" style="width: 18px; height: 18px;">
+                                            <span>{{ choice.text }}</span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 700; margin-bottom: 10px;">Déposer votre travail (PDF)</label>
+                            <input type="file" name="submissionFile" required class="form-control" style="width: 100%; padding: 10px; border: 1px solid #CBD5E1; border-radius: 10px;">
+                        </div>
+                    {% endif %}
+
+                    <div style="text-align: right; margin-top: 30px;">
+                        <button type="submit" class="btn btn-success" style="padding: 12px 30px; font-weight: 700; background: #10B981; border: none; border-radius: 12px;">
+                            Soumettre mes réponses
+                        </button>
+                    </div>
+                </form>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px; background: #F0FDF4; border-radius: 20px; border: 2px solid #bbf7d0; margin-top: 30px;">
+                <div style="width: 80px; height: 80px; background: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2.5rem;">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h2 style="color: #166534; font-weight: 800; margin-bottom: 10px;">Examen Terminé !</h2>
+                <p style="color: #15803d; font-size: 1.1rem; margin-bottom: 20px;">Votre participation a été enregistrée.</p>
+                
+                <div style="margin-bottom: 20px; text-align: left; display: inline-block; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 300px;">
+                    <p style="margin: 5px 0;"><strong>Candidat :</strong> <span style="color: #475569;">{{ submission.student ? submission.student.email : (submission.candidateIdentifier ?? 'Anonyme') }}</span></p>
+                    <p style="margin: 5px 0;"><strong>Date :</strong> <span style="color: #475569;">{{ submission.submittedAt|date('d/m/Y H:i') }}</span></p>
+                </div>
+                <br>
+
+                {% if submission.grade is not null %}
+                    <div style="margin-top: 10px; display: inline-block; background: white; padding: 20px 40px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                        <p style="color: #64748B; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 5px;">Note Obtenue</p>
+                        <p style="font-size: 2.5rem; font-weight: 800; color: {{ submission.isPassed ? '#166534' : '#dc2626' }}; margin: 0;">
+                            {{ submission.grade }} / {{ exam.questions|reduce((carry, q) => carry + q.points) }}
+                        </p>
+                        <span style="display: inline-block; margin-top: 10px; padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; background: {{ submission.isPassed ? '#bbf7d0' : '#fecaca' }}; color: {{ submission.isPassed ? '#166534' : '#991b1b' }};">
+                            {{ submission.isPassed ? 'VALIDÉ' : 'NON VALIDÉ' }}
+                        </span>
+                    </div>
+                {% else %}
+                    <p style="margin-top: 20px; color: #64748B;">Votre travail est en cours de correction.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if exam.externalLink and not submission %}
+            <!-- External link shown only if not started/submitted? Or always? Let's leave it compatible with previous design -->
+             <div style="margin-top: 20px;">
+                <a href="{{ exam.externalLink }}" target="_blank" class="btn btn-outline" style="width: 100%; text-align: center;">
+                    <i class="fas fa-external-link-alt margin-right-5"></i> Ressources Externes
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

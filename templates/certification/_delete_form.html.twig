@@ -1,0 +1,9 @@
+<form method="post"
+      action="{{ path('app_certification_delete', {id: certification.id}) }}"
+      style="display:inline"
+      onsubmit="return confirm('Supprimer cette certification ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ certification.id) }}">
+    <button class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-trash"></i>
+    </button>
+</form>
