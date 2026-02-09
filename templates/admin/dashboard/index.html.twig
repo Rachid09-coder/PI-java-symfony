@@ -14,14 +14,17 @@
         <p style="color: #64748B; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Élèves</p>
         <h3 style="font-size: 1.8rem; font-weight: 800;">{{ stats.total_students }}</h3>
     </div>
+
     <div class="card" style="padding: 25px; border-left: 4px solid #3B49A2;">
         <p style="color: #64748B; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Cours</p>
         <h3 style="font-size: 1.8rem; font-weight: 800;">{{ stats.total_courses }}</h3>
     </div>
+
     <div class="card" style="padding: 25px; border-left: 4px solid #F59E0B;">
         <p style="color: #64748B; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Examens</p>
         <h3 style="font-size: 1.8rem; font-weight: 800;">{{ stats.total_exams }}</h3>
     </div>
+
     <div class="card" style="padding: 25px; border-left: 4px solid #10B981;">
         <p style="color: #64748B; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Revenus</p>
         <h3 style="font-size: 1.8rem; font-weight: 800;">{{ stats.revenue }}</h3>
@@ -82,7 +85,7 @@
                         </a>
 
                         <form method="post"
-                             action="{{ path('admin_student_delete', {id: s.id}) }}"
+                              action="{{ path('admin_student_delete', {id: s.id}) }}"
                               style="display:inline;"
                               onsubmit="return confirm('Supprimer cet élève ?');"
                               novalidate>
