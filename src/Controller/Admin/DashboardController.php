@@ -2,6 +2,9 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\User;
+use App\Form\UserType;
+use App\Repository\CourseRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,8 +30,9 @@ class DashboardController extends AbstractController
             'students' => $students,
         ]);
     }
-   #[Route('/students/{id}/delete', name: 'admin_student_delete', methods: ['POST'])]
-    public function delete(
+
+    #[Route('/students/{id}/delete', name: 'admin_student_delete', methods: ['POST'])]
+    public function deleteStudent(
         int $id,
         Request $request,
         UserRepository $userRepository,
@@ -42,7 +46,7 @@ class DashboardController extends AbstractController
 
         $token = (string) $request->request->get('_token');
 
-        if (!$this->isCsrfTokenValid('delete_student_'.$student->getId(), $token)) {
+        if (!$this->isCsrfTokenValid('delete_student_' . $student->getId(), $token)) {
             $this->addFlash('danger', 'Token CSRF invalide.');
             return $this->redirectToRoute('admin_dashboard');
         }
@@ -53,48 +57,55 @@ class DashboardController extends AbstractController
         $this->addFlash('success', 'Élève supprimé.');
         return $this->redirectToRoute('admin_dashboard');
     }
+
     #[Route('/students/{id}/edit', name: 'admin_student_edit', methods: ['GET', 'POST'])]
-public function editStudent(
-    User $student,
-    Request $request,
-    EntityManagerInterface $em
-): Response {
-    if ($student->getRole() !== 'etudiant') {
-        throw $this->createNotFoundException();
+    public function editStudent(
+        User $student,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if ($student->getRole() !== 'etudiant') {
+            throw $this->createNotFoundException();
+        }
+
+        $form = $this->createForm(UserType::class, $student);
+        $form->remove('password'); // pas de changement mdp ici
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'Élève modifié.');
+            return $this->redirectToRoute('admin_dashboard');
+        }
+
+        return $this->render('admin/user/form.html.twig', [
+            'user' => $student,
+            'form' => $form->createView(),
+        ]);
     }
 
-    $form = $this->createForm(UserType::class, $student);
-    $form->remove('password'); // pas de changement mdp ici
-
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $em->flush();
-        $this->addFlash('success', 'Élève modifié.');
-        return $this->redirectToRoute('admin_dashboard');
-    }
-
-    return $this->render('admin/user/form.html.twig', [
-        'user' => $student,
-        'form' => $form->createView(),
-    ]);
-}
     #[Route('/courses/manage', name: 'admin_courses_manage', methods: ['GET'])]
-public function manageCourses(): Response
-{
-    return $this->render('admin/course/manage.html.twig');
-}
+    public function manageCourses(CourseRepository $courseRepository): Response
+    {
+        // If your repo doesn't have this method, replace with ->findAll()
+        $courses = method_exists($courseRepository, 'findAllOrderedByTitle')
+            ? $courseRepository->findAllOrderedByTitle()
+            : $courseRepository->findAll();
 
-#[Route('/modules/manage', name: 'admin_modules_manage', methods: ['GET'])]
-public function manageModules(): Response
-{
-    return $this->render('admin/module/manage.html.twig');
-}
+        return $this->render('admin/course/manage.html.twig', [
+            'courses' => $courses,
+        ]);
+    }
 
-#[Route('/exams/manage', name: 'admin_exams_manage', methods: ['GET'])]
-public function manageExams(): Response
-{
-    return $this->render('admin/exam/manage.html.twig');
-}
+    #[Route('/modules/manage', name: 'admin_modules_manage', methods: ['GET'])]
+    public function manageModules(): Response
+    {
+        return $this->render('admin/module/manage.html.twig');
+    }
 
+    #[Route('/exams/manage', name: 'admin_exams_manage', methods: ['GET'])]
+    public function manageExams(): Response
+    {
+        return $this->render('admin/exam/manage.html.twig');
+    }
 }

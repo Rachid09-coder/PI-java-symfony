@@ -1,0 +1,42 @@
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form) }}
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                {{ form_row(form.student) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_row(form.bulletin) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_row(form.type) }}
+            </div>
+
+            <div class="col-md-4">
+                {{ form_row(form.issuedAt) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_row(form.verificationCode) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_row(form.status) }}
+            </div>
+
+            <div class="col-md-12">
+                {{ form_row(form.pdfPath) }}
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between">
+            <a href="{{ path('app_certification_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+            </a>
+            <button class="btn btn-primary">
+                {{ button_label|default('Enregistrer') }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>

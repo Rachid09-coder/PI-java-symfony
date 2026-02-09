@@ -1,0 +1,42 @@
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form) }}
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form_row(form.student) }}
+            </div>
+            <div class="col-md-3">
+                {{ form_row(form.academicYear) }}
+            </div>
+            <div class="col-md-3">
+                {{ form_row(form.semester) }}
+            </div>
+
+            <div class="col-md-3">
+                {{ form_row(form.average) }}
+            </div>
+            <div class="col-md-3">
+                {{ form_row(form.status) }}
+            </div>
+
+            <div class="col-md-3">
+                {{ form_row(form.createdAt) }}
+            </div>
+            <div class="col-md-3">
+                {{ form_row(form.updatedAt) }}
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between">
+            <a href="{{ path('admin_bulletin_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+            </a>
+            <button class="btn btn-primary">
+                {{ button_label|default('Enregistrer') }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>

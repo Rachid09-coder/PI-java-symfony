@@ -30,7 +30,6 @@ final class AuthController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // hash password
             $user->setPassword(
                 $hasher->hashPassword($user, (string) $user->getPassword())
             );
