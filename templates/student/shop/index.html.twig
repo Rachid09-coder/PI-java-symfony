@@ -70,8 +70,21 @@
             setTimeout(() => {
                 this.innerHTML = originalText;
                 this.style.background = originalBG;
+            updateCartCount();
+            
+            // Visual feedback
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> Ajouté !';
+            this.style.background = '#10B981';
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.style.background = '#3B49A2';
             }, 2000);
         });
     });
 </script>
+<<<<<<< HEAD
 {% endblock %}
+=======
+{% endblock %}
+>>>>>>> origin/hazem

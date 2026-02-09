@@ -1,5 +1,6 @@
 {% extends 'admin_layout.html.twig' %}
 
+<<<<<<< HEAD
 {% block title %}Gestion Boutique - EduSmart{% endblock %}
 
 {% block body %}
@@ -68,3 +69,57 @@
     </div>
 </div>
 {% endblock %}
+=======
+{% block title %}{{ product is defined and product ? 'Modifier' : 'Ajouter' }} un Produit - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_shop_index') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ product is defined and product ? 'Modifier le Produit' : 'Ajouter un Nouveau Produit' }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px;">
+        <form action="{{ path('admin_shop_index') }}" method="GET">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Nom du produit</label>
+                    <input type="text" value="{{ product.name ?? '' }}" placeholder="Ex: Casque Audio" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Catégorie</label>
+                        <select style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;">
+                            <option>Équipements</option>
+                            <option>Livres</option>
+                            <option>Logiciels</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Prix (€)</label>
+                        <input type="number" step="0.01" value="{{ product.price ?? '' }}" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Stock initial</label>
+                        <input type="number" value="{{ product.stock ?? '0' }}" style="width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Photo du produit</label>
+                        <input type="file" style="width: 100%; padding: 10px; border: 1px solid #E2E8F0; border-radius: 12px; background: white; outline: none;">
+                    </div>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
+                <a href="{{ path('admin_shop_index') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">{{ product is defined and product ? 'Enregistrer' : 'Créer le Produit' }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+>>>>>>> origin/hazem

@@ -13,12 +13,23 @@
                     <span>Mes Cours</span>
                 </a>
             </li>
+<<<<<<< HEAD
             <li>
                 <a href="{{ path('student_exams_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_exam' ? 'active' : '' }}">
+=======
+
+            <li>
+                <a href="{{ path('student_exams_index') }}"
+                   class="nav-item {{ app.request.get('_route') in ['student_exams_index', 'student_exam_show'] ? 'active' : '' }}">
+>>>>>>> origin/hazem
                     <i class="fas fa-file-alt"></i>
                     <span>Mes Examens</span>
                 </a>
             </li>
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/hazem
             <li>
                 <a href="{{ path('student_shop_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_shop' ? 'active' : '' }}">
                     <i class="fas fa-shopping-bag"></i>
