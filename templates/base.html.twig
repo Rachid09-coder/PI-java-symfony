@@ -1,40 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}EduSmart{% endblock %}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🎓</text></svg>">
+        <title>{% block title %}EduSmart{% endblock %}</title>
         
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        
-        {% block stylesheets %}
-            {# Symfony asset() should now point to the versioned file in public/assets #}
-            <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
-        {% endblock %}
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+        <style>
+            body { background-color: #F4F7FE; margin: 0; font-family: sans-serif; }
+        </style>
+
+        {% block stylesheets %}{% endblock %}
     </head>
     <body>
-        <div class="app-container">
-            {% include 'partials/_sidebar.html.twig' %}
-            
-            <main class="main-content">
-                {% block header_content %}
-                    {% include 'partials/_header.html.twig' %}
-                {% endblock %}
-                
-                <div class="page-container">
-                    {% include 'partials/_flash.html.twig' %}
-                    {% block body %}{% endblock %}
-                </div>
-                
-                <footer class="footer" style="padding: 2rem; text-align: center; color: var(--text-secondary); font-size: 0.875rem; margin-top: auto;">
-                    &copy; {{ "now"|date("Y") }} EduSmart - All Rights Reserved
-                </footer>
-            </main>
-        </div>
+        {# C'est ici que le contenu des autres fichiers sera injecté #}
+        {% block body %}{% endblock %}
+
+        {% block javascripts %}{% endblock %}
     </body>
 </html>
