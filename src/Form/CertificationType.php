@@ -8,6 +8,7 @@ use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -21,7 +22,9 @@ class CertificationType extends AbstractType
         $builder
             ->add('student', EntityType::class, [
                 'class' => User::class,
-                'choice_label' => 'email',
+                'choice_label' => function(User $user) {
+                    return $user->getPrenom() . ' ' . $user->getName() . ' (' . $user->getEmail() . ')';
+                },
                 'label' => 'Étudiant',
                 'placeholder' => 'Sélectionner un étudiant',
             ])
@@ -36,18 +39,27 @@ class CertificationType extends AbstractType
             ->add('type', ChoiceType::class, [
                 'label' => 'Type de certification',
                 'choices' => [
-                    'Certificat de scolarité' => 'SCOLARITE',
+                    'Attestation de scolarité' => 'SCOLARITE',
                     'Certificat de réussite' => 'REUSSITE',
-                    'Attestation de notes' => 'NOTES',
+                    'Relevé de notes' => 'NOTES',
+                    'Diplôme interne' => 'DIPLOME',
+                    'Attestation de stage' => 'STAGE',
+                    'Attestation de présence' => 'PRESENCE',
                 ],
             ])
             ->add('verificationCode', TextType::class, [
                 'label' => 'Code de vérification',
                 'required' => false,
-                'attr' => ['placeholder' => 'Généré automatiquement si vide']
+                'attr' => ['placeholder' => 'Généré automatiquement si vide'],
+            ])
+            ->add('validUntil', DateType::class, [
+                'label' => 'Valide jusqu\'au',
+                'required' => false,
+                'widget' => 'single_text',
+                'input' => 'datetime_immutable',
             ])
             ->add('pdfFile', FileType::class, [
-                'label' => 'Fichier PDF',
+                'label' => 'Fichier PDF (optionnel)',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [

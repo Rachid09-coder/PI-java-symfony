@@ -1,0 +1,481 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}{{ is_edit ? 'Configuration' : 'Génération' }} Bulletin - EduSmart{% endblock %}
+
+{% block body %}
+<div class="admin-page animate-fade-in py-4">
+    {# Orbes décoratives pour la touche futuriste #}
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container-fluid position-relative z-index-2">
+        <header class="mb-5">
+            <a href="{{ path('admin_bulletin_index') }}" class="btn-back-premium mb-3">
+                <i class="fas fa-arrow-left me-2"></i> Retour au Registre
+            </a>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <h1 class="h2 fw-900 text-dark mb-1">{{ is_edit ? 'Mise à jour du' : 'Propulsion de nouveau' }} Bulletin</h1>
+                    <p class="text-muted small mb-0">Interface de contrôle pour la validation des performances académiques.</p>
+                </div>
+                <div class="badge-premium-logic">
+                    <i class="fas fa-microchip me-2"></i> Moteur de calcul actif
+                </div>
+            </div>
+        </header>
+
+        {{ form_start(form, {'attr': {'class': 'premium-form'}}) }}
+        <div class="row g-4">
+            {# Paramètres Généraux - Left Column #}
+            <div class="col-xl-4">
+                <div class="card card-premium-glass shadow-lg border-0 h-100">
+                    <div class="card-header bg-transparent border-bottom border-light py-4 px-4">
+                        <h5 class="fw-800 text-primary mb-0"><i class="fas fa-sliders-h me-2"></i>Paramètres</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="form-group-premium mb-4 {{ not form.student.vars.valid ? 'has-error-premium' : '' }}">
+                            {{ form_label(form.student, null, {'label_attr': {'class': 'label-premium'}}) }}
+                            <div class="input-glow-wrapper">
+                                {{ form_widget(form.student, {'attr': {'class': 'form-select-premium select-lg-premium' ~ (not form.student.vars.valid ? ' is-invalid-premium' : '')}}) }}
+                            </div>
+                            {% if not form.student.vars.valid %}
+                                <div class="invalid-feedback-premium animate-shake">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form_errors(form.student)|striptags|raw }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group-premium mb-4 {{ not form.academicYear.vars.valid ? 'has-error-premium' : '' }}">
+                            {{ form_label(form.academicYear, null, {'label_attr': {'class': 'label-premium'}}) }}
+                            <div class="input-glow-wrapper">
+                                {{ form_widget(form.academicYear, {'attr': {
+                                    'class': 'form-control-premium' ~ (not form.academicYear.vars.valid ? ' is-invalid-premium' : ''), 
+                                    'placeholder': 'Ex: 2025/2026'
+                                }}) }}
+                            </div>
+                            {% if not form.academicYear.vars.valid %}
+                                <div class="invalid-feedback-premium animate-shake">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form_errors(form.academicYear)|striptags|raw }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-4">
+                                {{ form_label(form.semester, null, {'label_attr': {'class': 'label-premium'}}) }}
+                                <div class="input-glow-wrapper">
+                                    {{ form_widget(form.semester, {'attr': {'class': 'form-select-premium'}}) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                {{ form_label(form.average, null, {'label_attr': {'class': 'label-premium'}}) }}
+                                <div class="input-glow-wrapper">
+                                    {{ form_widget(form.average, {'attr': {'class': 'form-control-premium bg-light-soft fw-bold', 'readonly': 'readonly'}}) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-premium mb-4 {{ not form.mention.vars.valid ? 'has-error-premium' : '' }}">
+                            {{ form_label(form.mention, null, {'label_attr': {'class': 'label-premium'}}) }}
+                            <div class="input-glow-wrapper">
+                                {{ form_widget(form.mention, {'attr': {'class': 'form-select-premium' ~ (not form.mention.vars.valid ? ' is-invalid-premium' : '')}}) }}
+                            </div>
+                            {% if not form.mention.vars.valid %}
+                                <div class="invalid-feedback-premium animate-shake">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form_errors(form.mention)|striptags|raw }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group-premium mb-4">
+                            {{ form_label(form.status, null, {'label_attr': {'class': 'label-premium'}}) }}
+                            <div class="input-glow-wrapper">
+                                {{ form_widget(form.status, {'attr': {'class': 'form-select-premium'}}) }}
+                            </div>
+                        </div>
+
+                        <div class="form-group-premium mb-0 {{ not form.classRank.vars.valid ? 'has-error-premium' : '' }}">
+                            {{ form_label(form.classRank, null, {'label_attr': {'class': 'label-premium'}}) }}
+                            <div class="input-glow-wrapper">
+                                {{ form_widget(form.classRank, {'attr': {'class': 'form-control-premium' ~ (not form.classRank.vars.valid ? ' is-invalid-premium' : ''), 'placeholder': 'Rang requis'}}) }}
+                            </div>
+                            {% if not form.classRank.vars.valid %}
+                                <div class="invalid-feedback-premium animate-shake">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form_errors(form.classRank)|striptags|raw }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Matières et Notes - Right Column #}
+            <div class="col-xl-8">
+                <div class="card card-premium-glass shadow-lg border-0">
+                    <div class="card-header bg-transparent border-bottom border-light py-4 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-800 text-primary mb-0"><i class="fas fa-graduation-cap me-2"></i>Matières & Performances</h5>
+                        <button type="button" class="btn btn-pill btn-premium-secondary add-another-collection-widget" data-list-selector="#report-card-lines-list">
+                            <i class="fas fa-plus-circle me-1"></i> Ajouter une matière
+                        </button>
+                    </div>
+                    <div class="card-body p-4">
+                        <div id="report-card-lines-list" 
+                             data-prototype="{{ form_widget(form.reportCardLines.vars.prototype)|e('html_attr') }}"
+                             data-widget-tags="{{ '<tr></tr>'|e }}"
+                             data-widget-counter="{{ form.reportCardLines|length }}">
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover-premium align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th class="ps-3">Module / Matière</th>
+                                            <th class="text-center" style="width: 100px;">Coef</th>
+                                            <th class="text-center" style="width: 100px;">Note</th>
+                                            <th>Commentaire</th>
+                                            <th class="text-end pe-3" style="width: 50px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="report-card-lines-container">
+                                        {% for lineForm in form.reportCardLines %}
+                                            <tr class="collection-item animate-row-in">
+                                                <td class="ps-3">{{ form_widget(lineForm.moduleName, {'attr': {'class': 'form-control-premium form-control-sm'}}) }}</td>
+                                                <td>{{ form_widget(lineForm.coefficient, {'attr': {'class': 'form-control-premium form-control-sm text-center coef-input'}}) }}</td>
+                                                <td>{{ form_widget(lineForm.note, {'attr': {'class': 'form-control-premium form-control-sm text-center note-input'}}) }}</td>
+                                                <td>{{ form_widget(lineForm.teacherComment, {'attr': {'class': 'form-control-premium form-control-sm', 'rows': '1'}}) }}</td>
+                                                <td class="text-end pe-3">
+                                                    <button type="button" class="btn-remove-premium remove-item">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-5 d-flex justify-content-end align-items-center gap-4">
+                            <div class="text-end d-none d-md-block">
+                                <span class="text-muted small d-block">Intégrité des données</span>
+                                <span class="badge bg-success-soft text-success rounded-pill px-3">Scan ok</span>
+                            </div>
+                            <button type="submit" class="btn-premium-submit px-5 shadow-lg">
+                                <i class="fas fa-rocket me-2"></i>
+                                <span>{{ is_edit ? 'Sauvegarder les modifications' : 'Lancer la création du bulletin' }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<style>
+    /* --- Futuristic Design System --- */
+    .fw-900 { font-weight: 900; }
+    .fw-800 { font-weight: 800; }
+    .z-index-2 { z-index: 2; }
+    
+    .bg-light-soft { background-color: #f8fafc; }
+    .bg-success-soft { background-color: #ecfdf5; color: #10b981; }
+
+    /* Orbes Lumineuses */
+    .orb {
+        position: fixed;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.12;
+        z-index: 0;
+        pointer-events: none;
+        animation: floatOrb 25s infinite alternate ease-in-out;
+    }
+    .orb-1 { top: -200px; right: -100px; background: #4f46e5; }
+    .orb-2 { bottom: -200px; left: -100px; background: #6366f1; }
+    @keyframes floatOrb {
+        from { transform: perspective(1000px) translate(0, 0) scale(1); }
+        to { transform: perspective(1000px) translate(100px, 50px) scale(1.1); }
+    }
+
+    /* Cards Glassmorphism */
+    .card-premium-glass {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        border-radius: 24px;
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .card-premium-glass:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15) !important;
+    }
+
+    /* Form Styles */
+    .label-premium {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .form-control-premium, .form-select-premium {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border: 2px solid #f1f5f9;
+        background: #fdfdfd;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .form-control-premium:focus, .form-select-premium:focus {
+        border-color: #6366f1;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        transform: scale(1.02);
+        outline: none;
+    }
+
+    /* Input Glow & Error States */
+    .input-glow-wrapper { position: relative; }
+    .input-glow-wrapper::after {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #4f46e5, #818cf8);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .input-glow-wrapper:focus-within::after { opacity: 0.2; }
+
+    /* Red Glow for Errors */
+    .has-error-premium .input-glow-wrapper::after {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        opacity: 0.3;
+        z-index: 1;
+        pointer-events: none;
+        animation: PulseError 2s infinite;
+    }
+    
+    .is-invalid-premium {
+        border-color: #fca5a5 !important;
+        background-color: rgba(254, 242, 242, 0.5) !important;
+        color: #b91c1c !important;
+    }
+
+    .invalid-feedback-premium {
+        color: #ef4444;
+        font-size: 0.75rem;
+        font-weight: 800;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        letter-spacing: 0.02em;
+    }
+
+    @keyframes PulseError {
+        0% { opacity: 0.2; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(1.02); }
+        100% { opacity: 0.2; transform: scale(1); }
+    }
+
+    .animate-shake {
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    /* Buttons */
+    .btn-pill { border-radius: 50px !important; }
+    .btn-premium-submit {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 50px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .btn-premium-submit:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(79, 70, 229, 0.3);
+        color: white;
+    }
+
+    .btn-premium-secondary {
+        background: #eef2ff;
+        color: #4f46e5;
+        border: none;
+        padding: 8px 18px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+    .btn-premium-secondary:hover {
+        background: #4f46e5;
+        color: white;
+        transform: rotate(2deg);
+    }
+
+    .btn-back-premium {
+        display: inline-flex;
+        align-items: center;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    .btn-back-premium:hover {
+        color: #4f46e5;
+        transform: translateX(-5px);
+    }
+
+    .btn-remove-premium {
+        background: rgba(239, 68, 68, 0.08);
+        color: #ef4444;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+    .btn-remove-premium:hover {
+        background: #ef4444;
+        color: white;
+        transform: scale(1.1) rotate(10deg);
+    }
+
+    /* Table Styles */
+    .table-hover-premium thead th {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #94a3b8;
+        border: none;
+        padding-bottom: 20px;
+    }
+    .table-hover-premium tbody tr { transition: all 0.2s ease; }
+    .table-hover-premium tbody tr:hover { background: rgba(79, 70, 229, 0.02); }
+    .table-hover-premium td { border: none; padding: 10px 5px; }
+
+    /* Animations */
+    .animate-fade-in { animation: fadeIn 1s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .animate-row-in { animation: rowIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes rowIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    .badge-premium-logic {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+</style>
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const list = document.querySelector('#report-card-lines-list');
+    const container = list.querySelector('.report-card-lines-container');
+    const addButton = document.querySelector('.add-another-collection-widget');
+    const avgInput = document.querySelector('[name*="[average]"]');
+    
+    addButton.addEventListener('click', function() {
+        const counter = list.dataset.widgetCounter;
+        const prototype = list.dataset.prototype;
+        const newForm = prototype.replace(/__name__/g, counter);
+        list.dataset.widgetCounter = parseInt(counter) + 1;
+
+        const tr = document.createElement('tr');
+        tr.className = 'collection-item animate-row-in';
+        
+        const temp = document.createElement('div');
+        temp.innerHTML = newForm;
+        const fields = temp.querySelectorAll('.mb-3, .form-group'); 
+        
+        let html = '';
+        fields.forEach((field) => {
+            const input = field.querySelector('input, textarea, select');
+            if(input) {
+                input.classList.add('form-control-premium', 'form-control-sm');
+                if (input.name.includes('[coefficient]')) input.classList.add('text-center', 'coef-input');
+                if (input.name.includes('[note]')) input.classList.add('text-center', 'note-input');
+                html += `<td>${input.outerHTML}</td>`;
+            }
+        });
+        
+        html += `<td class="text-end pe-3"><button type="button" class="btn-remove-premium remove-item"><i class="fas fa-trash-alt"></i></button></td>`;
+        tr.innerHTML = html;
+        container.appendChild(tr);
+        
+        attachRemoveEvent(tr.querySelector('.remove-item'));
+        attachCalcEvents(tr);
+    });
+
+    function attachRemoveEvent(btn) {
+        btn.addEventListener('click', function() {
+            const row = btn.closest('.collection-item');
+            row.style.transform = 'translateX(50px)';
+            row.style.opacity = '0';
+            setTimeout(() => {
+                row.remove();
+                calculateAverage();
+            }, 300);
+        });
+    }
+
+    function attachCalcEvents(row) {
+        row.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateAverage);
+        });
+    }
+
+    function calculateAverage() {
+        const rows = container.querySelectorAll('.collection-item');
+        let totalWeighted = 0;
+        let totalCoef = 0;
+
+        rows.forEach(row => {
+            const noteInput = row.querySelector('.note-input');
+            const coefInput = row.querySelector('.coef-input');
+            if(noteInput && coefInput) {
+                const note = parseFloat(noteInput.value) || 0;
+                const coef = parseFloat(coefInput.value) || 0;
+                totalWeighted += note * coef;
+                totalCoef += coef;
+            }
+        });
+
+        const avg = totalCoef > 0 ? (totalWeighted / totalCoef).toFixed(2) : '0.00';
+        avgInput.value = avg;
+        
+        // Dynamic effect on average input update
+        avgInput.parentElement.style.transform = 'scale(1.1)';
+        setTimeout(() => avgInput.parentElement.style.transform = 'scale(1)', 200);
+    }
+
+    document.querySelectorAll('.remove-item').forEach(attachRemoveEvent);
+    document.querySelectorAll('.collection-item').forEach(attachCalcEvents);
+});
+</script>
+{% endblock %}
+{% endblock %}
+

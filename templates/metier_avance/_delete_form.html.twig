@@ -1,0 +1,6 @@
+<form method="post" action="{{ path('app_metier_avance_delete', {'id': metier_avance.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce métier avancé ?');" style="display: inline-block;">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ metier_avance.id) }}">
+    <button class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-trash"></i>
+    </button>
+</form>

@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Métier Avancé{% endblock %}
+
+{% block header_content %}
+    <div class="page-header">
+        <h1>Détails du métier avancé</h1>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="page-content">
+        <div class="card">
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Id</th>
+                            <td>{{ metier_avance.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Nom</th>
+                            <td>{{ metier_avance.nom }}</td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>{{ metier_avance.description }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a href="{{ path('app_metier_avance_index') }}" class="btn btn-outline-secondary">Retour à la liste</a>
+                <a href="{{ path('app_metier_avance_edit', {'id': metier_avance.id}) }}" class="btn btn-primary">Modifier</a>
+                {{ include('metier_avance/_delete_form.html.twig', {metier_avance: metier_avance}) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

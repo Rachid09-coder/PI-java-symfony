@@ -1,90 +1,398 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin_layout.html.twig' %}
 
-{% block title %}Gestion des bulletins{% endblock %}
-
-{% block header_content %}
-    <div class="page-header">
-        <h1>Gestion des bulletins</h1>
-        <p class="text-muted">Consultez et gérez les bulletins académiques des étudiants.</p>
-    </div>
-{% endblock %}
+{% block title %}Gestion des Bulletins - EduSmart{% endblock %}
 
 {% block body %}
-    <div class="page-content">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="card-title mb-0">Liste des bulletins</h2>
-                    <small class="text-muted">Bulletins générés à partir des évaluations</small>
-                </div>
-                <a href="{{ path('admin_bulletin_new') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i> Nouveau bulletin
+<div class="admin-page animate-fade-in py-4">
+    {# Orbes décoratives pour la touche futuriste #}
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container-fluid position-relative z-index-2">
+        <header class="mb-5 d-flex justify-content-between align-items-center flex-wrap gap-4">
+            <div>
+                <h1 class="h2 fw-900 text-dark mb-1">Système des Bulletins</h1>
+                <p class="text-muted small mb-0">Interface de pilotage des performances académiques et validation analytique.</p>
+            </div>
+            <div class="header-actions-premium" style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 20px !important; flex-wrap: nowrap !important;">
+                <a href="{{ path('admin_audit_log_index') }}" class="btn-premium-action shadow-sm" style="width: auto !important; margin: 0 !important;">
+                    <i class="fas fa-history text-primary"></i> <span>Audit Log</span>
+                </a>
+                <a href="{{ path('admin_signature_asset_index') }}" class="btn-premium-action shadow-sm" style="width: auto !important; margin: 0 !important;">
+                    <i class="fas fa-signature text-primary"></i> <span>Protocoles</span>
+                </a>
+                <a href="{{ path('admin_bulletin_new') }}" class="btn-premium-launch px-4 shadow-lg" style="width: auto !important; margin: 0 !important;">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    <span class="fw-800">Nouveau Bulletin</span>
                 </a>
             </div>
+        </header>
 
-            <div class="card-body">
-                {% if bulletins is empty %}
-                    <p class="text-muted mb-0">Aucun bulletin n’a encore été créé.</p>
-                {% else %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Étudiant</th>
-                                    <th>Année</th>
-                                    <th>Semestre</th>
-                                    <th>Moyenne</th>
-                                    <th>Statut</th>
-                                    <th>Créé le</th>
-                                    <th class="text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for bulletin in bulletins %}
-                                    <tr>
-                                        <td>#{{ bulletin.id }}</td>
-                                        <td>{{ bulletin.student ? bulletin.student.email : '—' }}</td>
-                                        <td>{{ bulletin.academicYear }}</td>
-                                        <td>{{ bulletin.semester }}</td>
-                                        <td>
-                                            {{ bulletin.average is not null
-                                                ? bulletin.average|number_format(2, ',', ' ')
-                                                : '—' }}
-                                        </td>
-                                        <td>
-                                            {% set s = bulletin.status %}
-                                            {% if s == 'DRAFT' %}
-                                                <span class="badge bg-secondary">Brouillon</span>
-                                            {% elseif s == 'VALIDATED' %}
-                                                <span class="badge bg-success">Validé</span>
-                                            {% else %}
-                                                <span class="badge bg-light text-dark">{{ s }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {{ bulletin.createdAt
-                                                ? bulletin.createdAt|date('d/m/Y H:i')
-                                                : '' }}
-                                        </td>
-                                        <td class="text-end">
-                                            <a href="{{ path('admin_bulletin_show', {id: bulletin.id}) }}"
-                                               class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ path('admin_bulletin_edit', {id: bulletin.id}) }}"
-                                               class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            {{ include('bulletin/_delete_form.html.twig', { bulletin: bulletin }) }}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+        <div class="card card-premium-glass shadow-lg border-0 overflow-hidden">
+            <div class="card-header bg-transparent py-4 px-4 border-bottom border-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="icon-pulse-blue me-3">
+                        <i class="fas fa-clipboard-list text-primary"></i>
                     </div>
-                {% endif %}
+                    <h5 class="m-0 fw-800 text-dark">Répertoire des Bulletins Académiques</h5>
+                </div>
+                <div class="badge-premium-logic">
+                    <i class="fas fa-layer-group me-2"></i> {{ bulletins|length }} unités traitées
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover-premium align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Profil Étudiant</th>
+                                <th class="text-center">Cycle / Période</th>
+                                <th class="text-center">Performance / Moy</th>
+                                <th class="text-center">Certification / Statut</th>
+                                <th class="text-center">Enregistré</th>
+                                <th class="pe-4 text-end">Contrôle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for bulletin in bulletins %}
+                            <tr class="animate-row-in">
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-premium-bulletin me-3 shadow-sm">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-800 text-dark">{{ bulletin.student.prenom }} {{ bulletin.student.name }}</div>
+                                            <div class="small text-muted font-monospace" style="font-size: 0.75rem;">{{ bulletin.student.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="fw-800 text-dark mb-0">{{ bulletin.academicYear }}</div>
+                                    <div class="badge-hologram-sm">{{ bulletin.semester }}</div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="avg-glow-box">
+                                        <span class="fs-5 fw-900 {{ bulletin.average >= 10 ? 'text-success-gradient' : 'text-danger-gradient' }}">
+                                            {{ bulletin.average|number_format(2) }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60px; gap: 12px !important;">
+                                        {% set status_class = 'badge-status-other' %}
+                                        {% if bulletin.status == 'Publié' or bulletin.status == 'PUBLISHED' %}{% set status_class = 'badge-status-active' %}
+                                        {% elseif bulletin.status == 'Validé' or bulletin.status == 'VALIDATED' %}{% set status_class = 'badge-status-validated' %}
+                                        {% elseif bulletin.status == 'Vérifié' or bulletin.status == 'VERIFIED' %}{% set status_class = 'badge-status-verified' %}{% endif %}
+                                        
+                                        <div class="status-badge-container">
+                                            <span class="{{ status_class }} px-3 py-1 shadow-sm fw-800" style="display: inline-block; min-width: 90px;">
+                                                {% if bulletin.revoked %}<i class="fas fa-ban me-1"></i>RÉVOQUÉ{% else %}{{ bulletin.status|upper }}{% endif %}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="mention-glow-text text-info-gradient fw-900 text-uppercase tracking-widest" style="font-size: 0.65rem; line-height: 1.2;">
+                                            {% if bulletin.mention == 'A du00e9finir' or bulletin.mention == 'A definir' %}
+                                                À DÉFINIR
+                                            {% else %}
+                                                {{ bulletin.mention|default('—') }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="date-capsule">
+                                        <i class="far fa-calendar-alt me-1 opacity-50"></i> {{ bulletin.createdAt|date('d/m/Y') }}
+                                    </div>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex justify-content-end gap-2 action-btns">
+                                        <a href="{{ path('admin_bulletin_show', {id: bulletin.id}) }}" class="btn-action-premium text-primary" title="Details">
+                                            <i class="fas fa-laptop-code"></i>
+                                        </a>
+                                        <a href="{{ path('admin_bulletin_edit', {id: bulletin.id}) }}" class="btn-action-premium text-warning {{ (bulletin.published and not bulletin.revoked) ? 'disabled' : '' }}" title="Modify">
+                                            <i class="fas fa-sliders-h"></i>
+                                        </a>
+                                        {% if bulletin.pdfPath %}
+                                        <a href="{{ path('admin_bulletin_pdf', {id: bulletin.id}) }}" class="btn-action-premium text-danger shadow-sm" target="_blank" title="Export PDF">
+                                            <i class="fas fa-file-export"></i>
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if not bulletin.published or bulletin.revoked %}
+                                            {{ include('bulletin/_delete_form.html.twig') }}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="empty-state-icon mb-3">
+                                        <i class="fas fa-folder-open fa-3x opacity-20"></i>
+                                    </div>
+                                    <p class="text-muted fw-700">Aucune archive académique détectée.</p>
+                                    <a href="{{ path('admin_bulletin_new') }}" class="btn-premium-launch mt-2 px-4 shadow">
+                                        Initialiser nouveau cycle
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+</div>
+
+<style>
+    /* --- Futuristic Design System --- */
+    .fw-900 { font-weight: 900; }
+    .fw-800 { font-weight: 800; }
+    .fw-700 { font-weight: 700; }
+    .z-index-2 { z-index: 2; }
+    
+    /* Background Orbs */
+    .orb {
+        position: fixed;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        filter: blur(130px);
+        opacity: 0.08;
+        z-index: 0;
+        pointer-events: none;
+        animation: floatOrb 35s infinite alternate ease-in-out;
+    }
+    .orb-1 { top: -100px; left: -100px; background: #4f46e5; }
+    .orb-2 { bottom: -100px; right: -100px; background: #6366f1; }
+    @keyframes floatOrb {
+        from { transform: translate(0, 0) scale(1) rotate(0deg); }
+        to { transform: translate(120px, 80px) scale(1.15) rotate(15deg); }
+    }
+
+    /* Glassmorphism Card */
+    .card-premium-glass {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(226, 232, 240, 0.5) !important;
+        border-radius: 30px;
+    }
+
+    /* Table Styles */
+    .table-hover-premium thead th {
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #94a3b8;
+        padding: 22px 18px;
+        border-bottom: 2px solid #f1f5f9;
+        background: rgba(248, 250, 252, 0.4);
+    }
+    .table-hover-premium tbody td {
+        padding: 22px 18px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+    }
+    .table-hover-premium tbody tr:hover {
+        background: rgba(79, 70, 229, 0.03);
+        transform: translateY(-2px);
+    }
+
+    /* Buttons */
+    .btn-premium-launch {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        color: white !important;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 50px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .btn-premium-launch:hover {
+        transform: translateY(-5px) scale(1.03);
+        box-shadow: 0 15px 35px rgba(79, 70, 229, 0.25);
+    }
+
+    .btn-premium-action {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        border: 1px solid #e2e8f0;
+        padding: 12px 24px;
+        border-radius: 50px;
+        color: #64748b;
+        font-weight: 800;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-premium-action:hover {
+        background: #ffffff;
+        color: #4f46e5;
+        border-color: #4f46e5;
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.1);
+        transform: translateY(-3px);
+    }
+
+    .header-actions-premium {
+        background: rgba(255, 255, 255, 0.4);
+        padding: 8px;
+        border-radius: 60px;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(226, 232, 240, 0.3);
+    }
+
+    .btn-action-premium {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        color: inherit;
+        text-decoration: none;
+    }
+    .btn-action-premium:hover {
+        transform: scale(1.2) rotate(-5deg);
+        background: #fff;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    /* Holograms & Badges */
+    .badge-hologram-sm {
+        background: #eef2ff;
+        color: #4f46e5;
+        font-weight: 800;
+        font-size: 0.65rem;
+        padding: 4px 10px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .badge-status-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        font-weight: 800;
+        font-size: 0.7rem;
+        padding: 6px 14px;
+        border-radius: 50px;
+    }
+    .badge-status-validated {
+        background: rgba(79, 70, 229, 0.1);
+        color: #4f46e5;
+        font-weight: 800;
+        font-size: 0.7rem;
+        padding: 6px 14px;
+        border-radius: 50px;
+    }
+    .badge-status-verified {
+        background: rgba(14, 165, 233, 0.1);
+        color: #0ea5e9;
+        font-weight: 800;
+        font-size: 0.7rem;
+        padding: 6px 14px;
+        border-radius: 50px;
+    }
+    .badge-status-other {
+        background: #f1f5f9;
+        color: #64748b;
+        font-weight: 800;
+        font-size: 0.7rem;
+        padding: 6px 14px;
+        border-radius: 50px;
+    }
+
+    /* UI Data Viz */
+    .avg-glow-box {
+        background: #ffffff;
+        padding: 8px 15px;
+        border-radius: 12px;
+        border: 1px solid #f1f5f9;
+        display: inline-block;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+    }
+    .text-success-gradient {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .text-danger-gradient {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .text-info-gradient {
+        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .avatar-premium-bulletin {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        color: #4f46e5;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .icon-pulse-blue {
+        width: 46px;
+        height: 46px;
+        background: rgba(79, 70, 229, 0.08);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulseBlue 4s infinite;
+    }
+    @keyframes pulseBlue {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.15); }
+        50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+        100% { transform: scale(1); }
+    }
+
+    .badge-premium-logic {
+        background: #f8fafc;
+        color: #64748b;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .date-capsule {
+        background: #f8fafc;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #64748b;
+        display: inline-block;
+        border: 1px solid #f1f5f9;
+    }
+
+    /* Animations */
+    .animate-fade-in { animation: fadeIn 0.8s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+    .animate-row-in { animation: rowIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes rowIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
+
+    {% for i in 1..20 %}
+    .animate-row-in:nth-child({{ i }}) { animation-delay: {{ 0.04 * i }}s; }
+    {% endfor %}
+</style>
 {% endblock %}

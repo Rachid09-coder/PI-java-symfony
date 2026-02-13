@@ -3,59 +3,68 @@
 {% block title %}{{ isEdit ? 'Modifier l\'Examen' : 'Créer un Nouvel Examen' }} - EduSmart{% endblock %}
 
 {% block body %}
-<div style="max-width: 800px; margin: 0 auto;">
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
-        <a href="{{ path('admin_exams_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
-        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ isEdit ? 'Modifier l\'Examen' : 'Créer un Nouvel Examen' }}</h2>
-    </div>
+<div class="mb-4">
+    <a href="{{ path('admin_exams_manage') }}" class="btn btn-link p-0 text-decoration-none">
+        <i class="fas fa-arrow-left me-1"></i> Retour à la gestion
+    </a>
+    <h1 class="h3 mt-2">{{ isEdit ? 'Modifier l\'Examen' : 'Créer un Nouvel Examen' }}</h1>
+</div>
 
-    <div class="card" style="padding: 40px;">
-        {{ form_start(form) }}
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div>
-                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Titre de l'examen</label>
-                    {{ form_widget(form.title, {'attr': {'placeholder': 'Ex: Contrôle Final Algèbre', 'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
-                    {{ form_errors(form.title) }}
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Durée (minutes)</label>
-                        {{ form_widget(form.duration, {'attr': {'placeholder': '60', 'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
-                        {{ form_errors(form.duration) }}
-                    </div>
-                    <div>
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Type</label>
-                         {{ form_widget(form.type, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
-                         {{ form_errors(form.type) }}
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                     <div>
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Lien Externe (Optionnel)</label>
-                        {{ form_widget(form.externalLink, {'attr': {'placeholder': 'https://...', 'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;'}}) }}
-                        {{ form_errors(form.externalLink) }}
-                    </div>
-                    <div>
-                         <label style="display: block; font-weight: 700; margin-bottom: 8px;">Fichier Exam (PDF)</label>
-                        {{ form_widget(form.filePath, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; background: white;'}}) }}
-                        {{ form_errors(form.filePath) }}
-                    </div>
-                </div>
-
-                <div>
-                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Description / Consignes</label>
-                    {{ form_widget(form.description, {'attr': {'rows': '3', 'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;', 'placeholder': 'Calculatrice autorisée, etc.'}}) }}
-                    {{ form_errors(form.description) }}
-                </div>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow border-0 overflow-hidden">
+            <div class="card-header bg-primary py-3">
+                <h6 class="m-0 font-weight-bold text-white">Informations de l'Évaluation</h6>
             </div>
+            <div class="card-body p-4">
+                {{ form_start(form) }}
+                    <div class="mb-3">
+                        {{ form_label(form.title, 'Titre de l\'examen') }}
+                        {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Contrôle Final Algèbre'}}) }}
+                        {{ form_errors(form.title) }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.duration, 'Durée (minutes)') }}
+                            {{ form_widget(form.duration, {'attr': {'class': 'form-control', 'placeholder': '60'}}) }}
+                            {{ form_errors(form.duration) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.type) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.type) }}
+                        </div>
+                    </div>
 
-            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px;">
-                <a href="{{ path('admin_exams_manage') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
-                <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">Enregistrer</button>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.externalLink, 'Lien Externe (Optionnel)') }}
+                            {{ form_widget(form.externalLink, {'attr': {'class': 'form-control', 'placeholder': 'https://...'}}) }}
+                            {{ form_errors(form.externalLink) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_label(form.filePath, 'Fichier Exam (PDF)') }}
+                            {{ form_widget(form.filePath, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.filePath) }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.description, 'Description / Consignes') }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Calculatrice autorisée, etc.'}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow">
+                            <i class="fas fa-save fs-5"></i>
+                            <span class="fw-bold">Enregistrer l'Examen</span>
+                        </button>
+                    </div>
+                {{ form_end(form) }}
             </div>
-        {{ form_end(form) }}
+        </div>
     </div>
 </div>
 {% endblock %}

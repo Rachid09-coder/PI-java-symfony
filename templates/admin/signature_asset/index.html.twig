@@ -1,0 +1,167 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Signatures & Cachets - EduSmart{% endblock %}
+
+{% block body %}
+<div class="admin-page py-5">
+
+    <div class="container-fluid px-5">
+
+        <!-- HEADER -->
+        <div class="row mb-5">
+            <div class="col">
+
+                <div class="mb-3">
+                    <h1 class="h2 fw-bold mb-2">
+                        Authentification Officielle
+                    </h1>
+
+                    <p class="text-muted mb-3">
+                        Gestion des signatures et cachets numériques
+                    </p>
+                </div>
+
+                <!-- ✅ Bouton principal -->
+                <a href="{{ path('admin_signature_asset_new') }}"
+                   class="btn-premium-launch">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Ajouter un actif
+                </a>
+
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="row g-4">
+
+            {% for asset in assets %}
+
+            <div class="col-md-4 col-xl-3">
+
+                <div class="card shadow-sm h-100 border-0 rounded-4">
+
+                    <div class="card-body text-center d-flex flex-column gap-3">
+
+                        <div class="asset-preview">
+                            <img src="{{ asset(asset.imagePath) }}"
+                                 class="img-fluid"
+                                 style="max-height:120px">
+                        </div>
+
+                        <h6 class="fw-bold mb-0">
+                            {{ asset.label }}
+                        </h6>
+
+                        <small class="text-muted">
+                            {{ asset.createdAt|date('d/m/Y') }}
+                        </small>
+
+                        <form action="{{ path('admin_signature_asset_delete', {id: asset.id}) }}"
+                              method="POST"
+                              class="mt-auto">
+
+                            <input type="hidden"
+                                   name="_token"
+                                   value="{{ csrf_token('delete_asset_' ~ asset.id) }}">
+
+                            <button class="btn-action-danger-soft w-100">
+                                Supprimer
+                            </button>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <!-- EMPTY STATE -->
+            <div class="col-12">
+
+                <div class="empty-state text-center">
+
+                    <i class="fas fa-fingerprint fa-4x mb-4 opacity-50"></i>
+
+                    <h4 class="fw-bold mb-2">
+                        Aucun actif disponible
+                    </h4>
+
+                    <p class="text-muted mb-4">
+                        Initialisez le dépôt avant d’ajouter des signatures
+                    </p>
+
+                    <!-- ✅ UN SEUL bouton ici -->
+                    <a href="{{ path('admin_signature_asset_init') }}"
+                       class="btn-premium-launch">
+                        Initialiser le dépôt
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+
+/* EMPTY STATE */
+.empty-state {
+    padding: 90px 30px;
+    background: #fafafa;
+    border-radius: 18px;
+    margin-top: 40px;
+}
+
+/* ASSET PREVIEW */
+.asset-preview {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* PREMIUM BUTTON */
+.btn-premium-launch {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-premium-launch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+    color: white;
+}
+
+/* DELETE BUTTON */
+.btn-action-danger-soft {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    padding: 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-action-danger-soft:hover {
+    background: #dc2626;
+    color: white;
+}
+
+</style>
+
+{% endblock %}

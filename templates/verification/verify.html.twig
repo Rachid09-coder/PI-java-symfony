@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification de document - EduSmart{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0">Vérification d'Authenticité</h3>
+                </div>
+                <div class="card-body p-5">
+                    {% if found %}
+                        <div class="text-center mb-4">
+                            {% if status == 'Valide' and hmacValid %}
+                                <div class="display-1 text-success mb-3">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h2 class="text-success fw-bold">DOCUMENT VALIDE</h2>
+                            {% elseif not hmacValid %}
+                                <div class="display-1 text-danger mb-3">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h2 class="text-danger fw-bold">INTÉGRITÉ COMPROMISE</h2>
+                                <p class="text-muted">Ce document a été modifié après sa signature officielle.</p>
+                            {% else %}
+                                <div class="display-1 text-warning mb-3">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <h2 class="text-warning fw-bold">DOCUMENT RÉVOQUÉ</h2>
+                                <p class="alert alert-warning">Motif : {{ revocationReason }}</p>
+                            {% endif %}
+                        </div>
+
+                        <hr>
+
+                        <div class="row g-4 mt-2">
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Type de document</label>
+                                <p class="fs-5">{{ type }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Étudiant</label>
+                                <p class="fs-5">{{ studentName }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Période</label>
+                                <p class="fs-5">{{ academicYear }} - {{ semester }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Date d'émission</label>
+                                <p class="fs-5">{{ (publishedAt ?? issuedAt)|date('d/m/Y H:i') }}</p>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="text-muted small text-uppercase fw-bold">Code de vérification</label>
+                                <p class="font-monospace bg-light p-2 rounded border text-center">{{ code }}</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="display-1 text-muted mb-3">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h2 class="text-muted">CODE INTROUVABLE</h2>
+                            <p class="text-muted">Le code <strong>{{ code }}</strong> ne correspond à aucun document authentifié dans notre système.</p>
+                            <a href="/" class="btn btn-outline-primary mt-3">Retour à l'accueil</a>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light text-center py-3 text-muted small">
+                    © {{ "now"|date("Y") }} EduSmart Platform - Système de Certification Sécurisé
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

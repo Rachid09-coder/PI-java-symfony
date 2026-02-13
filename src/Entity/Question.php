@@ -22,7 +22,7 @@ class Question
     #[ORM\Column]
     private ?float $points = null;
 
-    #[ORM\ManyToOne(inversedBy: 'questions')]
+    #[ORM\ManyToOne(targetEntity: Exam::class, inversedBy: 'questions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Exam $exam = null;
 

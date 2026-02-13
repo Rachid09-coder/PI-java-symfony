@@ -56,13 +56,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        $roles = [];
-        if ($this->role === 'professeur') {
-            $roles[] = 'ROLE_PROFESSEUR';
-        } else {
-            $roles[] = 'ROLE_ETUDIANT';
-        }
-        $roles[] = 'ROLE_USER'; 
+        $roles = ['ROLE_USER'];
+        match ($this->role) {
+            'admin' => $roles[] = 'ROLE_ADMIN',
+            'chef_dept' => $roles[] = 'ROLE_CHEF_DEPT',
+            'professeur' => $roles[] = 'ROLE_PROFESSEUR',
+            default => $roles[] = 'ROLE_ETUDIANT',
+        };
         return array_unique($roles);
     }
 

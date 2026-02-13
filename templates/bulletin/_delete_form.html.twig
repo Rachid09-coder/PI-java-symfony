@@ -1,9 +1,9 @@
-<form method="post"
-      action="{{ path('app_bulletin_delete', {id: bulletin.id}) }}"
-      style="display:inline"
-      onsubmit="return confirm('Supprimer ce bulletin ?');">
+<form method="post" 
+      action="{{ path('admin_bulletin_delete', { id: bulletin.id }) }}" 
+      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce bulletin ?');" 
+      style="display: inline;">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ bulletin.id) }}">
-    <button class="btn btn-sm btn-outline-danger">
-        <i class="fas fa-trash"></i>
+    <button type="submit" class="btn-action-premium text-danger shadow-sm border-0" title="Supprimer">
+        <i class="fas fa-trash-alt"></i>
     </button>
 </form>

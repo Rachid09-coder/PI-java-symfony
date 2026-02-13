@@ -26,14 +26,14 @@ class ExamSubmission
     #[ORM\Column]
     private ?\DateTimeImmutable $submittedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'submissions')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $student = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $candidateIdentifier = null;
 
-    #[ORM\ManyToOne(inversedBy: 'submissions')]
+    #[ORM\ManyToOne(targetEntity: Exam::class, inversedBy: 'submissions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Exam $exam = null;
 

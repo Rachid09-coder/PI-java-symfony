@@ -1,0 +1,20 @@
+{{ form_start(form) }}
+    <div class="mb-3">
+        {{ form_label(form.nom, 'Nom du Métier') }}
+        {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Analyste Financier'}}) }}
+        {{ form_errors(form.nom) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Description détaillée...'}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+
+    <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow">
+            <i class="fas fa-save fs-5"></i>
+            <span class="fw-bold">{{ button_label|default('Enregistrer le Métier') }}</span>
+        </button>
+    </div>
+{{ form_end(form) }}
