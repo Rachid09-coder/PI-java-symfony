@@ -2,91 +2,42 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Bulletin;
 use App\Entity\Certification;
-use App\Form\BulletinType;
 use App\Form\CertificationType;
-use App\Repository\BulletinRepository;
 use App\Repository\CertificationRepository;
+use App\Service\AuditService;
+use App\Service\HmacService;
+use App\Service\PdfGeneratorService;
+use App\Service\VerificationCodeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/admin/certification')]
 class CertificationController extends AbstractController
 {
+    public function __construct(
+        private AuditService $auditService,
+        private HmacService $hmacService,
+        private PdfGeneratorService $pdfService,
+        private VerificationCodeService $verificationCodeService,
+    ) {
+    }
+
     #[Route('/', name: 'admin_certification_index')]
-    public function index(
-        CertificationRepository $certificationRepo,
-        BulletinRepository $bulletinRepo
-    ): Response {
+    public function index(CertificationRepository $certificationRepo): Response 
+    {
         return $this->render('admin/certification/index.html.twig', [
             'certifications' => $certificationRepo->findBy([], ['issuedAt' => 'DESC']),
-            'bulletins' => $bulletinRepo->findBy([], ['createdAt' => 'DESC']),
         ]);
     }
 
-    // ========== BULLETIN CRUD ==========
-    
-    #[Route('/bulletin/new', name: 'admin_bulletin_new')]
-    public function bulletinNew(Request $request, EntityManagerInterface $em): Response
-    {
-        $bulletin = new Bulletin();
-        $form = $this->createForm(BulletinType::class, $bulletin);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($bulletin);
-            $em->flush();
-
-            $this->addFlash('success', 'Bulletin créé avec succès.');
-            return $this->redirectToRoute('admin_certification_index');
-        }
-
-        return $this->render('admin/certification/bulletin_form.html.twig', [
-            'form' => $form,
-            'bulletin' => $bulletin,
-        ]);
-    }
-
-    #[Route('/bulletin/{id}/edit', name: 'admin_bulletin_edit')]
-    public function bulletinEdit(Bulletin $bulletin, Request $request, EntityManagerInterface $em): Response
-    {
-        $form = $this->createForm(BulletinType::class, $bulletin);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $bulletin->setUpdatedAt(new \DateTimeImmutable());
-            $em->flush();
-
-            $this->addFlash('success', 'Bulletin modifié avec succès.');
-            return $this->redirectToRoute('admin_certification_index');
-        }
-
-        return $this->render('admin/certification/bulletin_form.html.twig', [
-            'form' => $form,
-            'bulletin' => $bulletin,
-        ]);
-    }
-
-    #[Route('/bulletin/{id}/delete', name: 'admin_bulletin_delete', methods: ['POST'])]
-    public function bulletinDelete(Bulletin $bulletin, Request $request, EntityManagerInterface $em): Response
-    {
-        if ($this->isCsrfTokenValid('delete_bulletin_' . $bulletin->getId(), $request->request->get('_token'))) {
-            $em->remove($bulletin);
-            $em->flush();
-            $this->addFlash('success', 'Bulletin supprimé.');
-        }
-
-        return $this->redirectToRoute('admin_certification_index');
-    }
-
-    // ========== CERTIFICATION CRUD ==========
-    
     #[Route('/new', name: 'admin_certification_new')]
     public function certificationNew(
         Request $request,
@@ -98,10 +49,20 @@ class CertificationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Generate verification code if not provided
+            // Génération automatique du code de vérification
             if (!$certification->getVerificationCode()) {
-                $certification->setVerificationCode(strtoupper(bin2hex(random_bytes(6))));
+                $certification->setVerificationCode($this->verificationCodeService->generateVerificationCode());
             }
+
+            // Génération du numéro unique
+            if (!$certification->getUniqueNumber()) {
+                $certification->setUniqueNumber(
+                    $this->verificationCodeService->generateForCertification($certification->getType())
+                );
+            }
+
+            // Signature HMAC
+            $certification->setHmacHash($this->hmacService->signCertification($certification));
 
             // Handle PDF upload
             $pdfFile = $form->get('pdfFile')->getData();
@@ -124,7 +85,12 @@ class CertificationController extends AbstractController
             $em->persist($certification);
             $em->flush();
 
-            $this->addFlash('success', 'Certification créée avec succès.');
+            $this->auditService->log('Certification', $certification->getId(), 'CREATED', $this->getUser(), [
+                'type' => $certification->getType(),
+                'unique_number' => $certification->getUniqueNumber(),
+            ]);
+
+            $this->addFlash('success', 'Certification créée avec succès. N° : ' . $certification->getUniqueNumber());
             return $this->redirectToRoute('admin_certification_index');
         }
 
@@ -141,6 +107,11 @@ class CertificationController extends AbstractController
         EntityManagerInterface $em,
         SluggerInterface $slugger
     ): Response {
+        if ($certification->isRevoked()) {
+            $this->addFlash('error', 'Cette certification est révoquée et ne peut plus être modifiée.');
+            return $this->redirectToRoute('admin_certification_index');
+        }
+
         $form = $this->createForm(CertificationType::class, $certification);
         $form->handleRequest($request);
 
@@ -163,7 +134,12 @@ class CertificationController extends AbstractController
                 }
             }
 
+            // Re-signer le HMAC
+            $certification->setHmacHash($this->hmacService->signCertification($certification));
+
             $em->flush();
+
+            $this->auditService->log('Certification', $certification->getId(), 'UPDATED', $this->getUser());
 
             $this->addFlash('success', 'Certification modifiée avec succès.');
             return $this->redirectToRoute('admin_certification_index');
@@ -175,10 +151,67 @@ class CertificationController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/generate-pdf', name: 'admin_certification_generate_pdf', methods: ['POST'])]
+    public function generatePdf(Certification $certification, Request $request, EntityManagerInterface $em): Response
+    {
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $pdfPath = $this->pdfService->generateCertificationPdf($certification, $baseUrl);
+        $certification->setPdfPath($pdfPath);
+        $em->flush();
+
+        $this->auditService->log('Certification', $certification->getId(), 'PDF_GENERATED', $this->getUser());
+        $this->addFlash('success', 'PDF de la certification généré avec succès.');
+
+        return $this->redirectToRoute('admin_certification_index');
+    }
+
+    #[Route('/{id}/pdf', name: 'admin_certification_pdf', methods: ['GET'])]
+    public function downloadPdf(Certification $certification): Response
+    {
+        if (!$certification->getPdfPath()) {
+            $this->addFlash('error', 'Aucun PDF disponible.');
+            return $this->redirectToRoute('admin_certification_index');
+        }
+
+        $filePath = $this->getParameter('kernel.project_dir') . '/public/' . $certification->getPdfPath();
+
+        if (!file_exists($filePath)) {
+            $this->addFlash('error', 'Le fichier PDF est introuvable.');
+            return $this->redirectToRoute('admin_certification_index');
+        }
+
+        $response = new BinaryFileResponse($filePath);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_INLINE,
+            'certification_' . $certification->getId() . '.pdf'
+        );
+
+        return $response;
+    }
+
+    #[Route('/{id}/revoke', name: 'admin_certification_revoke', methods: ['POST'])]
+    public function revoke(Request $request, Certification $certification, EntityManagerInterface $em): Response
+    {
+        $reason = $request->request->get('reason', 'Aucune raison spécifiée');
+
+        $certification->setStatus('REVOKED');
+        $certification->setRevokedAt(new \DateTimeImmutable());
+        $certification->setRevocationReason($reason);
+        $em->flush();
+
+        $this->auditService->log('Certification', $certification->getId(), 'REVOKED', $this->getUser(), [
+            'reason' => $reason,
+        ]);
+
+        $this->addFlash('success', 'Certification révoquée.');
+        return $this->redirectToRoute('admin_certification_index');
+    }
+
     #[Route('/{id}/delete', name: 'admin_certification_delete', methods: ['POST'])]
     public function certificationDelete(Certification $certification, Request $request, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete_cert_' . $certification->getId(), $request->request->get('_token'))) {
+            $this->auditService->log('Certification', $certification->getId(), 'DELETED', $this->getUser());
             $em->remove($certification);
             $em->flush();
             $this->addFlash('success', 'Certification supprimée.');

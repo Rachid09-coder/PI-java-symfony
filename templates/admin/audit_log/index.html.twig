@@ -1,0 +1,79 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}EduSmart - Audit Log{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Journal d'Audit & Traçabilité</h1>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Filtrer par Type
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ path('admin_audit_log_index') }}">Tous</a></li>
+            <li><a class="dropdown-item" href="{{ path('admin_audit_log_index', {entity_type: 'Bulletin'}) }}">Bulletins</a></li>
+            <li><a class="dropdown-item" href="{{ path('admin_audit_log_index', {entity_type: 'Certification'}) }}">Certifications</a></li>
+            <li><a class="dropdown-item" href="{{ path('admin_audit_log_index', {entity_type: 'User'}) }}">Utilisateurs</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="card shadow border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date & Heure</th>
+                        <th>Utilisateur</th>
+                        <th>Action</th>
+                        <th>Entité</th>
+                        <th>ID</th>
+                        <th>Détails</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for log in logs %}
+                    <tr>
+                        <td class="text-nowrap">{{ log.performedAt|date('d/m/Y H:i:s') }}</td>
+                        <td>
+                            {% if log.performedBy %}
+                                <div class="fw-bold">{{ log.performedBy.name }}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">{{ log.performedBy.email }}</div>
+                            {% else %}
+                                <span class="text-muted">Système</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set badge_class = 'bg-secondary' %}
+                            {% if log.action == 'CREATED' or log.action == 'PUBLISHED' %}{% set badge_class = 'bg-success' %}
+                            {% elseif log.action == 'DELETED' or log.action == 'REVOKED' %}{% set badge_class = 'bg-danger' %}
+                            {% elseif log.action == 'VALIDATED' %}{% set badge_class = 'bg-primary' %}{% endif %}
+                            <span class="badge {{ badge_class }}">{{ log.action }}</span>
+                        </td>
+                        <td>{{ log.entityType }}</td>
+                        <td><code>#{{ log.entityId }}</code></td>
+                        <td>
+                            {% if log.details %}
+                                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ log.id }}">
+                                    Voir JSON
+                                </button>
+                                <div class="collapse mt-1" id="details-{{ log.id }}">
+                                    <pre class="bg-light p-2 rounded" style="font-size: 0.7rem;">{{ log.details|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                </div>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">Aucune activité enregistrée.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

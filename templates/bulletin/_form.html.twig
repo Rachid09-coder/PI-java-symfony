@@ -1,42 +1,250 @@
-<div class="card">
-    <div class="card-body">
-        {{ form_start(form) }}
-
-        <div class="row g-3">
-            <div class="col-md-6">
-                {{ form_row(form.student) }}
+<div class="admin-card animate-slide-up shadow-lg border-0 position-relative overflow-hidden" style="border-radius: 24px;">
+    {# Éléments décoratifs pour le côté "Alive" #}
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    
+    <div class="admin-card-body position-relative z-index-1 p-4 p-md-5">
+        <div class="d-flex align-items-center mb-4 pb-2">
+            <div class="icon-pulse me-3">
+                <i class="fas fa-file-invoice fa-2x text-primary-gradient"></i>
             </div>
-            <div class="col-md-3">
-                {{ form_row(form.academicYear) }}
-            </div>
-            <div class="col-md-3">
-                {{ form_row(form.semester) }}
-            </div>
-
-            <div class="col-md-3">
-                {{ form_row(form.average) }}
-            </div>
-            <div class="col-md-3">
-                {{ form_row(form.status) }}
-            </div>
-
-            <div class="col-md-3">
-                {{ form_row(form.createdAt) }}
-            </div>
-            <div class="col-md-3">
-                {{ form_row(form.updatedAt) }}
+            <div>
+                <h4 class="fw-800 text-dark mb-0">Configuration du Dossier</h4>
+                <p class="text-muted small mb-0">Paramétrage des données académiques pour l'étudiant.</p>
             </div>
         </div>
 
-        <div class="mt-4 d-flex justify-content-between">
-            <a href="{{ path('admin_bulletin_index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+        {{ form_start(form, { attr: { class: 'admin-form' } }) }}
+
+        {% if not form.vars.valid %}
+            <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4 animate-shake">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle fs-4 me-3"></i>
+                    <div>
+                        <strong class="d-block">Oups ! Quelques erreurs à corriger</strong>
+                        <span class="small opacity-75">Vérifiez les champs marqués en rouge ci-dessous.</span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="admin-form-grid">
+            <div class="form-group-dynamic mb-4">
+                {{ form_label(form.student, null, {'label_attr': {'class': 'form-label-premium'}}) }}
+                <div class="input-wrapper-premium">
+                    <i class="fas fa-user-graduate input-icon-premium"></i>
+                    {{ form_widget(form.student, {'attr': {'class': 'form-select-premium select-lg-premium'}}) }}
+                </div>
+                {{ form_errors(form.student) }}
+            </div>
+
+            <div class="form-group-dynamic mb-4">
+                {{ form_label(form.academicYear, null, {'label_attr': {'class': 'form-label-premium'}}) }}
+                <div class="input-wrapper-premium">
+                    <i class="fas fa-calendar-alt input-icon-premium"></i>
+                    {{ form_widget(form.academicYear, {'attr': {'class': 'form-control-premium input-lg-premium', 'placeholder': 'Ex: 2023/2024'}}) }}
+                </div>
+                {{ form_errors(form.academicYear) }}
+            </div>
+
+            <div class="form-group-dynamic mb-4">
+                {{ form_label(form.semester, null, {'label_attr': {'class': 'form-label-premium'}}) }}
+                <div class="input-wrapper-premium">
+                    <i class="fas fa-layer-group input-icon-premium"></i>
+                    {{ form_widget(form.semester, {'attr': {'class': 'form-control-premium input-lg-premium', 'placeholder': 'Ex: S1'}}) }}
+                </div>
+                {{ form_errors(form.semester) }}
+            </div>
+
+            <div class="form-group-dynamic mb-4">
+                {{ form_label(form.average, null, {'label_attr': {'class': 'form-label-premium'}}) }}
+                <div class="input-wrapper-premium">
+                    <i class="fas fa-star input-icon-premium"></i>
+                    {{ form_widget(form.average, {'attr': {'class': 'form-control-premium input-lg-premium', 'placeholder': '0.00'}}) }}
+                </div>
+                {{ form_errors(form.average) }}
+            </div>
+
+            <div class="form-group-dynamic col-span-2 mb-4">
+                {{ form_label(form.status, null, {'label_attr': {'class': 'form-label-premium'}}) }}
+                <div class="input-wrapper-premium">
+                    <i class="fas fa-info-circle input-icon-premium"></i>
+                    {{ form_widget(form.status, {'attr': {'class': 'form-select-premium select-lg-premium'}}) }}
+                </div>
+                {{ form_errors(form.status) }}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
+            <a href="{{ path('admin_bulletin_index') }}" class="btn-premium-cancel">
+                <i class="fas fa-chevron-left me-2"></i> Annuler l'édition
             </a>
-            <button class="btn btn-primary">
-                {{ button_label|default('Enregistrer') }}
+            <button class="btn-premium-submit">
+                <span>{{ button_label|default('Valider & Créer') }}</span>
+                <i class="fas fa-paper-plane ms-2"></i>
             </button>
         </div>
 
         {{ form_end(form) }}
     </div>
 </div>
+
+<style>
+    /* --- Design System EduSmart Premium --- */
+    .fw-800 { font-weight: 800; }
+    .col-span-2 { grid-column: span 2; }
+    .z-index-1 { z-index: 1; }
+    
+    .text-primary-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Orbes décoratives pour l'effet "Alive" */
+    .orb {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.15;
+        z-index: 0;
+        pointer-events: none;
+        animation: rotateOrb 20s linear infinite;
+    }
+    .orb-1 { top: -150px; right: -50px; background: #4f46e5; }
+    .orb-2 { bottom: -150px; left: -50px; background: #6366f1; }
+    
+    @keyframes rotateOrb {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Animation d'entrée */
+    .animate-slide-up {
+        animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .icon-pulse {
+        width: 64px;
+        height: 64px;
+        background: rgba(79, 70, 229, 0.08);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: softPulse 2s infinite;
+    }
+    @keyframes softPulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.2); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(79, 70, 229, 0); }
+        100% { transform: scale(1); }
+    }
+
+    /* Champs Premium */
+    .form-label-premium {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        transition: color 0.3s ease;
+    }
+
+    .input-wrapper-premium {
+        position: relative;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .input-wrapper-premium:focus-within {
+        transform: scale(1.02);
+    }
+
+    .input-icon-premium {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        transition: color 0.3s ease;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .form-control-premium, .form-select-premium {
+        width: 100%;
+        padding: 14px 16px 14px 50px;
+        border-radius: 16px;
+        border: 2px solid #f1f5f9;
+        background: #f8fafc;
+        font-size: 0.95rem;
+        color: #1e293b;
+        transition: all 0.3s ease;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .form-control-premium:focus, .form-select-premium:focus {
+        background: #ffffff;
+        border-color: #6366f1;
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.12);
+        outline: none;
+    }
+
+    .form-group-dynamic:focus-within .form-label-premium {
+        color: #4f46e5;
+    }
+
+    .form-group-dynamic:focus-within .input-icon-premium {
+        color: #6366f1;
+    }
+
+    /* Boutons Submit / Cancel */
+    .btn-premium-submit {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        color: white;
+        border: none;
+        padding: 14px 40px;
+        border-radius: 20px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .btn-premium-submit:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-premium-cancel {
+        color: #64748b;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 14px 20px;
+        border-radius: 18px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-premium-cancel:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+        transform: translateX(-5px);
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .admin-form-grid { grid-template-columns: 1fr; }
+        .col-span-2 { grid-column: auto; }
+        .btn-premium-submit { width: 100%; justify-content: center; }
+        .admin-form-actions { flex-direction: column-reverse; gap: 15px; }
+    }
+</style>

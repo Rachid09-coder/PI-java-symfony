@@ -1,0 +1,79 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Gestion des Métiers Avancés - EduSmart{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-1">Métiers Avancés</h1>
+        <p class="text-muted small mb-0">Spécialisations techniques et expertises avancées.</p>
+    </div>
+    <a href="{{ path('app_metier_avance_new') }}" class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow">
+        <i class="fas fa-plus-circle fs-5"></i>
+        <span class="fw-bold">Nouvelle Spécialisation</span>
+    </a>
+</div>
+
+<div class="card shadow border-0 overflow-hidden">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-project-diagram me-2"></i>Liste des Métiers Avancés</h6>
+        <span class="badge bg-primary-soft text-primary px-3">{{ metier_avances|length }} spécialités</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-uppercase small fw-bold text-muted">Filière</th>
+                        <th class="py-3 text-uppercase small fw-bold text-muted">Nom de la Spécialité</th>
+                        <th class="py-3 text-uppercase small fw-bold text-muted">Description</th>
+                        <th class="pe-4 py-3 text-uppercase small fw-bold text-muted text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for metier_avance in metier_avances %}
+                        <tr>
+                            <td class="ps-4">
+                                <span class="badge bg-light text-primary border px-2 py-1">
+                                    <i class="fas fa-tag me-1 small"></i>{{ metier_avance.metier.nom|default('N/A') }}
+                                </span>
+                            </td>
+                            <td class="fw-bold text-dark">{{ metier_avance.nom }}</td>
+                            <td class="text-muted small">
+                                {{ metier_avance.description|length > 80 ? metier_avance.description|slice(0, 80) ~ '...' : metier_avance.description }}
+                            </td>
+                            <td class="pe-4 text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ path('app_metier_avance_show', {id: metier_avance.id}) }}" class="btn btn-sm btn-light-soft text-primary shadow-sm" title="Voir les détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_metier_avance_edit', {id: metier_avance.id}) }}" class="btn btn-sm btn-light-soft text-warning shadow-sm" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <div class="d-inline-block">
+                                        {{ include('metier_avance/_delete_form.html.twig', {metier_avance: metier_avance}) }}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="text-muted mb-3"><i class="fas fa-microchip fa-3x"></i></div>
+                                <p class="mb-0">Aucun métier avancé répertorié.</p>
+                                <a href="{{ path('app_metier_avance_new') }}" class="btn btn-primary mt-3">Ajouter la première spécialité</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft { background-color: #eef2ff !important; color: #4f46e5 !important; }
+    .btn-light-soft { background-color: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+    .btn-light-soft:hover { background-color: #f1f5f9; color: #334155; }
+</style>
+{% endblock %}

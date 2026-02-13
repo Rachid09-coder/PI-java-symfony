@@ -82,15 +82,67 @@
                     <h2 style="font-size: 1.3rem; font-weight: 800; color: white;">EduSmart</h2>
                 </div>
                 <nav style="margin-top: 30px;">
-                    <ul style="list-style: none;">
-                        <li><a href="{{ path('admin_dashboard') }}" class="nav-item {{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></a></li>
-                        <li><a href="{{ path('admin_courses_manage') }}" class="nav-item {{ app.request.get('_route') == 'admin_courses_manage' ? 'active' : '' }}"><i class="fas fa-edit"></i> <span>Gérer les Cours</span></a></li>
-                        <li><a href="{{ path('admin_modules_manage') }}" class="nav-item {{ app.request.get('_route') == 'admin_modules_manage' ? 'active' : '' }}"><i class="fas fa-cubes"></i> <span>Gérer les Modules</span></a></li>
-                        <li><a href="{{ path('admin_exams_manage') }}" class="nav-item {{ app.request.get('_route') == 'admin_exams_manage' ? 'active' : '' }}"><i class="fas fa-tasks"></i> <span>Gérer Examens</span></a></li>
-                        <li><a href="{{ path('admin_shop_index') }}" class="nav-item {{ app.request.get('_route') starts with 'admin_shop' ? 'active' : '' }}"><i class="fas fa-shopping-cart"></i> <span>Boutique</span></a></li>
-                        <li><a href="{{ path('admin_certification_index') }}" class="nav-item {{ app.request.get('_route') == 'admin_certification_index' ? 'active' : '' }}"><i class="fas fa-certificate"></i> <span>Certifications</span></a></li>
-                    </ul>
-                </nav>
+    <ul style="list-style: none;">
+        <li>
+            <a href="{{ path('admin_dashboard') }}"
+               class="nav-item {{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ path('admin_courses_manage') }}"
+               class="nav-item {{ app.request.get('_route') == 'admin_courses_manage' ? 'active' : '' }}">
+                <i class="fas fa-edit"></i>
+                <span>Gérer les Cours</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ path('admin_modules_manage') }}"
+               class="nav-item {{ app.request.get('_route') == 'admin_modules_manage' ? 'active' : '' }}">
+                <i class="fas fa-cubes"></i>
+                <span>Gérer les Modules</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ path('admin_exams_manage') }}
+               "class="nav-item {{ app.request.get('_route') == 'admin_exams_manage' ? 'active' : '' }}">
+                <i class="fas fa-tasks"></i>
+                <span>Gérer Examens</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ path('admin_shop_index') }}"
+               class="nav-item {{ app.request.get('_route') starts with 'admin_shop' ? 'active' : '' }}">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Boutique</span>
+            </a>
+        </li>
+
+        {# --- NOUVEAU : BULLETINS --- #}
+        <li>
+            <a href="{{ path('admin_bulletin_index') }}"
+               class="nav-item {{ app.request.get('_route') starts with 'admin_bulletin_' ? 'active' : '' }}">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Bulletins</span>
+            </a>
+        </li>
+
+        {# --- EXISTANT : CERTIFICATIONS --- #}
+        <li>
+            <a href="{{ path('admin_certification_index') }}"
+               class="nav-item {{ app.request.get('_route') starts with 'admin_certification_' ? 'active' : '' }}">
+                <i class="fas fa-certificate"></i>
+                <span>Certifications</span>
+            </a>
+        </li>
+
+    </ul>
+    </nav>
                 <div style="margin-top: auto; padding: 20px;">
                     <a href="{{ path('student_courses') }}" class="btn btn-primary" style="width: 100%; font-size: 0.8rem; background: #6366F1;">Mode Étudiant</a>
                     <a href="{{ path('app_logout') }}" class="nav-item" style="margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>

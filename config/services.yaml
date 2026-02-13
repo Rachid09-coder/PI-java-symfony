@@ -5,6 +5,10 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
+    app.hmac_secret: '%env(default:app_hmac_default:HMAC_SECRET)%'
+    app_hmac_default: 'edusmart-secret-change-me-in-production'
+    app.base_url: '%env(default:app_base_url_default:APP_BASE_URL)%'
+    app_base_url_default: 'http://127.0.0.1:8000'
 
 services:
     # default configuration for services in *this* file
@@ -26,3 +30,11 @@ services:
     App\Service\FileUploader:
         arguments:
             $targetDirectory: '%uploads_directory%'
+
+    App\Service\HmacService:
+        arguments:
+            $hmacSecret: '%app.hmac_secret%'
+
+    App\Service\PdfGeneratorService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

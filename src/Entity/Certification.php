@@ -6,6 +6,7 @@ use App\Repository\CertificationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
 use App\Entity\Bulletin;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CertificationRepository::class)]
 class Certification
@@ -19,11 +20,16 @@ class Certification
     #[ORM\JoinColumn(nullable: false)]
     private ?User $student = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(inversedBy: 'certifications')]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?Bulletin $bulletin = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(
+        choices: ['SCOLARITE', 'REUSSITE', 'NOTES', 'DIPLOME', 'STAGE', 'PRESENCE'],
+        message: "Type de certification invalide."
+    )]
     private ?string $type = null;
 
     #[ORM\Column]
@@ -36,7 +42,25 @@ class Certification
     private ?string $pdfPath = null;
 
     #[ORM\Column(length: 20)]
+    #[Assert\Choice(choices: ['ACTIVE', 'REVOKED', 'EXPIRED'])]
     private ?string $status = null;
+
+    // --- Nouveaux champs ---
+
+    #[ORM\Column(length: 50, unique: true, nullable: true)]
+    private ?string $uniqueNumber = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $validUntil = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $hmacHash = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $revokedAt = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $revocationReason = null;
 
     public function __construct()
     {
@@ -44,85 +68,59 @@ class Certification
         $this->status = 'ACTIVE';
     }
 
-    public function getId(): ?int
+    public function getId(): ?int { return $this->id; }
+
+    public function getStudent(): ?User { return $this->student; }
+    public function setStudent(User $student): self { $this->student = $student; return $this; }
+
+    public function getBulletin(): ?Bulletin { return $this->bulletin; }
+    public function setBulletin(?Bulletin $bulletin): self { $this->bulletin = $bulletin; return $this; }
+
+    public function getType(): ?string { return $this->type; }
+    public function setType(string $type): self { $this->type = $type; return $this; }
+
+    public function getIssuedAt(): ?\DateTimeImmutable { return $this->issuedAt; }
+    public function setIssuedAt(\DateTimeImmutable $issuedAt): self { $this->issuedAt = $issuedAt; return $this; }
+
+    public function getVerificationCode(): ?string { return $this->verificationCode; }
+    public function setVerificationCode(string $verificationCode): self { $this->verificationCode = $verificationCode; return $this; }
+
+    public function getPdfPath(): ?string { return $this->pdfPath; }
+    public function setPdfPath(?string $pdfPath): self { $this->pdfPath = $pdfPath; return $this; }
+
+    public function getStatus(): ?string { return $this->status; }
+    public function setStatus(string $status): self { $this->status = $status; return $this; }
+
+    public function getUniqueNumber(): ?string { return $this->uniqueNumber; }
+    public function setUniqueNumber(?string $uniqueNumber): self { $this->uniqueNumber = $uniqueNumber; return $this; }
+
+    public function getValidUntil(): ?\DateTimeImmutable { return $this->validUntil; }
+    public function setValidUntil(?\DateTimeImmutable $validUntil): self { $this->validUntil = $validUntil; return $this; }
+
+    public function getHmacHash(): ?string { return $this->hmacHash; }
+    public function setHmacHash(?string $hmacHash): self { $this->hmacHash = $hmacHash; return $this; }
+
+    public function getRevokedAt(): ?\DateTimeImmutable { return $this->revokedAt; }
+    public function setRevokedAt(?\DateTimeImmutable $revokedAt): self { $this->revokedAt = $revokedAt; return $this; }
+
+    public function getRevocationReason(): ?string { return $this->revocationReason; }
+    public function setRevocationReason(?string $reason): self { $this->revocationReason = $reason; return $this; }
+
+    public function isRevoked(): bool
     {
-        return $this->id;
+        return $this->status === 'REVOKED' || $this->revokedAt !== null;
     }
 
-    public function getStudent(): ?User
+    public function getTypeLabel(): string
     {
-        return $this->student;
-    }
-
-    public function setStudent(User $student): self
-    {
-        $this->student = $student;
-        return $this;
-    }
-
-    public function getBulletin(): ?Bulletin
-    {
-        return $this->bulletin;
-    }
-
-    public function setBulletin(Bulletin $bulletin): self
-    {
-        $this->bulletin = $bulletin;
-        return $this;
-    }
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(string $type): self
-    {
-        $this->type = $type;
-        return $this;
-    }
-
-    public function getIssuedAt(): ?\DateTimeImmutable
-    {
-        return $this->issuedAt;
-    }
-
-    public function setIssuedAt(\DateTimeImmutable $issuedAt): self
-    {
-        $this->issuedAt = $issuedAt;
-        return $this;
-    }
-
-    public function getVerificationCode(): ?string
-    {
-        return $this->verificationCode;
-    }
-
-    public function setVerificationCode(string $verificationCode): self
-    {
-        $this->verificationCode = $verificationCode;
-        return $this;
-    }
-
-    public function getPdfPath(): ?string
-    {
-        return $this->pdfPath;
-    }
-
-    public function setPdfPath(?string $pdfPath): self
-    {
-        $this->pdfPath = $pdfPath;
-        return $this;
-    }
-
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): self
-    {
-        $this->status = $status;
-        return $this;
+        return match($this->type) {
+            'SCOLARITE' => 'Attestation de scolarité',
+            'REUSSITE' => 'Certificat de réussite',
+            'NOTES' => 'Relevé de notes',
+            'DIPLOME' => 'Diplôme interne',
+            'STAGE' => 'Attestation de stage',
+            'PRESENCE' => 'Attestation de présence',
+            default => $this->type ?? 'Inconnu',
+        };
     }
 }

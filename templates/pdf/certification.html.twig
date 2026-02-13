@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'DejaVu Sans', sans-serif; font-size: 14px; line-height: 1.6; color: #333; }
+        .container { width: 90%; margin: 50px auto; border: 15px double #6366F1; padding: 50px; position: relative; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo-box { margin-bottom: 20px; }
+        .logo { width: 80px; }
+        .doc-title { font-size: 28px; font-weight: bold; color: #1E293B; margin-bottom: 10px; text-transform: uppercase; }
+        .cert-number { font-family: monospace; font-size: 12px; color: #64748B; margin-bottom: 30px; }
+        .content { text-align: center; margin-bottom: 60px; }
+        .student-name { font-size: 22px; font-weight: bold; text-decoration: underline; margin: 15px 0; }
+        .footer { margin-top: 50px; position: relative; height: 150px; }
+        .sig-box { float: left; width: 40%; text-align: center; }
+        .sig-box-right { float: right; width: 40%; text-align: center; }
+        .sig-image { max-width: 120px; display: block; margin: 10px auto; }
+        .qr-box { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 9px; }
+        .qr-image { width: 90px; }
+        .clear { clear: both; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-box">
+                {% if logo %}
+                    <img src="data:image/png;base64,{{ (projectDir ~ '/public/' ~ logo.imagePath)|file_to_base64 }}" class="logo">
+                {% else %}
+                    <div style="font-size: 32px; font-weight: 800; color: #6366F1;">EduSmart</div>
+                {% endif %}
+            </div>
+            <div class="doc-title">{{ certification.getTypeLabel() }}</div>
+            <div class="cert-number">N° {{ certification.uniqueNumber }}</div>
+        </div>
+
+        <div class="content">
+            Il est certifié par la présente que l'étudiant(e) :
+            <div class="student-name">{{ certification.student.prenom }} {{ certification.student.name }}</div>
+            Né(e) le <strong>{{ certification.student.id }}</strong> (Simulation ID)<br>
+            A satisfait aux conditions requises pour l'obtention de ce document au titre de l'année académique 
+            <strong>{{ certification.bulletin.academicYear }}</strong>.
+            
+            <p style="margin-top: 30px;">
+                Fait à Tunis, le {{ certification.issuedAt|date('d/m/Y') }}
+            </p>
+        </div>
+
+        <div class="footer">
+            <div class="sig-box">
+                Le Chef de Département<br>
+                {% if cachet %}
+                    <img src="data:image/png;base64,{{ (projectDir ~ '/public/' ~ cachet.imagePath)|file_to_base64 }}" class="sig-image">
+                {% endif %}
+            </div>
+            <div class="sig-box-right">
+                Le Directeur de l'Établissement<br>
+                {% if signature %}
+                    <img src="data:image/png;base64,{{ (projectDir ~ '/public/' ~ signature.imagePath)|file_to_base64 }}" class="sig-image">
+                {% endif %}
+            </div>
+            <div class="clear"></div>
+
+            <div class="qr-box">
+                <img src="data:image/png;base64,{{ qrBase64 }}" class="qr-image"><br>
+                Authenticité vérifiable sur {{ verifyUrl }}<br>
+                Code: {{ certification.verificationCode }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
