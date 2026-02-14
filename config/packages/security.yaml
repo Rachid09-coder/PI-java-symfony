@@ -26,5 +26,5 @@ security:
 
     access_control:
         # Accès restreints selon le rôle
-        - { path: ^/admin, roles: ROLE_PROFESSEUR }
+        - { path: ^/admin, roles: [ROLE_PROFESSEUR, ROLE_ADMIN] }
         - { path: ^/student, roles: ROLE_ETUDIANT }
