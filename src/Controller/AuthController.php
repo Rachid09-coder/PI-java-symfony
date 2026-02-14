@@ -57,15 +57,98 @@ final class AuthController extends AbstractController
         ]);
     }
 
-    #[Route('/profile', name: 'app_profile', methods: ['GET'])]
-    public function profile(): Response
-    {
-        return $this->render('auth/profile.html.twig');
+    #[Route('/profile', name: 'app_profile', methods: ['GET', 'POST'])]
+    public function profile(
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $form = $this->createForm(UserType::class, $user);
+        // Don't allow changing password and role from profile page
+        if ($form->has('password')) {
+            $form->remove('password');
+        }
+        if ($form->has('role')) {
+            $form->remove('role');
+        }
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'Profil mis à jour avec succès.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        return $this->render('auth/profile.html.twig', [
+            'user' => $user,
+            'form' => $form->createView(),
+        ]);
     }
 
     #[Route('/profile/password', name: 'app_change_password', methods: ['GET', 'POST'])]
-    public function changePassword(): Response
-    {
+    public function changePassword(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher
+    ): Response {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($request->isMethod('POST')) {
+            $currentPassword = $request->request->get('current_password');
+            $newPassword = $request->request->get('new_password');
+            $confirmPassword = $request->request->get('confirm_password');
+
+            // Verify current password
+            if (!$hasher->isPasswordValid($user, $currentPassword)) {
+                $this->addFlash('danger', 'Mot de passe actuel incorrect.');
+                return $this->render('auth/change_password.html.twig');
+            }
+
+            // Check if passwords match
+            if ($newPassword !== $confirmPassword) {
+                $this->addFlash('danger', 'Les nouveaux mots de passe ne correspondent pas.');
+                return $this->render('auth/change_password.html.twig');
+            }
+
+            // Check password length
+            if (strlen($newPassword) < 8) {
+                $this->addFlash('danger', 'Le mot de passe doit faire au moins 8 caractères.');
+                return $this->render('auth/change_password.html.twig');
+            }
+
+            // Check for uppercase letter
+            if (!preg_match('/[A-Z]/', $newPassword)) {
+                $this->addFlash('danger', 'Le mot de passe doit contenir au moins une majuscule.');
+                return $this->render('auth/change_password.html.twig');
+            }
+
+            // Check for digit
+            if (!preg_match('/[0-9]/', $newPassword)) {
+                $this->addFlash('danger', 'Le mot de passe doit contenir au moins un chiffre.');
+                return $this->render('auth/change_password.html.twig');
+            }
+
+            // Check for symbol
+            if (!preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $newPassword)) {
+                $this->addFlash('danger', 'Le mot de passe doit contenir au moins un symbole (!@#$%^&* etc).');
+                return $this->render('auth/change_password.html.twig');
+            }
+
+            // Hash and update password
+            $user->setPassword($hasher->hashPassword($user, $newPassword));
+            $em->flush();
+
+            $this->addFlash('success', 'Mot de passe mis à jour avec succès.');
+            return $this->redirectToRoute('app_profile');
+        }
+
         return $this->render('auth/change_password.html.twig');
     }
 }
