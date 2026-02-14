@@ -47,9 +47,15 @@ class UserAdminController extends AbstractController
         ]);
     }
     #[Route('/{id}/delete', name: 'admin_user_delete', methods: ['POST', 'GET'])]
-    public function delete(int $id): Response
+    public function delete(
+        User $user,
+        EntityManagerInterface $em
+    ): Response
     {
-        // Logique de suppression simulée
+        // Désactiver l'utilisateur au lieu de le supprimer
+        $user->setIsActive(false);
+        $em->flush();
+        $this->addFlash('success', 'L\'utilisateur a été désactivé.');
         return $this->redirectToRoute('admin_dashboard');
     }
 }

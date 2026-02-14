@@ -27,7 +27,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank(message: "L'email est obligatoire")]
-    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")]
+    #[Assert\Email(message: "L'email doit contenir . et @")]
     private ?string $email = null;
 
     #[ORM\Column(length: 20)]
@@ -36,13 +36,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 200)]
     #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
-    #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères")]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le numéro de téléphone est obligatoire")]
     #[Assert\Regex(pattern: "/^[0-9]{8,15}$/", message: "Numéro de téléphone invalide")]
     private ?string $numtel = null;
+
+    #[ORM\Column]
+    private bool $isActive = true;
 
     // --- MÉTHODES REQUISES PAR USERINTERFACE ---
 
@@ -59,6 +61,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $roles = [];
         if ($this->role === 'professeur') {
             $roles[] = 'ROLE_PROFESSEUR';
+        } elseif ($this->role === 'admin') {
+            $roles[] = 'ROLE_ADMIN';
         } else {
             $roles[] = 'ROLE_ETUDIANT';
         }
@@ -92,4 +96,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getNumtel(): ?string { return $this->numtel; }
     public function setNumtel(string $numtel): static { $this->numtel = $numtel; return $this; }
+
+    public function isActive(): bool { return $this->isActive; }
+    public function setIsActive(bool $isActive): static { $this->isActive = $isActive; return $this; }
 }

@@ -39,7 +39,7 @@ class SecurityController extends AbstractController
         }
 
         // Vérification de ton champ 'role' (professeur ou etudiant)
-        if ($user->getRole() === 'professeur') {
+        if ($user->getRole() === 'admin') {
             return $this->redirectToRoute('admin_shop_index');
         }
 

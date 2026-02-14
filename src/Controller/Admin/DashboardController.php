@@ -18,6 +18,7 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'admin_dashboard', methods: ['GET'])]
     public function index(UserRepository $userRepository): Response
     {
+        // Show all students (both active and inactive)
         $students = $userRepository->findBy(['role' => 'etudiant'], ['id' => 'DESC']);
 
         return $this->render('admin/dashboard/index.html.twig', [
@@ -51,10 +52,13 @@ class DashboardController extends AbstractController
             return $this->redirectToRoute('admin_dashboard');
         }
 
-        $em->remove($student);
+        // Toggle the active status
+        $isCurrentlyActive = $student->isActive();
+        $student->setIsActive(!$isCurrentlyActive);
         $em->flush();
 
-        $this->addFlash('success', 'Élève supprimé.');
+        $message = $isCurrentlyActive ? 'Élève désactivé.' : 'Élève activé.';
+        $this->addFlash('success', $message);
         return $this->redirectToRoute('admin_dashboard');
     }
 
