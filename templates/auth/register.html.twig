@@ -17,7 +17,8 @@
 
          {{ form_start(form, {
     action: path('app_register'),
-    method: 'POST'
+    method: 'POST',
+    attr: {novalidate: 'novalidate'}
 }) }}
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); margin-bottom: var(--sp-4);">
@@ -30,7 +31,9 @@
                 required: 'required'
             }
         }) }}
-        {{ form_errors(form.prenom) }}
+        <div style="margin-top: 4px;">
+            {{ form_errors(form.prenom, {'attr': {'style': 'color: #ef4444; font-size: 0.75rem; display: block;'}}) }}
+        </div>
     </div>
 
     <div>
@@ -42,7 +45,9 @@
                 required: 'required'
             }
         }) }}
-        {{ form_errors(form.name) }}
+        <div style="margin-top: 4px;">
+            {{ form_errors(form.name, {'attr': {'style': 'color: #ef4444; font-size: 0.75rem; display: block;'}}) }}
+        </div>
     </div>
 </div>
 
@@ -55,7 +60,9 @@
             required: 'required'
         }
     }) }}
-    {{ form_errors(form.email) }}
+    <div style="margin-top: 4px;">
+        {{ form_errors(form.email, {'attr': {'style': 'color: #ef4444; font-size: 0.75rem; display: block;'}}) }}
+    </div>
 </div>
 
 <div style="margin-bottom: var(--sp-4);">
@@ -67,7 +74,9 @@
             required: 'required'
         }
     }) }}
-    {{ form_errors(form.numtel) }}
+    <div style="margin-top: 4px;">
+        {{ form_errors(form.numtel, {'attr': {'style': 'color: #ef4444; font-size: 0.75rem; display: block;'}}) }}
+    </div>
 </div>
 
 <div style="margin-bottom: var(--sp-4);">
@@ -77,7 +86,9 @@
             style: 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: white;'
         }
     }) }}
-    {{ form_errors(form.role) }}
+    <div style="margin-top: 4px;">
+        {{ form_errors(form.role, {'attr': {'style': 'color: #ef4444; font-size: 0.75rem; display: block;'}}) }}
+    </div>
 </div>
 
 <div style="margin-bottom: var(--sp-6);">
@@ -89,7 +100,9 @@
             required: 'required'
         }
     }) }}
-    {{ form_errors(form.password) }}
+    <div style="margin-top: 4px;">
+        {{ form_errors(form.password, {'attr': {'style': 'color: #ef4444; font-size: 0.75rem; display: block;'}}) }}
+    </div>
 </div>
 
 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 600; font-size: 1rem; margin-bottom: var(--sp-4);">
