@@ -71,31 +71,30 @@
                     </td>
 
                     <td style="padding: 15px;">
-                        <span style="background: #D1FAE5; color: #10B981; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">
-                            Actif
-                        </span>
+                        {% if s.isActive %}
+                            <span style="background: #D1FAE5; color: #10B981; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">
+                                Actif
+                            </span>
+                        {% else %}
+                            <span style="background: #FEE2E2; color: #EF4444; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">
+                                Inactif
+                            </span>
+                        {% endif %}
                     </td>
 
                     <td style="padding: 15px; text-align: right;">
-                        <a href="{{ path('admin_student_edit', {id: s.id}) }}"
-                           class="btn btn-outline"
-                           style="padding: 6px 10px; border-radius: 8px; color: #64748B;"
-                           title="Modifier l'élève">
-                            <i class="fas fa-edit"></i>
-                        </a>
-
                         <form method="post"
                               action="{{ path('admin_student_delete', {id: s.id}) }}"
                               style="display:inline;"
-                              onsubmit="return confirm('Supprimer cet élève ?');"
+                              onsubmit="return confirm('{{ s.isActive ? 'Désactiver cet élève ?' : 'Activer cet élève ?' }}');"
                               novalidate>
                             <input type="hidden" name="_token" value="{{ csrf_token('delete_student_' ~ s.id) }}">
 
                             <button type="submit"
                                     class="btn btn-outline"
-                                    style="padding: 6px 10px; border-radius: 8px; color: #EF4444; background: transparent; border: 0; cursor: pointer; pointer-events: auto;"
-                                    title="Supprimer l'élève">
-                                <i class="fas fa-trash"></i>
+                                    style="padding: 6px 10px; border-radius: 8px; {{ s.isActive ? 'color: #EF4444;' : 'color: #10B981;' }} background: transparent; border: 0; cursor: pointer; pointer-events: auto;"
+                                    title="{{ s.isActive ? 'Désactiver l\'élève' : 'Activer l\'élève' }}">
+                                <i class="fas {{ s.isActive ? 'fa-ban' : 'fa-check' }}"></i>
                             </button>
                         </form>
                     </td>

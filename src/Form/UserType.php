@@ -24,8 +24,8 @@ class UserType extends AbstractType
             ->add('numtel')
             ->add('role', ChoiceType::class, [
                 'choices' => [
-                    'Élève' => 'etudiant',
-                    'Enseignant / Admin' => 'professeur',
+                    'Etudiant' => 'etudiant',
+                    'Enseignant' => 'professeur',
                 ],
                 'placeholder' => 'Choisir un rôle',
                 'required' => true,
@@ -34,15 +34,23 @@ class UserType extends AbstractType
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
                     new Assert\NotBlank([
-                        'message' => 'Le mot de passe ne peut pas être vide',
+                        'message' => 'Le mot de passe est obligatoire',
                     ]),
                     new Assert\Length([
-                        'min' => 6,
-                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+                        'min' => 8,
+                        'minMessage' => 'Le mot de passe doit faire au moins 8 caractères',
                     ]),
                     new Assert\Regex([
                         'pattern' => '/[A-Z]/',
-                        'message' => 'Le mot de passe doit contenir au moins une lettre majuscule',
+                        'message' => 'Le mot de passe doit contenir au moins une majuscule',
+                    ]),
+                    new Assert\Regex([
+                        'pattern' => '/[0-9]/',
+                        'message' => 'Le mot de passe doit contenir au moins un chiffre',
+                    ]),
+                    new Assert\Regex([
+                        'pattern' => '/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/',
+                        'message' => 'Le mot de passe doit contenir au moins un symbole (!@#$%^&* etc)',
                     ]),
                 ],
             ]);
