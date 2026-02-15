@@ -21,19 +21,19 @@
             </div>
 
             {# --- AFFICHAGE DES ERREURS --- #}
-            {% if error %}
-                <div style="background: #FFF1F2; color: #E11D48; padding: 12px; border-radius: 12px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #FECACA;">
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
-                </div>
-            {% endif %}
 
             {# --- FORMULAIRE CORRIGÉ (POST) --- #}
-            <form method="POST">
+            <form method="POST" novalidate>
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: #1E293B;">Email</label>
-                    <input type="email" name="_username" value="{{ last_username }}" placeholder="exemple@email.com" required autofocus 
+                    <input type="email" name="_username" value="{{ last_username }}" placeholder="exemple@email.com" autofocus 
                            style="width: 100%; padding: 14px 18px; border: 1px solid #E2E8F0; border-radius: 12px; background: #F8FAFC; outline: none; transition: 0.3s;" 
                            onfocus="this.style.borderColor='#3B49A2'; this.style.background='white';">
+                    {% if error %}
+                    <div style="color: #ef4444; font-size: 0.75rem; display: block; margin-top: 4px;">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div style="margin-bottom: 30px;">
@@ -42,11 +42,16 @@
                         <a href="#" style="font-size: 0.8rem; color: #3B49A2; font-weight: 600; text-decoration: none;">Oublié ?</a>
                     </div>
                     <div style="position: relative;">
-                        <input type="password" name="_password" placeholder="••••••••" required 
+                        <input type="password" name="_password" placeholder="••••••••" 
                                style="width: 100%; padding: 14px 18px; border: 1px solid #E2E8F0; border-radius: 12px; background: #F8FAFC; outline: none; transition: 0.3s;" 
                                onfocus="this.style.borderColor='#3B49A2'; this.style.background='white';">
                         <button type="button" style="position: absolute; right: 15px; top: 14px; border: none; background: none; color: #64748B; cursor: pointer;"><i class="far fa-eye"></i></button>
                     </div>
+                    {% if error %}
+                    <div style="color: #ef4444; font-size: 0.75rem; display: block; margin-top: 4px;">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 {# --- JETON CSRF OBLIGATOIRE --- #}
