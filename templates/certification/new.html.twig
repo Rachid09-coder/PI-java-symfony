@@ -14,3 +14,33 @@
         {{ include('certification/_form.html.twig', {form: form, button_label: 'Créer la certification'}) }}
     </div>
 {% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const studentSelect = document.querySelector('#certification_student');
+    const bulletinSelect = document.querySelector('#certification_bulletin');
+
+    studentSelect.addEventListener('change', function () {
+
+        const studentId = this.value;
+
+        bulletinSelect.innerHTML = '<option>Chargement...</option>';
+
+        fetch('/certification/api/bulletin/' + studentId)
+            .then(response => response.json())
+            .then(data => {
+
+                bulletinSelect.innerHTML = '';
+
+                data.forEach(bulletin => {
+                    const option = document.createElement('option');
+                    option.value = bulletin.id;
+                    option.textContent = bulletin.label;
+                    bulletinSelect.appendChild(option);
+                });
+
+            });
+    });
+
+});
+</script>

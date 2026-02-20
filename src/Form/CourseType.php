@@ -50,6 +50,12 @@ class CourseType extends AbstractType
                 ],
                 'attr' => $inputAttr,
             ])
+            ->add('coefficient', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
+                'label' => 'Coefficient',
+                'required' => false,
+                'attr' => array_merge($inputAttr, ['placeholder' => 'Ex: 1, 1.5, 2...', 'step' => '0.5', 'min' => '0.5']),
+                'help' => 'Coefficient utilisé pour calculer la moyenne générale du bulletin',
+            ])
             ->add('modules', EntityType::class, [
                 'class' => Module::class,
                 'choice_label' => 'title',

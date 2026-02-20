@@ -37,6 +37,7 @@
                     <th style="padding: 20px;">Titre du Cours</th>
                     <th style="padding: 20px;">Modules</th>
                     <th style="padding: 20px;">Prix</th>
+                    <th style="padding: 20px;">Coef</th>
                     <th style="padding: 20px;">Statut</th>
                     <th style="padding: 20px; text-align: right;">Actions</th>
                 </tr>
@@ -67,6 +68,13 @@
                         {% endif %}
                     </td>
                     <td style="padding: 20px; font-weight: 700; color: #3B49A2;">{{ course.price|number_format(2, ',', ' ') }} €</td>
+                    <td style="padding: 20px; text-align: center;">
+                        {% if course.coefficient %}
+                            <span style="background: #EEF2FF; color: #6366F1; padding: 4px 10px; border-radius: 12px; font-weight: 700;">{{ course.coefficient }}</span>
+                        {% else %}
+                            <span style="color: #94A3B8;">-</span>
+                        {% endif %}
+                    </td>
                     <td style="padding: 20px;">
                         <span style="background: {{ course.status == 'PUBLISHED' ? '#D1FAE5' : '#FEF3C7' }}; color: {{ course.status == 'PUBLISHED' ? '#10B981' : '#D97706' }}; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; transition: all 0.3s ease; cursor: default;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">{{ course.status == 'PUBLISHED' ? 'Publié' : 'Brouillon' }}</span>
                     </td>
@@ -82,7 +90,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" style="padding: 40px; text-align: center; color: #64748B;">Aucun cours. <a href="{{ path('admin_course_new') }}" style="color: #3B49A2; text-decoration: none; font-weight: 600; transition: color 0.3s ease;" onmouseover="this.style.color='#6366F1'" onmouseout="this.style.color='#3B49A2'">Créer un cours</a></td>
+                    <td colspan="7" style="padding: 40px; text-align: center; color: #64748B;">Aucun cours. <a href="{{ path('admin_course_new') }}" style="color: #3B49A2; text-decoration: none; font-weight: 600; transition: color 0.3s ease;" onmouseover="this.style.color='#6366F1'" onmouseout="this.style.color='#3B49A2'">Créer un cours</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

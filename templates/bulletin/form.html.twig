@@ -24,7 +24,7 @@
             </div>
         </header>
 
-        {{ form_start(form, {'attr': {'class': 'premium-form'}}) }}
+        {{ form_start(form, {'attr': {'class': 'premium-form', 'novalidate': 'novalidate', 'id': 'bulletin-form'}}) }}
         <div class="row g-4">
             {# Paramètres Généraux - Left Column #}
             <div class="col-xl-4">
@@ -33,31 +33,21 @@
                         <h5 class="fw-800 text-primary mb-0"><i class="fas fa-sliders-h me-2"></i>Paramètres</h5>
                     </div>
                     <div class="card-body p-4">
-                        <div class="form-group-premium mb-4 {{ not form.student.vars.valid ? 'has-error-premium' : '' }}">
+                        <div class="form-group-premium mb-4">
                             {{ form_label(form.student, null, {'label_attr': {'class': 'label-premium'}}) }}
                             <div class="input-glow-wrapper">
-                                {{ form_widget(form.student, {'attr': {'class': 'form-select-premium select-lg-premium' ~ (not form.student.vars.valid ? ' is-invalid-premium' : '')}}) }}
+                                {{ form_widget(form.student, {'attr': {'class': 'form-select-premium select-lg-premium'}}) }}
                             </div>
-                            {% if not form.student.vars.valid %}
-                                <div class="invalid-feedback-premium animate-shake">
-                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form_errors(form.student)|striptags|raw }}
-                                </div>
-                            {% endif %}
                         </div>
                         
-                        <div class="form-group-premium mb-4 {{ not form.academicYear.vars.valid ? 'has-error-premium' : '' }}">
+                        <div class="form-group-premium mb-4">
                             {{ form_label(form.academicYear, null, {'label_attr': {'class': 'label-premium'}}) }}
                             <div class="input-glow-wrapper">
                                 {{ form_widget(form.academicYear, {'attr': {
-                                    'class': 'form-control-premium' ~ (not form.academicYear.vars.valid ? ' is-invalid-premium' : ''), 
+                                    'class': 'form-control-premium', 
                                     'placeholder': 'Ex: 2025/2026'
                                 }}) }}
                             </div>
-                            {% if not form.academicYear.vars.valid %}
-                                <div class="invalid-feedback-premium animate-shake">
-                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form_errors(form.academicYear)|striptags|raw }}
-                                </div>
-                            {% endif %}
                         </div>
 
                         <div class="row g-3">
@@ -75,35 +65,18 @@
                             </div>
                         </div>
 
-                        <div class="form-group-premium mb-4 {{ not form.mention.vars.valid ? 'has-error-premium' : '' }}">
+                        <div class="form-group-premium mb-4">
                             {{ form_label(form.mention, null, {'label_attr': {'class': 'label-premium'}}) }}
                             <div class="input-glow-wrapper">
-                                {{ form_widget(form.mention, {'attr': {'class': 'form-select-premium' ~ (not form.mention.vars.valid ? ' is-invalid-premium' : '')}}) }}
-                            </div>
-                            {% if not form.mention.vars.valid %}
-                                <div class="invalid-feedback-premium animate-shake">
-                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form_errors(form.mention)|striptags|raw }}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="form-group-premium mb-4">
-                            {{ form_label(form.status, null, {'label_attr': {'class': 'label-premium'}}) }}
-                            <div class="input-glow-wrapper">
-                                {{ form_widget(form.status, {'attr': {'class': 'form-select-premium'}}) }}
+                                {{ form_widget(form.mention, {'attr': {'class': 'form-select-premium'}}) }}
                             </div>
                         </div>
 
-                        <div class="form-group-premium mb-0 {{ not form.classRank.vars.valid ? 'has-error-premium' : '' }}">
+                        <div class="form-group-premium mb-0">
                             {{ form_label(form.classRank, null, {'label_attr': {'class': 'label-premium'}}) }}
                             <div class="input-glow-wrapper">
-                                {{ form_widget(form.classRank, {'attr': {'class': 'form-control-premium' ~ (not form.classRank.vars.valid ? ' is-invalid-premium' : ''), 'placeholder': 'Rang requis'}}) }}
+                                {{ form_widget(form.classRank, {'attr': {'class': 'form-control-premium', 'placeholder': 'Rang requis'}}) }}
                             </div>
-                            {% if not form.classRank.vars.valid %}
-                                <div class="invalid-feedback-premium animate-shake">
-                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ form_errors(form.classRank)|striptags|raw }}
-                                </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -119,6 +92,12 @@
                         </button>
                     </div>
                     <div class="card-body p-4">
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <button type="button" id="btn-load-grades" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-download me-1"></i> Charger notes depuis les examens
+                            </button>
+                            <small class="text-muted">Note = CC×10% + DS×20% + Exam×70%</small>
+                        </div>
                         <div id="report-card-lines-list" 
                              data-prototype="{{ form_widget(form.reportCardLines.vars.prototype)|e('html_attr') }}"
                              data-widget-tags="{{ '<tr></tr>'|e }}"
@@ -129,8 +108,11 @@
                                     <thead>
                                         <tr>
                                             <th class="ps-3">Module / Matière</th>
-                                            <th class="text-center" style="width: 100px;">Coef</th>
-                                            <th class="text-center" style="width: 100px;">Note</th>
+                                            <th class="text-center" style="width: 80px;">CC (10%)</th>
+                                            <th class="text-center" style="width: 80px;">DS (20%)</th>
+                                            <th class="text-center" style="width: 80px;">Exam (70%)</th>
+                                            <th class="text-center" style="width: 80px;">Note</th>
+                                            <th class="text-center" style="width: 70px;">Coef</th>
                                             <th>Commentaire</th>
                                             <th class="text-end pe-3" style="width: 50px;"></th>
                                         </tr>
@@ -139,8 +121,11 @@
                                         {% for lineForm in form.reportCardLines %}
                                             <tr class="collection-item animate-row-in">
                                                 <td class="ps-3">{{ form_widget(lineForm.moduleName, {'attr': {'class': 'form-control-premium form-control-sm'}}) }}</td>
+                                                <td>{{ form_widget(lineForm.noteCC, {'attr': {'class': 'form-control-premium form-control-sm text-center note-cc'}}) }}</td>
+                                                <td>{{ form_widget(lineForm.noteDS, {'attr': {'class': 'form-control-premium form-control-sm text-center note-ds'}}) }}</td>
+                                                <td>{{ form_widget(lineForm.noteExam, {'attr': {'class': 'form-control-premium form-control-sm text-center note-exam'}}) }}</td>
+                                                <td>{{ form_widget(lineForm.note, {'attr': {'class': 'form-control-premium form-control-sm text-center note-finale', 'readonly': true}}) }}</td>
                                                 <td>{{ form_widget(lineForm.coefficient, {'attr': {'class': 'form-control-premium form-control-sm text-center coef-input'}}) }}</td>
-                                                <td>{{ form_widget(lineForm.note, {'attr': {'class': 'form-control-premium form-control-sm text-center note-input'}}) }}</td>
                                                 <td>{{ form_widget(lineForm.teacherComment, {'attr': {'class': 'form-control-premium form-control-sm', 'rows': '1'}}) }}</td>
                                                 <td class="text-end pe-3">
                                                     <button type="button" class="btn-remove-premium remove-item">
@@ -388,6 +373,28 @@
         font-weight: 700;
         font-size: 0.8rem;
     }
+
+    /* Validation Error Styles */
+    .field-error {
+        border-color: #ef4444 !important;
+        background-color: rgba(254, 242, 242, 0.5) !important;
+        animation: shakeField 0.4s ease;
+    }
+    .error-message {
+        color: #ef4444;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .error-message i { font-size: 0.7rem; }
+    @keyframes shakeField {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
 </style>
 
 {% block javascripts %}
@@ -397,6 +404,91 @@ document.addEventListener('DOMContentLoaded', function() {
     const container = list.querySelector('.report-card-lines-container');
     const addButton = document.querySelector('.add-another-collection-widget');
     const avgInput = document.querySelector('[name*="[average]"]');
+    const form = document.getElementById('bulletin-form');
+    
+    // Form validation on submit
+    form.addEventListener('submit', function(e) {
+        clearErrors();
+        let isValid = true;
+        
+        // Check student selection
+        const studentSelect = form.querySelector('[name*="[student]"]');
+        if (studentSelect && !studentSelect.value) {
+            showError(studentSelect, 'Veuillez sélectionner un étudiant');
+            isValid = false;
+        }
+        
+        // Check academic year format (YYYY/YYYY)
+        const academicYear = form.querySelector('[name*="[academicYear]"]');
+        if (academicYear && academicYear.value) {
+            const yearPattern = /^\d{4}\/\d{4}$/;
+            if (!yearPattern.test(academicYear.value)) {
+                showError(academicYear, 'Format requis: 2025/2026');
+                isValid = false;
+            }
+        }
+        
+        // Check semester selection
+        const semesterSelect = form.querySelector('[name*="[semester]"]');
+        if (semesterSelect && !semesterSelect.value) {
+            showError(semesterSelect, 'Veuillez sélectionner un semestre');
+            isValid = false;
+        }
+        
+        // Check notes are between 0 and 20
+        const noteInputs = form.querySelectorAll('.note-input');
+        noteInputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (input.value && (isNaN(val) || val < 0 || val > 20)) {
+                showError(input, 'Note entre 0 et 20');
+                isValid = false;
+            }
+        });
+        
+        // Check coefficients are positive
+        const coefInputs = form.querySelectorAll('.coef-input');
+        coefInputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (input.value && (isNaN(val) || val <= 0)) {
+                showError(input, 'Coefficient positif requis');
+                isValid = false;
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            const firstError = form.querySelector('.field-error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+    
+    // Clear errors
+    function clearErrors() {
+        form.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+        form.querySelectorAll('.error-message').forEach(el => el.remove());
+    }
+    
+    // Show error
+    function showError(field, message) {
+        field.classList.add('field-error');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
+        field.parentElement.appendChild(errorDiv);
+    }
+    
+    // Real-time validation on blur
+    form.querySelectorAll('select, input').forEach(field => {
+        field.addEventListener('blur', function() {
+            this.classList.remove('field-error');
+            const wrapper = this.parentElement;
+            if (wrapper) {
+                wrapper.querySelectorAll('.error-message').forEach(e => e.remove());
+            }
+        });
+    });
     
     addButton.addEventListener('click', function() {
         const counter = list.dataset.widgetCounter;
@@ -417,7 +509,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if(input) {
                 input.classList.add('form-control-premium', 'form-control-sm');
                 if (input.name.includes('[coefficient]')) input.classList.add('text-center', 'coef-input');
-                if (input.name.includes('[note]')) input.classList.add('text-center', 'note-input');
+                if (input.name.includes('[noteCC]')) input.classList.add('text-center', 'note-cc');
+                if (input.name.includes('[noteDS]')) input.classList.add('text-center', 'note-ds');
+                if (input.name.includes('[noteExam]')) input.classList.add('text-center', 'note-exam');
+                if (input.name.includes('[note]') && !input.name.includes('noteCC') && !input.name.includes('noteDS') && !input.name.includes('noteExam')) {
+                    input.classList.add('text-center', 'note-finale');
+                    input.readOnly = true;
+                }
                 html += `<td>${input.outerHTML}</td>`;
             }
         });
@@ -443,7 +541,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function attachCalcEvents(row) {
-        row.querySelectorAll('input').forEach(input => {
+        // Auto-calculate note finale when CC/DS/Exam change
+        const ccInput = row.querySelector('.note-cc, [name*="[noteCC]"]');
+        const dsInput = row.querySelector('.note-ds, [name*="[noteDS]"]');
+        const examInput = row.querySelector('.note-exam, [name*="[noteExam]"]');
+        const noteFinale = row.querySelector('.note-finale, [name*="[note]"]:not([name*="noteCC"]):not([name*="noteDS"]):not([name*="noteExam"])');
+        
+        function recalcNote() {
+            const cc = parseFloat(ccInput?.value) || 0;
+            const ds = parseFloat(dsInput?.value) || 0;
+            const exam = parseFloat(examInput?.value) || 0;
+            const note = (cc * 0.10 + ds * 0.20 + exam * 0.70).toFixed(2);
+            if (noteFinale) noteFinale.value = note;
+            calculateAverage();
+        }
+        
+        if (ccInput) ccInput.addEventListener('input', recalcNote);
+        if (dsInput) dsInput.addEventListener('input', recalcNote);
+        if (examInput) examInput.addEventListener('input', recalcNote);
+        
+        row.querySelectorAll('.coef-input').forEach(input => {
             input.addEventListener('input', calculateAverage);
         });
     }
@@ -454,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalCoef = 0;
 
         rows.forEach(row => {
-            const noteInput = row.querySelector('.note-input');
+            const noteInput = row.querySelector('.note-finale, [name*="[note]"]:not([name*="noteCC"]):not([name*="noteDS"]):not([name*="noteExam"])');
             const coefInput = row.querySelector('.coef-input');
             if(noteInput && coefInput) {
                 const note = parseFloat(noteInput.value) || 0;
@@ -467,10 +584,133 @@ document.addEventListener('DOMContentLoaded', function() {
         const avg = totalCoef > 0 ? (totalWeighted / totalCoef).toFixed(2) : '0.00';
         avgInput.value = avg;
         
+        // Update mention based on average
+        const mentionSelect = form.querySelector('[name*="[mention]"]');
+        if (mentionSelect) {
+            const avgNum = parseFloat(avg);
+            let mention = 'Insuffisant';
+            if (avgNum >= 16) mention = 'Très Bien';
+            else if (avgNum >= 14) mention = 'Bien';
+            else if (avgNum >= 12) mention = 'Assez Bien';
+            else if (avgNum >= 10) mention = 'Passable';
+            
+            for (let opt of mentionSelect.options) {
+                if (opt.value === mention || opt.text === mention) {
+                    mentionSelect.value = opt.value;
+                    break;
+                }
+            }
+        }
+        
         // Dynamic effect on average input update
         avgInput.parentElement.style.transform = 'scale(1.1)';
         setTimeout(() => avgInput.parentElement.style.transform = 'scale(1)', 200);
     }
+
+    // Load grades button
+    const loadGradesBtn = document.getElementById('btn-load-grades');
+    loadGradesBtn.addEventListener('click', async function() {
+        const studentSelect = form.querySelector('[name*="[student]"]');
+        const yearInput = form.querySelector('[name*="[academicYear]"]');
+        const semesterSelect = form.querySelector('[name*="[semester]"]');
+        
+        if (!studentSelect?.value || !yearInput?.value || !semesterSelect?.value) {
+            alert('Veuillez d\'abord sélectionner un étudiant, une année académique et un semestre.');
+            return;
+        }
+        
+        loadGradesBtn.disabled = true;
+        loadGradesBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Chargement...';
+        
+        try {
+            const url = `/api/grades/student/${studentSelect.value}?academicYear=${encodeURIComponent(yearInput.value)}&semester=${encodeURIComponent(semesterSelect.value)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success && data.data.grades.length > 0) {
+                // Clear existing rows
+                container.innerHTML = '';
+                list.dataset.widgetCounter = 0;
+                
+                // Add rows for each grade
+                data.data.grades.forEach((grade, index) => {
+                    const counter = list.dataset.widgetCounter;
+                    const prototype = list.dataset.prototype;
+                    let newForm = prototype.replace(/__name__/g, counter);
+                    list.dataset.widgetCounter = parseInt(counter) + 1;
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = 'collection-item animate-row-in';
+                    
+                    const temp = document.createElement('div');
+                    temp.innerHTML = newForm;
+                    
+                    // Fill in the values
+                    const inputs = temp.querySelectorAll('input, textarea');
+                    inputs.forEach(input => {
+                        if (input.name.includes('[moduleName]')) input.value = grade.moduleName;
+                        if (input.name.includes('[noteCC]')) input.value = grade.noteCC || '';
+                        if (input.name.includes('[noteDS]')) input.value = grade.noteDS || '';
+                        if (input.name.includes('[noteExam]')) input.value = grade.noteExam || '';
+                        if (input.name.includes('[note]') && !input.name.includes('noteCC') && !input.name.includes('noteDS') && !input.name.includes('noteExam')) {
+                            input.value = grade.note;
+                            input.readOnly = true;
+                        }
+                        if (input.name.includes('[coefficient]')) input.value = grade.coefficient;
+                        input.classList.add('form-control-premium', 'form-control-sm');
+                        if (input.name.includes('[coefficient]')) input.classList.add('text-center', 'coef-input');
+                        if (input.name.includes('[noteCC]')) input.classList.add('text-center', 'note-cc');
+                        if (input.name.includes('[noteDS]')) input.classList.add('text-center', 'note-ds');
+                        if (input.name.includes('[noteExam]')) input.classList.add('text-center', 'note-exam');
+                        if (input.name.includes('[note]') && !input.name.includes('noteCC') && !input.name.includes('noteDS') && !input.name.includes('noteExam')) {
+                            input.classList.add('text-center', 'note-finale');
+                        }
+                    });
+                    
+                    let html = '';
+                    const fields = temp.querySelectorAll('.mb-3, .form-group');
+                    fields.forEach(field => {
+                        const input = field.querySelector('input, textarea');
+                        if (input) html += `<td>${input.outerHTML}</td>`;
+                    });
+                    html += `<td class="text-end pe-3"><button type="button" class="btn-remove-premium remove-item"><i class="fas fa-trash-alt"></i></button></td>`;
+                    
+                    tr.innerHTML = html;
+                    container.appendChild(tr);
+                    attachRemoveEvent(tr.querySelector('.remove-item'));
+                    attachCalcEvents(tr);
+                });
+                
+                // Update average and mention
+                avgInput.value = data.data.average;
+                const mentionSelect = form.querySelector('[name*="[mention]"]');
+                if (mentionSelect) {
+                    for (let opt of mentionSelect.options) {
+                        if (opt.value === data.data.mention || opt.text === data.data.mention) {
+                            mentionSelect.value = opt.value;
+                            break;
+                        }
+                    }
+                }
+                
+                // Update rank
+                const rankInput = form.querySelector('[name*="[classRank]"]');
+                if (rankInput && data.data.rank) {
+                    rankInput.value = data.data.rank;
+                }
+                
+                alert(`${data.data.grades.length} module(s) chargé(s) avec une moyenne de ${data.data.average} - Mention: ${data.data.mention}`);
+            } else {
+                alert('Aucune note trouvée pour cet étudiant/période. Vérifiez que les notes ont été saisies dans le module Gestion des Notes.');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Erreur lors du chargement des notes: ' + error.message);
+        } finally {
+            loadGradesBtn.disabled = false;
+            loadGradesBtn.innerHTML = '<i class="fas fa-download me-1"></i> Charger notes depuis les examens';
+        }
+    });
 
     document.querySelectorAll('.remove-item').forEach(attachRemoveEvent);
     document.querySelectorAll('.collection-item').forEach(attachCalcEvents);

@@ -92,4 +92,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getNumtel(): ?string { return $this->numtel; }
     public function setNumtel(string $numtel): static { $this->numtel = $numtel; return $this; }
+
+    // Alias for SMS service compatibility
+    public function getPhone(): ?string { return $this->numtel; }
 }

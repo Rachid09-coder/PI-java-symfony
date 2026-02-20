@@ -15,18 +15,21 @@ class AuditLogController extends AbstractController
     public function index(Request $request, AuditLogRepository $repo): Response
     {
         $entityType = $request->query->get('entity_type');
+        $entityId = $request->query->get('entity_id');
         $limit = $request->query->getInt('limit', 100);
 
+        $qb = $repo->createQueryBuilder('a');
         if ($entityType) {
-            $qb = $repo->createQueryBuilder('a')
-                ->andWhere('a.entityType = :type')
-                ->setParameter('type', $entityType)
-                ->orderBy('a.performedAt', 'DESC')
-                ->setMaxResults($limit);
-            $logs = $qb->getQuery()->getResult();
-        } else {
-            $logs = $repo->findRecent($limit);
+            $qb->andWhere('a.entityType = :type')
+                ->setParameter('type', $entityType);
         }
+        if ($entityId) {
+            $qb->andWhere('a.entityId = :id')
+                ->setParameter('id', $entityId);
+        }
+        $qb->orderBy('a.performedAt', 'DESC')
+            ->setMaxResults($limit);
+        $logs = $qb->getQuery()->getResult();
 
         return $this->render('admin/audit_log/index.html.twig', [
             'logs' => $logs,

@@ -62,8 +62,7 @@ class Bulletin
     #[Assert\NotBlank(message: "La mention est obligatoire.")]
     private ?string $mention = null;
 
-    #[ORM\Column]
-    #[Assert\NotNull(message: "Le rang est obligatoire.")]
+    #[ORM\Column(nullable: true)]
     private ?int $classRank = null;
 
     #[ORM\Column(length: 255, nullable: true)]

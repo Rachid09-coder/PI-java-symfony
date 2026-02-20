@@ -21,7 +21,7 @@ class Certification
     private ?User $student = null;
 
     #[ORM\ManyToOne(inversedBy: 'certifications')]
-    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+    #[ORM\JoinColumn(nullable: true, onDelete: "CASCADE")]
     private ?Bulletin $bulletin = null;
 
     #[ORM\Column(length: 50)]

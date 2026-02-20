@@ -1,79 +1,428 @@
 {% extends 'admin_layout.html.twig' %}
 
-{% block title %}EduSmart - Audit Log{% endblock %}
+{% block title %}Journal d'Audit & Traçabilité - EduSmart{% endblock %}
 
 {% block body %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Journal d'Audit & Traçabilité</h1>
-    <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            Filtrer par Type
-        </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{{ path('admin_audit_log_index') }}">Tous</a></li>
-            <li><a class="dropdown-item" href="{{ path('admin_audit_log_index', {entity_type: 'Bulletin'}) }}">Bulletins</a></li>
-            <li><a class="dropdown-item" href="{{ path('admin_audit_log_index', {entity_type: 'Certification'}) }}">Certifications</a></li>
-            <li><a class="dropdown-item" href="{{ path('admin_audit_log_index', {entity_type: 'User'}) }}">Utilisateurs</a></li>
-        </ul>
-    </div>
-</div>
+<div class="admin-page animate-fade-in py-4">
+    {# Orbes décoratives pour la touche futuriste #}
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
 
-<div class="card shadow border-0">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle small">
-                <thead class="table-light">
-                    <tr>
-                        <th>Date & Heure</th>
-                        <th>Utilisateur</th>
-                        <th>Action</th>
-                        <th>Entité</th>
-                        <th>ID</th>
-                        <th>Détails</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for log in logs %}
-                    <tr>
-                        <td class="text-nowrap">{{ log.performedAt|date('d/m/Y H:i:s') }}</td>
-                        <td>
-                            {% if log.performedBy %}
-                                <div class="fw-bold">{{ log.performedBy.name }}</div>
-                                <div class="text-muted" style="font-size: 0.75rem;">{{ log.performedBy.email }}</div>
-                            {% else %}
-                                <span class="text-muted">Système</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% set badge_class = 'bg-secondary' %}
-                            {% if log.action == 'CREATED' or log.action == 'PUBLISHED' %}{% set badge_class = 'bg-success' %}
-                            {% elseif log.action == 'DELETED' or log.action == 'REVOKED' %}{% set badge_class = 'bg-danger' %}
-                            {% elseif log.action == 'VALIDATED' %}{% set badge_class = 'bg-primary' %}{% endif %}
-                            <span class="badge {{ badge_class }}">{{ log.action }}</span>
-                        </td>
-                        <td>{{ log.entityType }}</td>
-                        <td><code>#{{ log.entityId }}</code></td>
-                        <td>
-                            {% if log.details %}
-                                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ log.id }}">
-                                    Voir JSON
-                                </button>
-                                <div class="collapse mt-1" id="details-{{ log.id }}">
-                                    <pre class="bg-light p-2 rounded" style="font-size: 0.7rem;">{{ log.details|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
-                                </div>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">Aucune activité enregistrée.</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <div class="container-fluid position-relative z-index-2">
+        <header class="mb-5 d-flex justify-content-between align-items-center flex-wrap gap-4">
+            <div>
+                <h1 class="h2 fw-900 text-dark mb-1">
+                    <i class="fas fa-shield-alt text-primary me-2"></i>
+                    Journal d'Audit & Traçabilité
+                </h1>
+                <p class="text-muted small mb-0">Historique complet des actions système - Conformité et sécurité des données académiques.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-4 align-items-center">
+                <div class="dropdown">
+                    <button class="btn-premium-action dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter text-primary me-2"></i> 
+                        <span>{{ current_filter ? current_filter : 'Tous les types' }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2">
+                        <li><a class="dropdown-item rounded-3 py-2 px-3 {{ not current_filter ? 'active' : '' }}" href="{{ path('admin_audit_log_index') }}"><i class="fas fa-list me-2 text-muted"></i>Tous</a></li>
+                        <li><hr class="dropdown-divider my-2"></li>
+                        <li><a class="dropdown-item rounded-3 py-2 px-3 {{ current_filter == 'Bulletin' ? 'active' : '' }}" href="{{ path('admin_audit_log_index', {entity_type: 'Bulletin'}) }}"><i class="fas fa-clipboard-list me-2 text-primary"></i>Bulletins</a></li>
+                        <li><a class="dropdown-item rounded-3 py-2 px-3 {{ current_filter == 'Certification' ? 'active' : '' }}" href="{{ path('admin_audit_log_index', {entity_type: 'Certification'}) }}"><i class="fas fa-certificate me-2 text-success"></i>Certifications</a></li>
+                        <li><a class="dropdown-item rounded-3 py-2 px-3 {{ current_filter == 'User' ? 'active' : '' }}" href="{{ path('admin_audit_log_index', {entity_type: 'User'}) }}"><i class="fas fa-users me-2 text-info"></i>Utilisateurs</a></li>
+                    </ul>
+                </div>
+                <a href="{{ path('admin_bulletin_index') }}" class="btn-premium-action shadow-sm">
+                    <i class="fas fa-clipboard-list text-primary"></i> <span>Bulletins</span>
+                </a>
+                <a href="{{ path('admin_certification_index') }}" class="btn-premium-action shadow-sm">
+                    <i class="fas fa-certificate text-primary"></i> <span>Certifications</span>
+                </a>
+            </div>
+        </header>
+
+        {# Stats Cards #}
+        <div class="row g-4 mb-5">
+            {% set total_logs = logs|length %}
+            {% set created_count = 0 %}
+            {% set published_count = 0 %}
+            {% set revoked_count = 0 %}
+            {% for log in logs %}
+                {% if log.action == 'CREATED' %}{% set created_count = created_count + 1 %}{% endif %}
+                {% if log.action == 'PUBLISHED' %}{% set published_count = published_count + 1 %}{% endif %}
+                {% if log.action == 'REVOKED' %}{% set revoked_count = revoked_count + 1 %}{% endif %}
+            {% endfor %}
+            
+            <div class="col-md-3">
+                <div class="stat-card-audit shadow-sm">
+                    <div class="stat-icon bg-primary-soft"><i class="fas fa-database text-primary"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ total_logs }}</div>
+                        <div class="stat-label">Total Entrées</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card-audit shadow-sm">
+                    <div class="stat-icon bg-success-soft"><i class="fas fa-plus-circle text-success"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ created_count }}</div>
+                        <div class="stat-label">Créations</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card-audit shadow-sm">
+                    <div class="stat-icon bg-info-soft"><i class="fas fa-rocket text-info"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ published_count }}</div>
+                        <div class="stat-label">Publications</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card-audit shadow-sm">
+                    <div class="stat-icon bg-danger-soft"><i class="fas fa-ban text-danger"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ revoked_count }}</div>
+                        <div class="stat-label">Révocations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-premium-glass shadow-lg border-0 overflow-hidden">
+            <div class="card-header bg-transparent py-4 px-4 border-bottom border-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="icon-pulse-blue me-3">
+                        <i class="fas fa-history text-primary"></i>
+                    </div>
+                    <h5 class="m-0 fw-800 text-dark">Registre des Actions</h5>
+                </div>
+                <div class="badge-premium-logic">
+                    <i class="fas fa-shield-check me-2"></i> Logs Sécurisés
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover-premium align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Date & Heure</th>
+                                <th>Utilisateur</th>
+                                <th>Action</th>
+                                <th>Entité</th>
+                                <th class="text-center">ID</th>
+                                <th>Détails</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for log in logs %}
+                            <tr class="animate-row-in">
+                                <td class="ps-4 text-nowrap">
+                                    <div class="d-flex align-items-center">
+                                        <div class="time-badge me-3">
+                                            <i class="far fa-clock text-muted"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-700 text-dark">{{ log.performedAt|date('d/m/Y') }}</div>
+                                            <div class="small text-muted">{{ log.performedAt|date('H:i:s') }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if log.performedBy %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-mini me-2">{{ log.performedBy.prenom|slice(0,1) }}{{ log.performedBy.name|slice(0,1) }}</div>
+                                            <div>
+                                                <div class="fw-700 text-dark">{{ log.performedBy.prenom }} {{ log.performedBy.name }}</div>
+                                                <div class="small text-muted">{{ log.performedBy.email }}</div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted"><i class="fas fa-robot me-1"></i>Système</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set badge_class = 'badge-action-default' %}
+                                    {% set badge_icon = 'fa-cog' %}
+                                    {% if log.action == 'CREATED' %}
+                                        {% set badge_class = 'badge-action-success' %}
+                                        {% set badge_icon = 'fa-plus' %}
+                                    {% elseif log.action == 'PUBLISHED' %}
+                                        {% set badge_class = 'badge-action-primary' %}
+                                        {% set badge_icon = 'fa-rocket' %}
+                                    {% elseif log.action == 'DELETED' or log.action == 'REVOKED' %}
+                                        {% set badge_class = 'badge-action-danger' %}
+                                        {% set badge_icon = 'fa-trash' %}
+                                    {% elseif log.action == 'VERIFIED' %}
+                                        {% set badge_class = 'badge-action-info' %}
+                                        {% set badge_icon = 'fa-check' %}
+                                    {% elseif log.action == 'VALIDATED' %}
+                                        {% set badge_class = 'badge-action-warning' %}
+                                        {% set badge_icon = 'fa-shield-check' %}
+                                    {% elseif log.action == 'UPDATED' %}
+                                        {% set badge_class = 'badge-action-secondary' %}
+                                        {% set badge_icon = 'fa-edit' %}
+                                    {% elseif log.action == 'PDF_GENERATED' %}
+                                        {% set badge_class = 'badge-action-danger' %}
+                                        {% set badge_icon = 'fa-file-pdf' %}
+                                    {% endif %}
+                                    <span class="{{ badge_class }}"><i class="fas {{ badge_icon }} me-1"></i>{{ log.action }}</span>
+                                </td>
+                                <td>
+                                    <span class="entity-badge">
+                                        {% if log.entityType == 'Bulletin' %}
+                                            <i class="fas fa-clipboard-list me-1 text-primary"></i>
+                                        {% elseif log.entityType == 'Certification' %}
+                                            <i class="fas fa-certificate me-1 text-success"></i>
+                                        {% else %}
+                                            <i class="fas fa-cube me-1 text-muted"></i>
+                                        {% endif %}
+                                        {{ log.entityType }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <code class="id-badge">{{ log.entityId }}</code>
+                                </td>
+                                <td class="small">
+                                    {% if log.details %}
+                                        <button type="button" class="btn-details-toggle" data-bs-toggle="modal" data-bs-target="#detailsModal{{ log.id }}">
+                                            <i class="fas fa-eye me-1"></i>Détails
+                                        </button>
+                                        
+                                        {# Modal #}
+                                        <div class="modal fade" id="detailsModal{{ log.id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content border-0 shadow-lg rounded-4">
+                                                    <div class="modal-header bg-light border-0 py-3">
+                                                        <h6 class="modal-title fw-800"><i class="fas fa-info-circle me-2 text-primary"></i>Détails de l'action</h6>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body p-4">
+                                                        <pre class="bg-dark text-light p-3 rounded-3 mb-0" style="font-size: 0.8rem; max-height: 300px; overflow: auto;">{{ log.details|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon mb-3">
+                                            <i class="fas fa-inbox fa-3x text-muted opacity-50"></i>
+                                        </div>
+                                        <h5 class="fw-800 text-dark">Aucun log disponible</h5>
+                                        <p class="text-muted small">Les actions sur les bulletins et certifications seront enregistrées ici.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* --- Futuristic Design System --- */
+    .fw-900 { font-weight: 900; }
+    .fw-800 { font-weight: 800; }
+    .fw-700 { font-weight: 700; }
+    .z-index-2 { z-index: 2; }
+    
+    /* Background Orbs */
+    .orb {
+        position: fixed;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        filter: blur(130px);
+        opacity: 0.08;
+        z-index: 0;
+        pointer-events: none;
+        animation: floatOrb 35s infinite alternate ease-in-out;
+    }
+    .orb-1 { top: -100px; left: -100px; background: #4f46e5; }
+    .orb-2 { bottom: -100px; right: -100px; background: #6366f1; }
+    @keyframes floatOrb {
+        from { transform: translate(0, 0) scale(1) rotate(0deg); }
+        to { transform: translate(120px, 80px) scale(1.15) rotate(15deg); }
+    }
+
+    /* Glassmorphism Card */
+    .card-premium-glass {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(226, 232, 240, 0.5) !important;
+        border-radius: 30px;
+    }
+
+    /* Stat Cards */
+    .stat-card-audit {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+    }
+    .stat-card-audit:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    }
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .stat-value { font-size: 2rem; font-weight: 900; color: #1E293B; }
+    .stat-label { font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .bg-primary-soft { background: rgba(99, 102, 241, 0.1); }
+    .bg-success-soft { background: rgba(16, 185, 129, 0.1); }
+    .bg-info-soft { background: rgba(59, 130, 246, 0.1); }
+    .bg-danger-soft { background: rgba(239, 68, 68, 0.1); }
+
+    /* Table Styles */
+    .table-hover-premium thead th {
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #94a3b8;
+        padding: 22px 18px;
+        border-bottom: 2px solid #f1f5f9;
+        background: rgba(248, 250, 252, 0.4);
+    }
+    .table-hover-premium tbody td {
+        padding: 20px 18px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+    }
+    .table-hover-premium tbody tr:hover {
+        background: rgba(99, 102, 241, 0.03);
+    }
+
+    /* Avatar Mini */
+    .avatar-mini {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Action Badges */
+    .badge-action-default { background: #f1f5f9; color: #64748b; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+    .badge-action-success { background: #D1FAE5; color: #059669; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+    .badge-action-primary { background: #EEF2FF; color: #4F46E5; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+    .badge-action-danger { background: #FEE2E2; color: #DC2626; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+    .badge-action-info { background: #DBEAFE; color: #2563EB; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+    .badge-action-warning { background: #FEF3C7; color: #D97706; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+    .badge-action-secondary { background: #E2E8F0; color: #475569; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+
+    /* Entity Badge */
+    .entity-badge {
+        font-weight: 700;
+        color: #1E293B;
+    }
+
+    /* ID Badge */
+    .id-badge {
+        background: #F1F5F9;
+        color: #6366F1;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    /* Details Button */
+    .btn-details-toggle {
+        background: #EEF2FF;
+        color: #4F46E5;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-details-toggle:hover {
+        background: #4F46E5;
+        color: white;
+    }
+
+    /* Premium Buttons */
+    .btn-premium-action {
+        background: white;
+        color: #1E293B;
+        border: 1px solid #E2E8F0;
+        padding: 14px 24px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    .btn-premium-action:hover {
+        background: #F8FAFC;
+        border-color: #6366F1;
+        color: #4F46E5;
+        transform: translateY(-2px);
+    }
+
+    .badge-premium-logic {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+    
+    .icon-pulse-blue {
+        width: 48px;
+        height: 48px;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    /* Animations */
+    .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .animate-row-in { animation: rowIn 0.4s ease-out; }
+    @keyframes rowIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* Dropdown */
+    .dropdown-item.active { background: #EEF2FF; color: #4F46E5; }
+</style>
 {% endblock %}

@@ -2,13 +2,12 @@
 
 namespace App\Form;
 
-use App\Entity\Bulletin;
 use App\Entity\Certification;
 use App\Entity\User;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -25,16 +24,15 @@ class CertificationType extends AbstractType
                 'choice_label' => function(User $user) {
                     return $user->getPrenom() . ' ' . $user->getName() . ' (' . $user->getEmail() . ')';
                 },
+                'query_builder' => function (EntityRepository $er) {
+                    return $er->createQueryBuilder('u')
+                        ->where('u.role = :role')
+                        ->setParameter('role', 'etudiant')
+                        ->orderBy('u.name', 'ASC');
+                },
                 'label' => 'Étudiant',
                 'placeholder' => 'Sélectionner un étudiant',
-            ])
-            ->add('bulletin', EntityType::class, [
-                'class' => Bulletin::class,
-                'choice_label' => function(Bulletin $bulletin) {
-                    return $bulletin->getAcademicYear() . ' - ' . $bulletin->getSemester();
-                },
-                'label' => 'Bulletin',
-                'placeholder' => 'Sélectionner un bulletin',
+                'attr' => ['class' => 'form-select-premium']
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type de certification',
@@ -46,17 +44,29 @@ class CertificationType extends AbstractType
                     'Attestation de stage' => 'STAGE',
                     'Attestation de présence' => 'PRESENCE',
                 ],
+                'attr' => ['class' => 'form-select-premium']
             ])
+            ->add('semesterChoice', TextType::class, [
+                'label' => 'Période concernée',
+                'mapped' => false,
+                'required' => false,
+                'attr' => ['id' => 'certification_semesterChoice', 'class' => 'form-select-premium']
+            ])
+            // Status removed - managed automatically (defaults to ACTIVE, can be revoked via button)
             ->add('verificationCode', TextType::class, [
                 'label' => 'Code de vérification',
                 'required' => false,
-                'attr' => ['placeholder' => 'Généré automatiquement si vide'],
+                'attr' => ['placeholder' => 'Généré automatiquement si vide', 'class' => 'form-control-premium'],
             ])
-            ->add('validUntil', DateType::class, [
+            ->add('validUntil', TextType::class, [
                 'label' => 'Valide jusqu\'au',
                 'required' => false,
-                'widget' => 'single_text',
-                'input' => 'datetime_immutable',
+                'mapped' => false,
+                'attr' => [
+                    'class' => 'form-control-premium flatpickr-date',
+                    'placeholder' => 'Sélectionner une date',
+                    'autocomplete' => 'off'
+                ]
             ])
             ->add('pdfFile', FileType::class, [
                 'label' => 'Fichier PDF (optionnel)',
@@ -69,14 +79,7 @@ class CertificationType extends AbstractType
                         'mimeTypesMessage' => 'Veuillez uploader un fichier PDF valide',
                     ])
                 ],
-            ])
-            ->add('status', ChoiceType::class, [
-                'label' => 'Statut',
-                'choices' => [
-                    'Actif' => 'ACTIVE',
-                    'Révoqué' => 'REVOKED',
-                    'Expiré' => 'EXPIRED',
-                ],
+                'attr' => ['class' => 'form-control-premium']
             ])
         ;
     }

@@ -1,25 +1,68 @@
-{% extends 'admin_layout.html.twig' %}
+﻿{% extends 'admin_layout.html.twig' %}
 
-{% block title %}Nouveau Métier - EduSmart{% endblock %}
+{% block title %}Nouveau Metier - EduSmart{% endblock %}
 
 {% block body %}
-<div class="mb-4">
-    <a href="{{ path('app_metier_index') }}" class="btn btn-link p-0 text-decoration-none">
-        <i class="fas fa-arrow-left me-1"></i> Retour à la liste
-    </a>
-    <h1 class="h3 mt-2">Créer un nouveau métier</h1>
-</div>
+<div class="admin-page animate-fade-in py-4">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow border-0 overflow-hidden">
-            <div class="card-header bg-primary py-3">
-                <h6 class="m-0 font-weight-bold text-white">Informations du Métier</h6>
+    <div class="container-fluid position-relative z-index-2">
+        <header class="mb-5">
+            <a href="{{ path('app_metier_index') }}" class="btn-back-premium mb-3">
+                <i class="fas fa-arrow-left me-2"></i> Retour aux Metiers
+            </a>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <h1 class="h2 fw-900 text-dark mb-1">
+                        <i class="fas fa-briefcase text-primary me-2"></i>
+                        Nouveau Metier
+                    </h1>
+                    <p class="text-muted small mb-0">Creez une nouvelle filiere professionnelle.</p>
+                </div>
+                <div class="badge-premium-logic">
+                    <i class="fas fa-plus-circle me-2"></i> Creation
+                </div>
             </div>
-            <div class="card-body p-4">
-                {{ include('metier/_form.html.twig') }}
+        </header>
+
+        <div class="row justify-content-center">
+            <div class="col-xl-8">
+                <div class="card card-premium-glass shadow-lg border-0 overflow-hidden">
+                    <div class="card-header bg-transparent border-0 py-4 px-4 px-md-5">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse-blue me-3">
+                                <i class="fas fa-edit text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-800 text-dark mb-0">Informations du Metier</h4>
+                                <p class="text-muted small mb-0">Remplissez les details de la filiere.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5 pt-0">
+                        {{ include('metier/_form.html.twig') }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .fw-900 { font-weight: 900; }
+    .fw-800 { font-weight: 800; }
+    .z-index-2 { z-index: 2; }
+    .orb { position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(130px); opacity: 0.08; z-index: 0; pointer-events: none; }
+    .orb-1 { top: -100px; left: -100px; background: #4f46e5; }
+    .orb-2 { bottom: -100px; right: -100px; background: #10b981; }
+    .card-premium-glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(25px); border: 1px solid rgba(226, 232, 240, 0.5) !important; border-radius: 30px !important; }
+    .icon-pulse-blue { width: 56px; height: 56px; background: rgba(99, 102, 241, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    .btn-back-premium { display: inline-flex; align-items: center; color: #64748b; text-decoration: none; font-weight: 600; transition: all 0.2s ease; padding: 8px 16px; border-radius: 10px; background: rgba(241, 245, 249, 0.8); }
+    .btn-back-premium:hover { color: #4f46e5; background: #EEF2FF; transform: translateX(-3px); }
+    .badge-premium-logic { background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 10px 18px; border-radius: 50px; font-weight: 700; font-size: 0.85rem; }
+    .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
 {% endblock %}

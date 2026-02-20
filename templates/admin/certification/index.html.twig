@@ -14,7 +14,7 @@
                 <h1 class="h2 fw-900 text-dark mb-1">Certifications Officielles</h1>
                 <p class="text-muted small mb-0">Régistre de délivrance et suivi des protocoles académiques sécurisés.</p>
             </div>
-            <div class="d-flex flex-wrap gap-3">
+            <div class="header-buttons">
                 <a href="{{ path('admin_audit_log_index') }}" class="btn-premium-action shadow-sm">
                     <i class="fas fa-history text-primary"></i> <span>Audit Log</span>
                 </a>
@@ -39,6 +39,39 @@
                 <div class="badge-premium-logic">
                     <i class="fas fa-database me-2"></i> {{ certifications|length }} instances actives
                 </div>
+            </div>
+
+            {# Barre de recherche et tri #}
+            <div class="search-sort-bar px-4 py-3 border-bottom" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+                <form method="GET" action="{{ path('admin_certification_index') }}" class="d-flex flex-wrap gap-3 align-items-center">
+                    <div class="flex-grow-1" style="min-width: 250px;">
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);">
+                            <span class="input-group-text border-0" style="background: white; padding-left: 16px;"><i class="fas fa-search" style="color: #6366F1;"></i></span>
+                            <input type="text" name="search" class="form-control border-0" style="padding: 12px 16px; font-weight: 500;" placeholder="Rechercher par nom, prénom, email ou numéro..." value="{{ search|default('') }}">
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <select name="sort" class="form-select" style="width: auto; border-radius: 10px; border: 1px solid #E2E8F0; padding: 10px 35px 10px 14px; font-weight: 600; color: #475569; background-color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                            <option value="issuedAt" {{ sortBy == 'issuedAt' ? 'selected' : '' }}>Date d'émission</option>
+                            <option value="typeLabel" {{ sortBy == 'typeLabel' ? 'selected' : '' }}>Type</option>
+                            <option value="status" {{ sortBy == 'status' ? 'selected' : '' }}>Statut</option>
+                            <option value="uniqueNumber" {{ sortBy == 'uniqueNumber' ? 'selected' : '' }}>Numéro unique</option>
+                            <option value="studentName" {{ sortBy == 'studentName' ? 'selected' : '' }}>Nom étudiant</option>
+                        </select>
+                        <select name="order" class="form-select" style="width: auto; border-radius: 10px; border: 1px solid #E2E8F0; padding: 10px 35px 10px 14px; font-weight: 600; color: #475569; background-color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                            <option value="DESC" {{ sortOrder == 'DESC' ? 'selected' : '' }}>Décroissant</option>
+                            <option value="ASC" {{ sortOrder == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                        </select>
+                        <button type="submit" class="btn-premium-action shadow-sm" style="padding: 10px 20px;">
+                            <i class="fas fa-filter text-primary"></i> <span>Filtrer</span>
+                        </button>
+                        {% if search or sortBy != 'issuedAt' or sortOrder != 'DESC' %}
+                        <a href="{{ path('admin_certification_index') }}" class="btn-premium-action shadow-sm" style="padding: 10px 20px; border-color: #EF4444;">
+                            <i class="fas fa-times" style="color: #EF4444;"></i> <span style="color: #EF4444;">Réinitialiser</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
             </div>
             
             <div class="card-body p-0">
@@ -93,28 +126,58 @@
                                     {% endif %}
                                 </td>
                                 <td class="pe-4 text-end">
-                                    <div class="d-flex justify-content-end gap-2 action-btns">
+                                    <div class="d-flex justify-content-end gap-3 action-btns">
                                         {% if cert.pdfPath %}
-                                            <a href="{{ path('admin_certification_pdf', {id: cert.id}) }}" class="btn-action-premium text-danger" target="_blank" title="Download PDF">
+                                            <a href="{{ path('admin_certification_pdf', {id: cert.id}) }}" class="btn-action-premium text-danger" target="_blank" title="Voir PDF">
                                                 <i class="fas fa-file-pdf"></i>
                                             </a>
+                                            <form action="{{ path('admin_certification_generate_pdf', {id: cert.id}) }}" method="POST" style="display:inline;">
+                                                <button type="submit" class="btn-action-premium text-success" title="Régénérer PDF">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </form>
                                         {% else %}
                                             <form action="{{ path('admin_certification_generate_pdf', {id: cert.id}) }}" method="POST" style="display:inline;">
-                                                <button class="btn-action-premium text-primary" title="Generate PDF">
-                                                    <i class="fas fa-dna"></i>
+                                                <button class="btn-action-premium text-primary" title="Générer PDF">
+                                                    <i class="fas fa-file-export"></i>
                                                 </button>
                                             </form>
                                         {% endif %}
                                         
-                                        <a href="{{ path('admin_certification_edit', {id: cert.id}) }}" class="btn-action-premium text-warning {{ cert.revoked ? 'disabled' : '' }}" title="Modify">
+                                        <a href="{{ path('admin_certification_show', {id: cert.id}) }}" class="btn-action-premium text-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        <a href="{{ path('admin_certification_edit', {id: cert.id}) }}" class="btn-action-premium text-warning {{ cert.revoked ? 'disabled' : '' }}" title="Modifier">
                                             <i class="fas fa-pen-nib"></i>
                                         </a>
 
+                                        {# Boutons SMS et Email #}
+                                        {% if cert.status == 'ACTIVE' and cert.student.numtel %}
+                                        <form action="{{ path('admin_certification_send_sms', {id: cert.id}) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn-action-premium" style="color: #8B5CF6;" title="Envoyer SMS">
+                                                <i class="fas fa-sms"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        {% if cert.status == 'ACTIVE' and cert.student.email %}
+                                        <form action="{{ path('admin_certification_send_email', {id: cert.id}) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn-action-premium text-info" title="Envoyer Email">
+                                                <i class="fas fa-envelope"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+
                                         {% if not cert.revoked %}
-                                        <button class="btn-action-premium text-danger" data-bs-toggle="modal" data-bs-target="#revokeModal{{ cert.id }}" title="Revoke">
+                                        <button class="btn-action-premium text-danger" data-bs-toggle="modal" data-bs-target="#revokeModal{{ cert.id }}" title="Révoquer">
                                             <i class="fas fa-lock"></i>
                                         </button>
                                         {% endif %}
+
+                                        {# Bouton Supprimer #}
+                                        <button class="btn-action-premium text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ cert.id }}" title="Supprimer">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
                                     </div>
 
                                     {# Modal de révocation futuriste #}
@@ -159,6 +222,42 @@
                                         </div>
                                     </div>
                                     {% endif %}
+
+                                    {# Modal de suppression #}
+                                    <div class="modal fade" id="deleteModal{{ cert.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content card-premium-glass shadow-2xl border-0 overflow-hidden">
+                                                <form action="{{ path('admin_certification_delete', {id: cert.id}) }}" method="POST">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cert.id) }}">
+                                                    <div class="modal-header border-0 py-4 px-4" style="background: linear-gradient(135deg, #DC2626, #B91C1C);">
+                                                        <h5 class="modal-title fw-800 text-white"><i class="fas fa-trash-alt me-2"></i>Supprimer Certification</h5>
+                                                        <button type="button" class="btn-close btn-close-white opacity-50" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body p-4 p-md-5">
+                                                        <div class="alert bg-danger-soft p-4 rounded-4 border-0 mb-4">
+                                                            <div class="d-flex">
+                                                                <i class="fas fa-exclamation-triangle fa-2x text-danger me-3"></i>
+                                                                <div>
+                                                                    <strong class="d-block text-danger mb-1">Suppression Permanente</strong>
+                                                                    <span class="small text-danger opacity-80">Cette action supprimera définitivement la certification <strong>{{ cert.uniqueNumber }}</strong>.</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <p class="text-muted mb-0">
+                                                            <strong>Étudiant :</strong> {{ cert.student.prenom }} {{ cert.student.name }}<br>
+                                                            <strong>Type :</strong> {{ cert.getTypeLabel() }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="modal-footer bg-transparent border-0 p-4 pt-0">
+                                                        <button type="button" class="btn-premium-cancel px-4" data-bs-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-danger btn-pill fw-800 px-5 shadow-lg">
+                                                            <i class="fas fa-trash-alt me-2"></i>Supprimer
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         {% else %}
@@ -240,11 +339,17 @@
     .revoked-row { background: rgba(239, 68, 68, 0.02); }
 
     /* Buttons */
+    .header-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        row-gap: 12px;
+    }
     .btn-premium-launch {
         background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
         color: white !important;
         border: none;
-        padding: 12px 28px;
+        padding: 14px 28px;
         border-radius: 50px;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
@@ -257,7 +362,7 @@
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(10px);
         border: 1px solid #e2e8f0;
-        padding: 12px 20px;
+        padding: 14px 24px;
         border-radius: 50px;
         color: #64748b;
         font-weight: 800;
@@ -275,8 +380,8 @@
     }
 
     .btn-action-premium {
-        width: 36px;
-        height: 36px;
+        width: 38px;
+        height: 38px;
         border-radius: 12px;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
@@ -286,6 +391,7 @@
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         color: inherit;
         text-decoration: none;
+        margin: 0 2px;
     }
     .btn-action-premium:hover {
         transform: scale(1.2) rotate(5deg);
@@ -425,5 +531,49 @@
     .animate-row-in:nth-child({{ i }}) { animation-delay: {{ 0.05 * i }}s; }
     {% endfor %}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="search"]');
+    const tableBody = document.querySelector('table.table-hover-premium tbody');
+    const rows = tableBody ? tableBody.querySelectorAll('tr.animate-row-in') : [];
+    
+    if (searchInput && rows.length > 0) {
+        // Dynamic search on input
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            rows.forEach(function(row) {
+                const studentName = row.querySelector('td:first-child .fw-800');
+                const studentEmail = row.querySelector('td:first-child .font-monospace');
+                const uniqueNumber = row.querySelector('td:nth-child(3)');
+                const certType = row.querySelector('td:nth-child(2)');
+                
+                const name = studentName ? studentName.textContent.toLowerCase() : '';
+                const email = studentEmail ? studentEmail.textContent.toLowerCase() : '';
+                const number = uniqueNumber ? uniqueNumber.textContent.toLowerCase() : '';
+                const type = certType ? certType.textContent.toLowerCase() : '';
+                
+                const matches = name.includes(query) || email.includes(query) || number.includes(query) || type.includes(query);
+                row.style.display = matches ? '' : 'none';
+            });
+            
+            // Update count
+            const visibleCount = Array.from(rows).filter(r => r.style.display !== 'none').length;
+            const badge = document.querySelector('.badge-premium-logic');
+            if (badge) {
+                badge.innerHTML = '<i class="fas fa-database me-2"></i> ' + visibleCount + ' instances actives';
+            }
+        });
+        
+        // Submit form on Enter
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                this.closest('form').submit();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
 

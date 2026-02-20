@@ -46,6 +46,25 @@ class Exam
     #[ORM\Column(nullable: true)]
     private ?int $duration = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $moduleName = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $gradeCategory = null; // 'cc', 'ds', 'exam'
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $academicYear = null; // ex: "2024-2025"
+
+    #[ORM\Column(nullable: true)]
+    private ?int $semester = null; // 1 ou 2
+
+    #[ORM\Column(nullable: true)]
+    private ?float $coefficient = null;
+
+    #[ORM\ManyToOne(targetEntity: Course::class, inversedBy: 'exams')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Course $course = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -181,5 +200,99 @@ class Exam
         }
 
         return $this;
+    }
+
+    public function getModuleName(): ?string
+    {
+        return $this->moduleName;
+    }
+
+    public function setModuleName(?string $moduleName): static
+    {
+        $this->moduleName = $moduleName;
+
+        return $this;
+    }
+
+    public function getGradeCategory(): ?string
+    {
+        return $this->gradeCategory;
+    }
+
+    public function setGradeCategory(?string $gradeCategory): static
+    {
+        $this->gradeCategory = $gradeCategory;
+
+        return $this;
+    }
+
+    public function getAcademicYear(): ?string
+    {
+        return $this->academicYear;
+    }
+
+    public function setAcademicYear(?string $academicYear): static
+    {
+        $this->academicYear = $academicYear;
+
+        return $this;
+    }
+
+    public function getSemester(): ?int
+    {
+        return $this->semester;
+    }
+
+    public function setSemester(?int $semester): static
+    {
+        $this->semester = $semester;
+
+        return $this;
+    }
+
+    public function getCoefficient(): ?float
+    {
+        return $this->coefficient;
+    }
+
+    public function setCoefficient(?float $coefficient): static
+    {
+        $this->coefficient = $coefficient;
+
+        return $this;
+    }
+
+    public function getCourse(): ?Course
+    {
+        return $this->course;
+    }
+
+    public function setCourse(?Course $course): static
+    {
+        $this->course = $course;
+
+        return $this;
+    }
+
+    /**
+     * Retourne le coefficient effectif (du cours lié ou du champ local)
+     */
+    public function getEffectiveCoefficient(): ?float
+    {
+        if ($this->course && $this->course->getCoefficient()) {
+            return $this->course->getCoefficient();
+        }
+        return $this->coefficient;
+    }
+
+    /**
+     * Retourne le nom du module/matière effectif (du cours lié ou du champ local)
+     */
+    public function getEffectiveModuleName(): ?string
+    {
+        if ($this->course) {
+            return $this->course->getTitle();
+        }
+        return $this->moduleName;
     }
 }
