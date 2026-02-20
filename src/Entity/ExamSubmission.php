@@ -26,6 +26,14 @@ class ExamSubmission
     #[ORM\Column]
     private ?\DateTimeImmutable $submittedAt = null;
 
+    /** When the student clicked "Commencer l'examen" (exam start). */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $startedAt = null;
+
+    /** When the attempt was closed (left page or time expired). No more submission allowed. */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $closedAt = null;
+
     #[ORM\ManyToOne(inversedBy: 'submissions')]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $student = null;
@@ -93,6 +101,36 @@ class ExamSubmission
         $this->submittedAt = $submittedAt;
 
         return $this;
+    }
+
+    public function getStartedAt(): ?\DateTimeImmutable
+    {
+        return $this->startedAt;
+    }
+
+    public function setStartedAt(?\DateTimeImmutable $startedAt): static
+    {
+        $this->startedAt = $startedAt;
+
+        return $this;
+    }
+
+    public function getClosedAt(): ?\DateTimeImmutable
+    {
+        return $this->closedAt;
+    }
+
+    public function setClosedAt(?\DateTimeImmutable $closedAt): static
+    {
+        $this->closedAt = $closedAt;
+
+        return $this;
+    }
+
+    /** True if the student can no longer submit (left or time up). */
+    public function isClosed(): bool
+    {
+        return $this->closedAt !== null;
     }
 
     public function getStudent(): ?User

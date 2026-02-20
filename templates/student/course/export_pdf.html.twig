@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon cours — {{ course.title }}</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { font-family: 'DejaVu Sans', sans-serif; color: #1e293b; font-size: 11pt; line-height: 1.5; }
+        /* Cover: block layout only, no flex/vh - Dompdf friendly */
+        .cover-page {
+            padding: 50px 45px 50px 45px;
+            background-color: #5a67d8;
+            color: #ffffff;
+            page-break-after: always;
+        }
+        .cover-page .brand {
+            font-size: 11pt;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 80px;
+        }
+        .cover-page .label {
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+        .cover-page h1 {
+            font-size: 24pt;
+            font-weight: 900;
+            line-height: 1.25;
+            margin-bottom: 35px;
+            color: #ffffff;
+        }
+        .cover-page .personal-box {
+            padding: 18px 22px;
+            background-color: rgba(255,255,255,0.2);
+            margin-bottom: 50px;
+            width: 280px;
+        }
+        .cover-page .personal-box .small {
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .cover-page .personal-box .name { font-size: 13pt; font-weight: 700; }
+        .cover-page .date { font-size: 10pt; opacity: 0.95; }
+        .cover-page .quote {
+            margin-top: 60px;
+            font-size: 10pt;
+            font-style: italic;
+            opacity: 0.9;
+            border-left: 4px solid rgba(255,255,255,0.6);
+            padding-left: 16px;
+        }
+        /* Résumé page */
+        .summary-page { padding: 45px 50px 50px 50px; }
+        .summary-page .page-title {
+            font-size: 18pt;
+            font-weight: 800;
+            color: #5a67d8;
+            margin-bottom: 8px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #5a67d8;
+        }
+        .summary-page .page-subtitle {
+            font-size: 10pt;
+            color: #64748b;
+            margin-bottom: 28px;
+        }
+        .section-title {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #334155;
+            margin: 28px 0 14px 0;
+            padding-left: 12px;
+            border-left: 4px solid #5a67d8;
+        }
+        .description-text {
+            color: #475569;
+            text-align: justify;
+            margin-bottom: 20px;
+            line-height: 1.65;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 28px 0;
+        }
+        .info-table td {
+            padding: 14px 18px;
+            border: 1px solid #e2e8f0;
+        }
+        .info-table td:first-child { color: #64748b; width: 38%; background-color: #f8fafc; }
+        .info-table td:last-child { font-weight: 700; color: #1e293b; }
+        .module-row {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background-color: #f1f5f9;
+            border-left: 4px solid #5a67d8;
+        }
+        .module-num { font-weight: 700; color: #5a67d8; margin-right: 8px; }
+        .footer-box {
+            margin-top: 35px;
+            padding: 20px 24px;
+            background-color: #eef2ff;
+            border: 1px solid #c7d2fe;
+            font-size: 9pt;
+            color: #4338ca;
+            text-align: center;
+        }
+        .footer-box strong { color: #4f46e5; }
+        .divider { height: 1px; background-color: #e2e8f0; margin: 24px 0; }
+    </style>
+</head>
+<body>
+    {# Page 1 : Couverture — layout simple pour que Dompdf affiche tout #}
+    <div class="cover-page">
+        <div class="brand">EduSmart — Espace Étudiant</div>
+        <div class="label">Mon cours</div>
+        <h1>{{ course.title }}</h1>
+        <div class="personal-box">
+            <div class="small">Exemplaire personnel</div>
+            <div class="name">{{ studentName }}</div>
+        </div>
+        <div class="date">Généré le {{ exportDate }}</div>
+        <div class="quote">« Ce document est votre résumé personnalisé. Le contenu complet du cours suit après cette page. »</div>
+    </div>
+
+    {# Page 2 : Résumé du cours #}
+    <div class="summary-page">
+        <div class="page-title">Résumé du cours</div>
+        <div class="page-subtitle">Conservez ce document pour réviser ou partager votre progression.</div>
+
+        <div class="section-title">Description</div>
+        <p class="description-text">{{ course.description|default("Ce cours vous permet de développer vos compétences et d'approfondir vos connaissances dans le domaine.") }}</p>
+
+        <div class="section-title">Informations</div>
+        <table class="info-table">
+            <tr><td>Date de création</td><td>{{ course.createdAt|date('d/m/Y') }}</td></tr>
+            <tr><td>Nombre de modules</td><td>{{ course.modules|length }}</td></tr>
+            <tr><td>Tarif</td><td>{{ course.price > 0 ? course.price|number_format(2, ',', ' ') ~ ' €' : 'Gratuit' }}</td></tr>
+            <tr><td>Support PDF du cours</td><td>{{ course.pdfPath ? 'Inclus dans ce document (pages suivantes)' : 'Non' }}</td></tr>
+        </table>
+
+        <div class="section-title">Modules inclus</div>
+        {% if course.modules|length > 0 %}
+            {% for module in course.modules %}
+                <div class="module-row"><span class="module-num">{{ loop.index }}.</span> {{ module.title }}</div>
+            {% endfor %}
+        {% else %}
+            <p style="color:#64748b;">Aucun module associé pour le moment.</p>
+        {% endif %}
+
+        <div class="divider"></div>
+        <div class="footer-box">
+            <strong>EduSmart</strong> — Résumé généré à votre intention. Les pages suivantes contiennent le support du cours lorsqu'il est disponible.
+        </div>
+    </div>
+</body>
+</html>

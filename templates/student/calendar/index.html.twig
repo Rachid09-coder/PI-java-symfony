@@ -1,0 +1,753 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Calendrier - EduSmart{% endblock %}
+
+{% block stylesheets %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.css' rel='stylesheet' />
+<style>
+    .calendar-page { padding: 0 20px 40px; }
+
+    /* ── Hero Banner ── */
+    .calendar-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 28px;
+        padding: 40px 45px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+    .calendar-hero::before {
+        content: '';
+        position: absolute;
+        top: -60%;
+        right: -15%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: floatBubble 8s ease-in-out infinite;
+    }
+    .calendar-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -50%;
+        left: -8%;
+        width: 380px;
+        height: 380px;
+        background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: floatBubble 10s ease-in-out infinite reverse;
+    }
+    @keyframes floatBubble {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50%      { transform: translateY(-25px) scale(1.05); }
+    }
+    .hero-inner { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; }
+    .hero-text h2 {
+        font-size: 2.2rem;
+        font-weight: 900;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+    }
+    .hero-text p { font-size: 1rem; opacity: 0.88; }
+    .hero-right {
+        display: flex;
+        gap: 18px;
+    }
+    .hero-stat-card {
+        background: rgba(255,255,255,0.16);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.22);
+        border-radius: 18px;
+        padding: 18px 24px;
+        min-width: 135px;
+        text-align: center;
+        transition: transform 0.3s;
+    }
+    .hero-stat-card:hover { transform: translateY(-4px); }
+    .hero-stat-card .val { font-size: 1.9rem; font-weight: 900; display: block; line-height: 1; }
+    .hero-stat-card .lbl { font-size: 0.75rem; opacity: 0.82; margin-top: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ── Layout ── */
+    .calendar-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 28px;
+        align-items: start;
+    }
+
+    /* ── Calendar Wrapper ── */
+    .calendar-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.04);
+        padding: 28px;
+        overflow: hidden;
+    }
+
+    /* ── FullCalendar Overrides ── */
+    .fc {
+        font-family: 'Inter', sans-serif !important;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 1.3rem !important;
+        font-weight: 800 !important;
+        color: #1E293B;
+        text-transform: capitalize;
+    }
+    .fc .fc-button {
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 8px 16px !important;
+        font-weight: 600 !important;
+        font-size: 0.82rem !important;
+        box-shadow: 0 2px 8px rgba(102,126,234,0.25) !important;
+        transition: all 0.3s ease !important;
+        text-transform: capitalize !important;
+    }
+    .fc .fc-button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 18px rgba(102,126,234,0.35) !important;
+    }
+    .fc .fc-button-active {
+        background: linear-gradient(135deg, #764ba2, #667eea) !important;
+        box-shadow: 0 4px 14px rgba(118,75,162,0.4) !important;
+    }
+    .fc .fc-button-group .fc-button {
+        border-radius: 0 !important;
+    }
+    .fc .fc-button-group .fc-button:first-child {
+        border-radius: 10px 0 0 10px !important;
+    }
+    .fc .fc-button-group .fc-button:last-child {
+        border-radius: 0 10px 10px 0 !important;
+    }
+    .fc .fc-col-header-cell {
+        background: linear-gradient(135deg, rgba(102,126,234,0.06), rgba(118,75,162,0.04));
+        padding: 12px 0 !important;
+    }
+    .fc .fc-col-header-cell-cushion {
+        font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        color: #64748B !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        text-decoration: none !important;
+    }
+    .fc .fc-daygrid-day-number {
+        font-weight: 600 !important;
+        color: #334155 !important;
+        padding: 8px 10px !important;
+        text-decoration: none !important;
+    }
+    .fc .fc-day-today {
+        background: rgba(102,126,234,0.06) !important;
+    }
+    .fc .fc-day-today .fc-daygrid-day-number {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white !important;
+        border-radius: 10px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 4px;
+    }
+    .fc .fc-daygrid-event {
+        border-radius: 8px !important;
+        padding: 3px 8px !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        border: none !important;
+        margin: 1px 4px !important;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .fc .fc-daygrid-event:hover {
+        transform: scale(1.03);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+    .fc .fc-event-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .fc td, .fc th {
+        border-color: #F1F5F9 !important;
+    }
+    .fc .fc-scrollgrid {
+        border-color: #E2E8F0 !important;
+        border-radius: 16px !important;
+        overflow: hidden;
+    }
+
+    /* holiday events */
+    .fc-event.holiday-event {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA) !important;
+        color: #DC2626 !important;
+        border-left: 3px solid #EF4444 !important;
+        font-style: italic;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar-panel { display: flex; flex-direction: column; gap: 22px; position: sticky; top: 100px; }
+
+    .legend-card {
+        background: white;
+        border-radius: 22px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        padding: 26px;
+    }
+    .legend-card h4 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #1E293B;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .legend-card h4 i { color: #667eea; }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        font-size: 0.88rem;
+        color: #475569;
+        font-weight: 500;
+    }
+    .legend-item:not(:last-child) { border-bottom: 1px solid #F8FAFC; }
+    .legend-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 5px;
+        flex-shrink: 0;
+    }
+    .legend-dot-holiday {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA);
+        border: 2px solid #EF4444;
+    }
+
+    .upcoming-card {
+        background: white;
+        border-radius: 22px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        padding: 26px;
+    }
+    .upcoming-card h4 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #1E293B;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .upcoming-card h4 i { color: #4facfe; }
+    .upcoming-course {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px;
+        border-radius: 14px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        margin-bottom: 8px;
+        border: 1px solid transparent;
+    }
+    .upcoming-course:hover {
+        background: #F8FAFC;
+        border-color: #E2E8F0;
+        transform: translateX(4px);
+    }
+    .upcoming-course-color {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .upcoming-course-info { flex: 1; min-width: 0; }
+    .upcoming-course-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #1E293B;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .upcoming-course-date {
+        font-size: 0.75rem;
+        color: #94A3B8;
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .upcoming-course-arrow {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #F8FAFC;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94A3B8;
+        font-size: 0.7rem;
+        transition: all 0.3s;
+        flex-shrink: 0;
+    }
+    .upcoming-course:hover .upcoming-course-arrow {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .holidays-card {
+        background: linear-gradient(135deg, #FFF7ED, #FEF3C7);
+        border-radius: 22px;
+        border: 1px solid #FDE68A;
+        padding: 26px;
+    }
+    .holidays-card h4 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #92400E;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .holidays-card h4 i { color: #F59E0B; }
+    .holidays-info {
+        font-size: 0.85rem;
+        color: #A16207;
+        line-height: 1.6;
+    }
+    .holidays-info i { margin-right: 6px; }
+
+    /* ── Tooltip ── */
+    .cal-tooltip {
+        position: fixed;
+        z-index: 10000;
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+        border: 1px solid #E2E8F0;
+        padding: 0;
+        width: 300px;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.25s, transform 0.25s;
+        overflow: hidden;
+    }
+    .cal-tooltip.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .cal-tooltip-header {
+        padding: 18px 22px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .cal-tooltip-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -30%;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+        border-radius: 50%;
+    }
+    .cal-tooltip-title {
+        font-size: 1rem;
+        font-weight: 800;
+        position: relative;
+        z-index: 2;
+    }
+    .cal-tooltip-type {
+        font-size: 0.72rem;
+        opacity: 0.85;
+        margin-top: 3px;
+        position: relative;
+        z-index: 2;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+    .cal-tooltip-body {
+        padding: 18px 22px;
+    }
+    .cal-tooltip-desc {
+        font-size: 0.82rem;
+        color: #475569;
+        line-height: 1.5;
+        margin-bottom: 14px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .cal-tooltip-meta {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .cal-tooltip-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.78rem;
+        color: #64748B;
+        font-weight: 600;
+    }
+    .cal-tooltip-meta-item i {
+        font-size: 0.7rem;
+        color: #667eea;
+    }
+    .cal-tooltip-footer {
+        padding: 12px 22px;
+        background: #F8FAFC;
+        border-top: 1px solid #F1F5F9;
+        font-size: 0.75rem;
+        color: #94A3B8;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* holiday tooltip */
+    .cal-tooltip-holiday .cal-tooltip-header {
+        background: linear-gradient(135deg, #EF4444, #DC2626);
+    }
+    .cal-tooltip-holiday .cal-tooltip-body {
+        text-align: center;
+        padding: 22px;
+    }
+    .cal-tooltip-holiday .cal-tooltip-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    .cal-tooltip-holiday .cal-tooltip-notice {
+        font-size: 0.82rem;
+        color: #DC2626;
+        font-weight: 700;
+        background: #FEE2E2;
+        padding: 8px 14px;
+        border-radius: 10px;
+        margin-top: 10px;
+        display: inline-block;
+    }
+
+    .empty-upcoming {
+        text-align: center;
+        padding: 20px 10px;
+        color: #94A3B8;
+        font-size: 0.85rem;
+    }
+    .empty-upcoming i {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+        display: block;
+        color: #CBD5E1;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="calendar-page">
+    <div class="calendar-hero">
+        <div class="hero-inner">
+            <div class="hero-text">
+                <h2>Calendrier des Cours</h2>
+                <p>Planifiez votre apprentissage et suivez les jours fériés tunisiens</p>
+            </div>
+            <div class="hero-right">
+                <div class="hero-stat-card">
+                    <span class="val">{{ courses|length }}</span>
+                    <span class="lbl">Cours</span>
+                </div>
+                <div class="hero-stat-card">
+                    {% set pub = 0 %}
+                    {% for c in courses %}{% if c.status == 'PUBLISHED' %}{% set pub = pub + 1 %}{% endif %}{% endfor %}
+                    <span class="val">{{ pub }}</span>
+                    <span class="lbl">Publiés</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar-layout">
+        <div class="calendar-card">
+            <div id="calendar"></div>
+        </div>
+
+        <div class="sidebar-panel">
+            <div class="legend-card">
+                <h4><i class="fas fa-palette"></i> Légende</h4>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #667eea;"></div>
+                    <span>Cours ajouté</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #f5576c;"></div>
+                    <span>Cours récent</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #4facfe;"></div>
+                    <span>Cours spécial</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot legend-dot-holiday"></div>
+                    <span>Jour férié tunisien</span>
+                </div>
+            </div>
+
+            <div class="upcoming-card">
+                <h4><i class="fas fa-clock"></i> Cours récents</h4>
+                {% set colors = ['#667eea', '#f5576c', '#4facfe', '#43e97b', '#fa709a', '#a18cd1'] %}
+                {% set icons = ['fa-laptop-code', 'fa-book-open', 'fa-graduation-cap', 'fa-brain', 'fa-code', 'fa-flask'] %}
+                {% if courses|length > 0 %}
+                    {% for course in courses|slice(0, 5) %}
+                        <a href="{{ path('student_course_details', {id: course.id}) }}" class="upcoming-course">
+                            <div class="upcoming-course-color" style="background: {{ colors[loop.index0 % 6] }};">
+                                <i class="fas {{ icons[loop.index0 % 6] }}"></i>
+                            </div>
+                            <div class="upcoming-course-info">
+                                <div class="upcoming-course-title">{{ course.title }}</div>
+                                <div class="upcoming-course-date">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ course.createdAt|date('d/m/Y') }}
+                                </div>
+                            </div>
+                            <div class="upcoming-course-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-upcoming">
+                        <i class="fas fa-calendar-times"></i>
+                        Aucun cours pour le moment
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="holidays-card">
+                <h4><i class="fas fa-umbrella-beach"></i> Jours fériés</h4>
+                <div class="holidays-info">
+                    <p><i class="fas fa-info-circle"></i> Les jours fériés tunisiens sont automatiquement affichés sur le calendrier en rouge.</p>
+                    <p style="margin-top: 8px;"><i class="fas fa-ban"></i> Les cours prévus pendant un jour férié sont considérés <strong>annulés</strong>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tooltip -->
+<div id="calTooltip" class="cal-tooltip"></div>
+{% endblock %}
+
+{% block javascripts %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.9/index.global.min.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const tooltipEl  = document.getElementById('calTooltip');
+
+    let holidayDates = {};
+
+    const tunisianHolidays = [
+        { date: '-01-01', title: 'Jour de l\'An' },
+        { date: '-01-14', title: 'Fête de la Révolution' },
+        { date: '-03-20', title: 'Fête de l\'Indépendance' },
+        { date: '-04-09', title: 'Journée des Martyrs' },
+        { date: '-05-01', title: 'Fête du Travail' },
+        { date: '-07-25', title: 'Fête de la République' },
+        { date: '-08-13', title: 'Journée de la Femme' },
+        { date: '-10-15', title: 'Fête de l\'Évacuation' },
+    ];
+
+    const islamicHolidays2025 = [
+        { start: '2025-03-30', end: '2025-04-01', title: 'Aïd el-Fitr' },
+        { start: '2025-06-06', end: '2025-06-08', title: 'Aïd el-Adha' },
+        { start: '2025-06-26', title: 'Nouvel An Hégirien' },
+        { start: '2025-09-04', title: 'Mouled (Naissance du Prophète)' },
+    ];
+    const islamicHolidays2026 = [
+        { start: '2026-03-19', end: '2026-03-21', title: 'Aïd el-Fitr' },
+        { start: '2026-05-26', end: '2026-05-28', title: 'Aïd el-Adha' },
+        { start: '2026-06-16', title: 'Nouvel An Hégirien' },
+        { start: '2026-08-25', title: 'Mouled (Naissance du Prophète)' },
+    ];
+
+    function getHolidayEvents() {
+        const events = [];
+        const years = [2024, 2025, 2026, 2027];
+        years.forEach(year => {
+            tunisianHolidays.forEach(h => {
+                const dateStr = year + h.date;
+                holidayDates[dateStr] = h.title;
+                events.push({
+                    title: '🇹🇳 ' + h.title,
+                    start: dateStr,
+                    display: 'block',
+                    backgroundColor: '#FEE2E2',
+                    borderColor: '#EF4444',
+                    textColor: '#DC2626',
+                    classNames: ['holiday-event'],
+                    extendedProps: { type: 'holiday', holidayName: h.title }
+                });
+            });
+        });
+        [...islamicHolidays2025, ...islamicHolidays2026].forEach(h => {
+            holidayDates[h.start] = h.title;
+            events.push({
+                title: '🌙 ' + h.title,
+                start: h.start,
+                end: h.end || undefined,
+                display: 'block',
+                backgroundColor: '#FEF3C7',
+                borderColor: '#F59E0B',
+                textColor: '#92400E',
+                classNames: ['holiday-event'],
+                extendedProps: { type: 'holiday', holidayName: h.title }
+            });
+        });
+        return events;
+    }
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'fr',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,dayGridWeek,listMonth'
+        },
+        buttonText: {
+            today: "Aujourd'hui",
+            month: 'Mois',
+            week: 'Semaine',
+            list: 'Liste'
+        },
+        height: 'auto',
+        dayMaxEvents: 3,
+        moreLinkText: 'plus',
+        navLinks: true,
+        eventSources: [
+            { url: '{{ path("student_calendar_events") }}', failure: function() { console.warn('Erreur chargement des cours'); } },
+            { events: getHolidayEvents() }
+        ],
+        eventDidMount: function(info) {
+            const el = info.el;
+            const props = info.event.extendedProps;
+
+            el.addEventListener('mouseenter', function(e) {
+                showTooltip(e, info.event, props);
+            });
+            el.addEventListener('mousemove', function(e) {
+                positionTooltip(e);
+            });
+            el.addEventListener('mouseleave', function() {
+                hideTooltip();
+            });
+        },
+        eventClick: function(info) {
+            if (info.event.extendedProps.type === 'holiday') {
+                info.jsEvent.preventDefault();
+                return;
+            }
+        },
+        dayCellDidMount: function(info) {
+            const dateStr = info.date.toISOString().split('T')[0];
+            if (holidayDates[dateStr]) {
+                info.el.style.background = 'linear-gradient(135deg, #FEF2F2, #FEE2E2)';
+            }
+        }
+    });
+
+    calendar.render();
+
+    function showTooltip(e, event, props) {
+        if (props.type === 'holiday') {
+            tooltipEl.className = 'cal-tooltip cal-tooltip-holiday visible';
+            tooltipEl.innerHTML = `
+                <div class="cal-tooltip-header">
+                    <div class="cal-tooltip-title">${event.title}</div>
+                    <div class="cal-tooltip-type">Jour férié tunisien</div>
+                </div>
+                <div class="cal-tooltip-body">
+                    <div class="cal-tooltip-icon">🇹🇳</div>
+                    <div class="cal-tooltip-notice">
+                        <i class="fas fa-ban"></i> Cours annulés ce jour
+                    </div>
+                </div>
+            `;
+        } else {
+            const desc  = props.description || 'Aucune description disponible.';
+            const price = parseFloat(props.price) > 0 ? parseFloat(props.price).toFixed(2) + ' €' : 'Gratuit';
+            const mods  = props.modules || 0;
+            const pdf   = props.hasPdf ? '<i class="fas fa-check-circle" style="color:#10B981;"></i> PDF' : '';
+            const bg    = event.backgroundColor || '#667eea';
+            const status = props.status === 'PUBLISHED'
+                ? '<span style="color:#10B981;font-weight:700;">Publié</span>'
+                : '<span style="color:#F59E0B;font-weight:700;">Brouillon</span>';
+
+            tooltipEl.className = 'cal-tooltip visible';
+            tooltipEl.innerHTML = `
+                <div class="cal-tooltip-header" style="background:${bg};">
+                    <div class="cal-tooltip-title">${event.title}</div>
+                    <div class="cal-tooltip-type">Cours</div>
+                </div>
+                <div class="cal-tooltip-body">
+                    <div class="cal-tooltip-desc">${desc}</div>
+                    <div class="cal-tooltip-meta">
+                        <div class="cal-tooltip-meta-item"><i class="fas fa-tag"></i> ${price}</div>
+                        <div class="cal-tooltip-meta-item"><i class="fas fa-cubes"></i> ${mods} module(s)</div>
+                        <div class="cal-tooltip-meta-item">${status}</div>
+                        ${pdf ? '<div class="cal-tooltip-meta-item">' + pdf + '</div>' : ''}
+                    </div>
+                </div>
+                <div class="cal-tooltip-footer">
+                    <i class="fas fa-mouse-pointer"></i> Cliquez pour accéder au cours
+                </div>
+            `;
+        }
+        positionTooltip(e);
+    }
+
+    function positionTooltip(e) {
+        const pad = 15;
+        let x = e.clientX + pad;
+        let y = e.clientY + pad;
+        const tw = tooltipEl.offsetWidth;
+        const th = tooltipEl.offsetHeight;
+        if (x + tw > window.innerWidth - 10) x = e.clientX - tw - pad;
+        if (y + th > window.innerHeight - 10) y = e.clientY - th - pad;
+        tooltipEl.style.left = x + 'px';
+        tooltipEl.style.top  = y + 'px';
+    }
+
+    function hideTooltip() {
+        tooltipEl.classList.remove('visible');
+    }
+});
+</script>
+{% endblock %}

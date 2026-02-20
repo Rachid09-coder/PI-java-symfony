@@ -65,9 +65,33 @@ class StudentExamController extends AbstractController
         // Find existing submission
         $submission = $em->getRepository(ExamSubmission::class)->findOneBy($criteria);
 
+        $remainingSeconds = 0;
+        $canSubmit = false;
+        if ($submission && $submission->getFilePath() === null && !$submission->isClosed()) {
+            $durationMinutes = $exam->getDuration() ?? 0;
+            $startedAt = $submission->getStartedAt() ?? $submission->getSubmittedAt();
+            if ($startedAt && $durationMinutes > 0) {
+                $endAt = $startedAt->modify('+' . $durationMinutes . ' minutes');
+                $now = new \DateTimeImmutable();
+                if ($now >= $endAt) {
+                    $submission->setClosedAt($now);
+                    $submission->setGrade(0.0);
+                    $submission->setIsPassed(false);
+                    $em->flush();
+                } else {
+                    $remainingSeconds = $endAt->getTimestamp() - $now->getTimestamp();
+                    $canSubmit = true;
+                }
+            } else {
+                $canSubmit = true;
+            }
+        }
+
         return $this->render('student/exam/show.html.twig', [
             'exam' => $exam,
-            'submission' => $submission
+            'submission' => $submission,
+            'remaining_seconds' => $remainingSeconds,
+            'can_submit' => $canSubmit,
         ]);
     }
 
@@ -100,6 +124,7 @@ class StudentExamController extends AbstractController
         // Check if already started
         $existing = $em->getRepository(ExamSubmission::class)->findOneBy($criteria);
 
+        $now = new \DateTimeImmutable();
         if (!$existing) {
             $submission = new ExamSubmission();
             $submission->setExam($exam);
@@ -108,18 +133,45 @@ class StudentExamController extends AbstractController
             } else {
                 $submission->setCandidateIdentifier($candidateId);
             }
-            $submission->setSubmittedAt(new \DateTimeImmutable());
-            
+            $submission->setSubmittedAt($now);
+            $submission->setStartedAt($now);
             $em->persist($submission);
             $em->flush();
         } else {
             $submission = $existing;
+            if ($submission->getStartedAt() === null) {
+                $submission->setStartedAt($now);
+                $em->flush();
+            }
         }
 
-        // Render the exam details page directly with the submission
+        $remainingSeconds = 0;
+        $canSubmit = false;
+        if ($submission->getFilePath() === null && !$submission->isClosed()) {
+            $durationMinutes = $exam->getDuration() ?? 0;
+            $startedAt = $submission->getStartedAt() ?? $submission->getSubmittedAt();
+            if ($startedAt && $durationMinutes > 0) {
+                $endAt = $startedAt->modify('+' . $durationMinutes . ' minutes');
+                $now = new \DateTimeImmutable();
+                if ($now >= $endAt) {
+                    $submission->setClosedAt($now);
+                    $submission->setGrade(0.0);
+                    $submission->setIsPassed(false);
+                    $em->flush();
+                } else {
+                    $remainingSeconds = $endAt->getTimestamp() - $now->getTimestamp();
+                    $canSubmit = true;
+                }
+            } else {
+                $canSubmit = true;
+            }
+        }
+
         return $this->render('student/exam/show.html.twig', [
             'exam' => $exam,
-            'submission' => $submission
+            'submission' => $submission,
+            'remaining_seconds' => $remainingSeconds,
+            'can_submit' => $canSubmit,
         ]);
     }
 
@@ -143,6 +195,25 @@ class StudentExamController extends AbstractController
 
         if (!$submission) {
             return $this->redirectToRoute('student_exams_index');
+        }
+
+        if ($submission->isClosed()) {
+            $this->addFlash('error', 'Cet examen est clôturé. Vous ne pouvez plus déposer de rendu.');
+            return $this->redirectToRoute('student_exam_show', ['id' => $exam->getId()]);
+        }
+
+        $durationMinutes = $exam->getDuration() ?? 0;
+        $startedAt = $submission->getStartedAt() ?? $submission->getSubmittedAt();
+        if ($startedAt && $durationMinutes > 0) {
+            $endAt = $startedAt->modify('+' . $durationMinutes . ' minutes');
+            if ((new \DateTimeImmutable()) >= $endAt) {
+                $submission->setClosedAt(new \DateTimeImmutable());
+                $submission->setGrade(0.0);
+                $submission->setIsPassed(false);
+                $em->flush();
+                $this->addFlash('error', 'Le temps imparti est écoulé. L\'examen est clôturé avec la note 0.');
+                return $this->redirectToRoute('student_exam_show', ['id' => $exam->getId()]);
+            }
         }
 
         if ($exam->getType() === 'QCM') {
@@ -194,5 +265,59 @@ class StudentExamController extends AbstractController
         $em->flush();
 
         return $this->redirectToRoute('student_exam_show', ['id' => $exam->getId()]);
+    }
+
+    #[Route('/{id}/leave', name: 'student_exam_leave', methods: ['POST', 'GET'])]
+    public function leave(Exam $exam, EntityManagerInterface $em, Request $request): Response
+    {
+        $submission = $this->findSubmission($exam, $request, $em);
+        if (!$submission) {
+            return $this->json(['ok' => false], Response::HTTP_NOT_FOUND);
+        }
+        $this->closeSubmissionAsAbandoned($submission, $em);
+        if ($request->isXmlHttpRequest() || $request->headers->get('Accept') === 'application/json') {
+            return $this->json(['ok' => true]);
+        }
+        return $this->redirectToRoute('student_exam_show', ['id' => $exam->getId()]);
+    }
+
+    #[Route('/{id}/timeup', name: 'student_exam_timeup', methods: ['POST', 'GET'])]
+    public function timeup(Exam $exam, EntityManagerInterface $em, Request $request): Response
+    {
+        $submission = $this->findSubmission($exam, $request, $em);
+        if (!$submission) {
+            return $this->json(['ok' => false], Response::HTTP_NOT_FOUND);
+        }
+        $this->closeSubmissionAsAbandoned($submission, $em);
+        if ($request->isXmlHttpRequest() || $request->headers->get('Accept') === 'application/json') {
+            return $this->json(['ok' => true]);
+        }
+        return $this->redirectToRoute('student_exam_show', ['id' => $exam->getId()]);
+    }
+
+    private function findSubmission(Exam $exam, Request $request, EntityManagerInterface $em): ?ExamSubmission
+    {
+        $user = $this->getUser();
+        $candidateId = $this->getCandidateIdentifier($request);
+        $criteria = ['exam' => $exam];
+        if ($user) {
+            $criteria['student'] = $user;
+        } elseif ($candidateId) {
+            $criteria['candidateIdentifier'] = $candidateId;
+        } else {
+            return null;
+        }
+        return $em->getRepository(ExamSubmission::class)->findOneBy($criteria);
+    }
+
+    private function closeSubmissionAsAbandoned(ExamSubmission $submission, EntityManagerInterface $em): void
+    {
+        if ($submission->isClosed()) {
+            return;
+        }
+        $submission->setClosedAt(new \DateTimeImmutable());
+        $submission->setGrade(0.0);
+        $submission->setIsPassed(false);
+        $em->flush();
     }
 }

@@ -1,0 +1,202 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Tableau de bord — {{ exam.title }} — EduSmart{% endblock %}
+
+{% block body %}
+<div class="exam-dash">
+    <header class="exam-dash-header">
+        <a href="{{ path('admin_exams_manage') }}" class="exam-dash-back">
+            <i class="fas fa-arrow-left"></i> Retour aux examens
+        </a>
+        <div class="exam-dash-title-row">
+            <h1 class="exam-dash-title">{{ exam.title }}</h1>
+            <span class="exam-dash-type">{{ exam.type }}</span>
+            <a href="{{ path('admin_exam_similarity', {id: exam.id}) }}" class="exam-dash-similarity" title="Détection de similarité entre rendus PDF">
+                <i class="fas fa-search"></i> Similarité
+            </a>
+            <a href="{{ path('admin_exam_corrections', {id: exam.id}) }}" class="exam-dash-corrections">
+                <i class="fas fa-pen-fancy"></i> Correction des copies
+            </a>
+            <a href="{{ path('admin_exam_export_csv', {id: exam.id}) }}" class="exam-dash-export">
+                <i class="fas fa-file-csv"></i> Exporter CSV
+            </a>
+        </div>
+        <p class="exam-dash-meta">Durée : {{ exam.duration ? exam.duration ~ ' min' : '—' }} · {{ exam.questions|length }} question(s)</p>
+    </header>
+
+    {# Stats cards #}
+    <div class="exam-dash-stats">
+        <div class="exam-dash-stat-card">
+            <div class="exam-dash-stat-icon total"><i class="fas fa-users"></i></div>
+            <div class="exam-dash-stat-content">
+                <span class="exam-dash-stat-value">{{ stats.total }}</span>
+                <span class="exam-dash-stat-label">Tentatives</span>
+            </div>
+        </div>
+        <div class="exam-dash-stat-card">
+            <div class="exam-dash-stat-icon progress"><i class="fas fa-hourglass-half"></i></div>
+            <div class="exam-dash-stat-content">
+                <span class="exam-dash-stat-value">{{ stats.in_progress }}</span>
+                <span class="exam-dash-stat-label">En cours</span>
+            </div>
+        </div>
+        <div class="exam-dash-stat-card">
+            <div class="exam-dash-stat-icon submitted"><i class="fas fa-file-upload"></i></div>
+            <div class="exam-dash-stat-content">
+                <span class="exam-dash-stat-value">{{ stats.submitted }}</span>
+                <span class="exam-dash-stat-label">Rendus</span>
+            </div>
+        </div>
+        <div class="exam-dash-stat-card">
+            <div class="exam-dash-stat-icon closed"><i class="fas fa-ban"></i></div>
+            <div class="exam-dash-stat-content">
+                <span class="exam-dash-stat-value">{{ stats.closed_no_submit }}</span>
+                <span class="exam-dash-stat-label">Clôturés (abandon/temps)</span>
+            </div>
+        </div>
+        <div class="exam-dash-stat-card highlight">
+            <div class="exam-dash-stat-icon avg"><i class="fas fa-chart-line"></i></div>
+            <div class="exam-dash-stat-content">
+                <span class="exam-dash-stat-value">{{ stats.average ?? '—' }}{% if stats.average is not null %}/20{% endif %}</span>
+                <span class="exam-dash-stat-label">Moyenne</span>
+            </div>
+        </div>
+        <div class="exam-dash-stat-card highlight">
+            <div class="exam-dash-stat-icon rate"><i class="fas fa-percentage"></i></div>
+            <div class="exam-dash-stat-content">
+                <span class="exam-dash-stat-value">{{ stats.pass_rate ?? '—' }}{% if stats.pass_rate is not null %}%{% endif %}</span>
+                <span class="exam-dash-stat-label">Taux de réussite</span>
+            </div>
+        </div>
+    </div>
+
+    {# Mini chart: pass vs fail (among graded) #}
+    {% if stats.grades_count > 0 %}
+    <div class="exam-dash-chart-card">
+        <h3 class="exam-dash-chart-title"><i class="fas fa-chart-bar"></i> Répartition des résultats</h3>
+        <div class="exam-dash-chart-bar-wrap">
+            <div class="exam-dash-chart-bar passed" style="width: {{ stats.pass_rate }}%;" title="Validés {{ stats.passed }}"></div>
+            <div class="exam-dash-chart-bar failed" style="width: {{ 100 - stats.pass_rate }}%;" title="Non validés {{ stats.grades_count - stats.passed }}"></div>
+        </div>
+        <div class="exam-dash-chart-legend">
+            <span><i class="fas fa-check-circle" style="color: #10b981;"></i> Validés ({{ stats.passed }})</span>
+            <span><i class="fas fa-times-circle" style="color: #ef4444;"></i> Non validés ({{ stats.grades_count - stats.passed }})</span>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Rapport anti-triche / Chronologie des tentatives #}
+    <div class="exam-dash-table-card">
+        <h3 class="exam-dash-table-title"><i class="fas fa-shield-alt"></i> Rapport des tentatives & suivi anti-triche</h3>
+        <p class="exam-dash-table-desc">Chronologie des candidats : début, clôture ou rendu, statut et note.</p>
+        <div class="exam-dash-table-wrap">
+            <table class="exam-dash-table">
+                <thead>
+                    <tr>
+                        <th>Candidat</th>
+                        <th>Début</th>
+                        <th>Fin / Clôture</th>
+                        <th>Statut</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in submissions %}
+                    <tr>
+                        <td>
+                            <strong>{{ s.student ? (s.student.name ?? s.student.email) : (s.candidateIdentifier ?? 'Anonyme') }}</strong>
+                            {% if s.student %}<br><span class="exam-dash-email">{{ s.student.email }}</span>{% endif %}
+                        </td>
+                        <td>{{ (s.startedAt ?? s.submittedAt)|date('d/m/Y H:i') }}</td>
+                        <td>
+                            {% if s.closedAt %}{{ s.closedAt|date('d/m/Y H:i') }}{% elseif s.filePath %}{{ s.submittedAt|date('d/m/Y H:i') }}{% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if s.filePath %}
+                                <span class="exam-dash-badge submitted">Rendu</span>
+                            {% elseif s.closedAt %}
+                                <span class="exam-dash-badge closed">Clôturé</span>
+                            {% else %}
+                                <span class="exam-dash-badge in-progress">En cours</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if s.grade is not null %}
+                                <span class="exam-dash-grade {{ s.isPassed ? 'passed' : 'failed' }}">{{ s.grade }}/20</span>
+                                {% if s.isPassed %}<i class="fas fa-check-circle" style="color: #10b981;"></i>{% else %}<i class="fas fa-times-circle" style="color: #ef4444;"></i>{% endif %}
+                            {% else %}
+                                <span class="exam-dash-grade pending">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="exam-dash-empty">Aucune tentative pour cet examen.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.exam-dash { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.exam-dash-header { margin-bottom: 32px; }
+.exam-dash-back { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-weight: 600; margin-bottom: 16px; }
+.exam-dash-back:hover { color: #3b49a2; }
+.exam-dash-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 8px; }
+.exam-dash-title { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+.exam-dash-type { background: #eef2ff; color: #6366f1; padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+.exam-dash-similarity { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: #f59e0b; color: #fff; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem; margin-left: auto; }
+.exam-dash-similarity:hover { background: #d97706; color: #fff; }
+.exam-dash-corrections { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: #6366f1; color: #fff; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem; }
+.exam-dash-corrections:hover { background: #4f46e5; color: #fff; }
+.exam-dash-export { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: #10b981; color: #fff; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem; }
+.exam-dash-export:hover { background: #059669; color: #fff; }
+.exam-dash-meta { color: var(--text-secondary); font-size: 0.95rem; margin: 0; }
+
+.exam-dash-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; margin-bottom: 28px; }
+.exam-dash-stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: transform 0.2s, box-shadow 0.2s; }
+.exam-dash-stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+.exam-dash-stat-card.highlight { border-color: #3b49a2; background: linear-gradient(135deg, rgba(59,73,162,0.06) 0%, transparent 100%); }
+.exam-dash-stat-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.exam-dash-stat-icon.total { background: #e0e7ff; color: #4f46e5; }
+.exam-dash-stat-icon.progress { background: #fef3c7; color: #d97706; }
+.exam-dash-stat-icon.submitted { background: #d1fae5; color: #059669; }
+.exam-dash-stat-icon.closed { background: #fee2e2; color: #dc2626; }
+.exam-dash-stat-icon.avg { background: #c7d2fe; color: #4338ca; }
+.exam-dash-stat-icon.rate { background: #a7f3d0; color: #047857; }
+.exam-dash-stat-content { display: flex; flex-direction: column; gap: 2px; }
+.exam-dash-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
+.exam-dash-stat-label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }
+
+.exam-dash-chart-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 28px; }
+.exam-dash-chart-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0; display: flex; align-items: center; gap: 10px; }
+.exam-dash-chart-bar-wrap { display: flex; height: 28px; border-radius: 14px; overflow: hidden; background: #f1f5f9; margin-bottom: 12px; }
+.exam-dash-chart-bar { transition: width 0.5s ease; }
+.exam-dash-chart-bar.passed { background: linear-gradient(90deg, #10b981, #34d399); }
+.exam-dash-chart-bar.failed { background: linear-gradient(90deg, #ef4444, #f87171); }
+.exam-dash-chart-legend { display: flex; gap: 24px; font-size: 0.85rem; color: var(--text-secondary); }
+.exam-dash-chart-legend span { display: flex; align-items: center; gap: 6px; }
+
+.exam-dash-table-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; overflow: hidden; }
+.exam-dash-table-title { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0; display: flex; align-items: center; gap: 10px; }
+.exam-dash-table-desc { font-size: 0.9rem; color: var(--text-secondary); margin: 0 0 20px 0; }
+.exam-dash-table-wrap { overflow-x: auto; }
+.exam-dash-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.exam-dash-table th { text-align: left; padding: 14px 16px; background: #f8fafc; color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; border-bottom: 2px solid var(--border-color); }
+.exam-dash-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+.exam-dash-table tbody tr:hover { background: rgba(59,73,162,0.04); }
+.exam-dash-email { font-size: 0.8rem; color: var(--text-secondary); font-weight: 400; }
+.exam-dash-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+.exam-dash-badge.submitted { background: #d1fae5; color: #047857; }
+.exam-dash-badge.closed { background: #fee2e2; color: #b91c1c; }
+.exam-dash-badge.in-progress { background: #fef3c7; color: #b45309; }
+.exam-dash-grade { font-weight: 800; }
+.exam-dash-grade.passed { color: #059669; }
+.exam-dash-grade.failed { color: #dc2626; }
+.exam-dash-grade.pending { color: var(--text-secondary); }
+.exam-dash-empty { text-align: center; color: var(--text-secondary); padding: 32px !important; }
+</style>
+{% endblock %}
