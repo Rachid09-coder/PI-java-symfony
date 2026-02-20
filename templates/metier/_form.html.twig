@@ -1,20 +1,98 @@
-{{ form_start(form) }}
-    <div class="mb-3">
-        {{ form_label(form.nom, 'Nom du Métier') }}
-        {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Analyste Financier'}}) }}
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'metier-form'}}) }}
+    <div class="mb-4">
+        {{ form_label(form.nom, 'Nom du Métier', {'label_attr': {'class': 'form-label fw-700 text-dark'}}) }}
+        {{ form_widget(form.nom, {'attr': {'class': 'form-control form-control-lg rounded-3', 'placeholder': 'Ex: Analyste Financier'}}) }}
         {{ form_errors(form.nom) }}
+        <div class="error-message" id="nom-error"></div>
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.description) }}
-        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Description détaillée...'}}) }}
+    <div class="mb-4">
+        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-700 text-dark'}}) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control rounded-3', 'rows': 5, 'placeholder': 'Description détaillée du métier...'}}) }}
         {{ form_errors(form.description) }}
+        <div class="error-message" id="description-error"></div>
     </div>
 
-    <div class="d-flex justify-content-end mt-4">
-        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow">
-            <i class="fas fa-save fs-5"></i>
+    <div class="d-flex justify-content-end mt-4 gap-3">
+        <a href="{{ path('app_metier_index') }}" class="btn btn-outline-secondary px-4 rounded-pill">
+            <i class="fas fa-times me-2"></i>Annuler
+        </a>
+        <button type="submit" class="btn-premium-launch shadow">
+            <i class="fas fa-save me-2"></i>
             <span class="fw-bold">{{ button_label|default('Enregistrer le Métier') }}</span>
         </button>
     </div>
 {{ form_end(form) }}
+
+<style>
+    .fw-700 { font-weight: 700; }
+    .form-control:focus { border-color: #6366f1; box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.15); }
+    .form-control-lg { padding: 14px 18px; font-size: 1rem; }
+    .btn-premium-launch { background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; border: none; padding: 14px 32px; border-radius: 50px; font-weight: 700; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-premium-launch:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.35); color: white; }
+    .field-error { border-color: #dc2626 !important; background-color: #fef2f2 !important; }
+    .error-message { color: #dc2626; font-size: 0.85rem; font-weight: 600; margin-top: 6px; display: none; }
+    .error-message.show { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('metier-form');
+    if (!form) return;
+
+    const nomField = document.querySelector('[name*="[nom]"]');
+    const descField = document.querySelector('[name*="[description]"]');
+
+    function showError(field, errorDiv, message) {
+        field.classList.add('field-error');
+        errorDiv.textContent = message;
+        errorDiv.classList.add('show');
+    }
+
+    function clearError(field, errorDiv) {
+        field.classList.remove('field-error');
+        errorDiv.classList.remove('show');
+    }
+
+    // Real-time validation on blur
+    if (nomField) {
+        nomField.addEventListener('blur', function() {
+            const errorDiv = document.getElementById('nom-error');
+            if (!this.value.trim()) {
+                showError(this, errorDiv, 'Le nom du métier est requis.');
+            } else if (this.value.trim().length < 2) {
+                showError(this, errorDiv, 'Le nom doit contenir au moins 2 caractères.');
+            } else {
+                clearError(this, errorDiv);
+            }
+        });
+    }
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        let hasError = false;
+
+        // Validate nom
+        if (nomField) {
+            const nomError = document.getElementById('nom-error');
+            if (!nomField.value.trim()) {
+                showError(nomField, nomError, 'Le nom du métier est requis.');
+                hasError = true;
+            } else if (nomField.value.trim().length < 2) {
+                showError(nomField, nomError, 'Le nom doit contenir au moins 2 caractères.');
+                hasError = true;
+            }
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = form.querySelector('.field-error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+});
+</script>

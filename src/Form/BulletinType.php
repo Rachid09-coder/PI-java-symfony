@@ -27,28 +27,41 @@ class BulletinType extends AbstractType
                 },
                 'label' => 'Étudiant',
                 'placeholder' => 'Sélectionner un étudiant',
+                'required' => false,
+                'attr' => ['required' => false]
             ])
             ->add('academicYear', TextType::class, [
                 'label' => 'Année académique',
-                'attr' => ['placeholder' => 'Ex: 2025/2026']
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Ex: 2025/2026',
+                    'required' => false
+                ]
             ])
             ->add('semester', ChoiceType::class, [
                 'label' => 'Semestre',
+                'required' => false,
                 'choices' => [
                     'Semestre 1' => 'Semestre 1',
                     'Semestre 2' => 'Semestre 2',
                     'Annuel' => 'Annuel',
                 ],
+                'attr' => ['required' => false]
             ])
             ->add('average', NumberType::class, [
                 'label' => 'Moyenne',
                 'scale' => 2,
                 'required' => false,
-                'attr' => ['step' => '0.01', 'min' => '0', 'max' => '20']
+                'attr' => [
+                    'step' => '0.01',
+                    'min' => '0',
+                    'max' => '20',
+                    'required' => false
+                ]
             ])
             ->add('mention', ChoiceType::class, [
                 'label' => 'Mention',
-                'required' => true,
+                'required' => false,
                 'choices' => [
                     'Très Bien' => 'Très Bien',
                     'Bien' => 'Bien',
@@ -56,21 +69,17 @@ class BulletinType extends AbstractType
                     'Passable' => 'Passable',
                     'Insuffisant' => 'Insuffisant',
                 ],
+                'attr' => ['required' => false]
             ])
             ->add('classRank', IntegerType::class, [
-                'label' => 'Rang / Classement',
-                'required' => true,
-                'attr' => ['min' => '1']
-            ])
-            ->add('status', ChoiceType::class, [
-                'label' => 'Statut',
-                'choices' => [
-                    'Brouillon' => 'Brouillon',
-                    'Vérifié' => 'Vérifié',
-                    'Validé' => 'Validé',
-                    'Publié' => 'Publié',
-                ],
-            ])
+    'label' => 'Rang / Classement',
+    'required' => false, // 🔥 IMPORTANT
+    'attr' => [
+        'min' => '1',
+        'required' => false // 🔥 désactive HTML5
+            ]
+    ])
+            // Status removed - managed automatically via workflow buttons
             ->add('reportCardLines', CollectionType::class, [
                 'entry_type' => ReportCardLineType::class,
                 'entry_options' => ['label' => false],

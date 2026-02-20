@@ -1,14 +1,12 @@
-{{ form_start(form) }}
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'admin-bulletin-form'}}) }}
     <div class="row">
         <div class="col-md-6 mb-3">
             {{ form_label(form.student) }}
             {{ form_widget(form.student, {'attr': {'class': 'form-select'}}) }}
-            {{ form_errors(form.student) }}
         </div>
         <div class="col-md-6 mb-3">
             {{ form_label(form.academicYear) }}
             {{ form_widget(form.academicYear, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 2023-2024'}}) }}
-            {{ form_errors(form.academicYear) }}
         </div>
     </div>
 
@@ -16,19 +14,11 @@
         <div class="col-md-6 mb-3">
             {{ form_label(form.semester) }}
             {{ form_widget(form.semester, {'attr': {'class': 'form-select'}}) }}
-            {{ form_errors(form.semester) }}
         </div>
         <div class="col-md-6 mb-3">
             {{ form_label(form.average) }}
             {{ form_widget(form.average, {'attr': {'class': 'form-control', 'step': '0.01'}}) }}
-            {{ form_errors(form.average) }}
         </div>
-    </div>
-
-    <div class="mb-3">
-        {{ form_label(form.status) }}
-        {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
-        {{ form_errors(form.status) }}
     </div>
 
     <div class="d-flex justify-content-end mt-4">
@@ -38,3 +28,48 @@
         </button>
     </div>
 {{ form_end(form) }}
+
+<style>
+.field-error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+    animation: shake 0.4s ease;
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('admin-bulletin-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            form.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+            var isValid = true;
+            var requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(function(field) {
+                if (!field.value || field.value.trim() === '') {
+                    field.classList.add('field-error');
+                    isValid = false;
+                }
+            });
+            if (!isValid) {
+                e.preventDefault();
+                var firstError = form.querySelector('.field-error');
+                if (firstError) {
+                    firstError.focus();
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+        form.querySelectorAll('input, select, textarea').forEach(function(field) {
+            field.addEventListener('input', function() {
+                this.classList.remove('field-error');
+            });
+        });
+    }
+});
+</script>

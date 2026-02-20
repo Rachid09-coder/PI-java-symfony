@@ -19,7 +19,7 @@
                     <i class="fas fa-history text-primary"></i> <span>Audit Log</span>
                 </a>
                 <a href="{{ path('admin_signature_asset_index') }}" class="btn-premium-action shadow-sm" style="width: auto !important; margin: 0 !important;">
-                    <i class="fas fa-signature text-primary"></i> <span>Protocoles</span>
+                    <i class="fas fa-signature text-primary"></i> <span>Signatures</span>
                 </a>
                 <a href="{{ path('admin_bulletin_new') }}" class="btn-premium-launch px-4 shadow-lg" style="width: auto !important; margin: 0 !important;">
                     <i class="fas fa-plus-circle me-2"></i>
@@ -39,6 +39,40 @@
                 <div class="badge-premium-logic">
                     <i class="fas fa-layer-group me-2"></i> {{ bulletins|length }} unités traitées
                 </div>
+            </div>
+
+            {# Barre de recherche et tri #}
+            <div class="search-sort-bar px-4 py-3 border-bottom" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+                <form method="GET" action="{{ path('admin_bulletin_index') }}" class="d-flex flex-wrap gap-3 align-items-center">
+                    <div class="flex-grow-1" style="min-width: 250px;">
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);">
+                            <span class="input-group-text border-0" style="background: white; padding-left: 16px;"><i class="fas fa-search" style="color: #6366F1;"></i></span>
+                            <input type="text" name="search" class="form-control border-0" style="padding: 12px 16px; font-weight: 500;" placeholder="Rechercher par nom, prénom ou email..." value="{{ search|default('') }}">
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <select name="sort" class="form-select" style="width: auto; border-radius: 10px; border: 1px solid #E2E8F0; padding: 10px 35px 10px 14px; font-weight: 600; color: #475569; background-color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                            <option value="createdAt" {{ sortBy == 'createdAt' ? 'selected' : '' }}>Date de création</option>
+                            <option value="average" {{ sortBy == 'average' ? 'selected' : '' }}>Moyenne</option>
+                            <option value="classRank" {{ sortBy == 'classRank' ? 'selected' : '' }}>Rang</option>
+                            <option value="academicYear" {{ sortBy == 'academicYear' ? 'selected' : '' }}>Année académique</option>
+                            <option value="semester" {{ sortBy == 'semester' ? 'selected' : '' }}>Semestre</option>
+                            <option value="studentName" {{ sortBy == 'studentName' ? 'selected' : '' }}>Nom étudiant</option>
+                        </select>
+                        <select name="order" class="form-select" style="width: auto; border-radius: 10px; border: 1px solid #E2E8F0; padding: 10px 35px 10px 14px; font-weight: 600; color: #475569; background-color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                            <option value="DESC" {{ sortOrder == 'DESC' ? 'selected' : '' }}>Décroissant</option>
+                            <option value="ASC" {{ sortOrder == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                        </select>
+                        <button type="submit" class="btn-premium-action shadow-sm" style="padding: 10px 20px;">
+                            <i class="fas fa-filter text-primary"></i> <span>Filtrer</span>
+                        </button>
+                        {% if search or sortBy != 'createdAt' or sortOrder != 'DESC' %}
+                        <a href="{{ path('admin_bulletin_index') }}" class="btn-premium-action shadow-sm" style="padding: 10px 20px; border-color: #EF4444;">
+                            <i class="fas fa-times" style="color: #EF4444;"></i> <span style="color: #EF4444;">Réinitialiser</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
             </div>
             
             <div class="card-body p-0">
@@ -115,9 +149,20 @@
                                             <i class="fas fa-sliders-h"></i>
                                         </a>
                                         {% if bulletin.pdfPath %}
-                                        <a href="{{ path('admin_bulletin_pdf', {id: bulletin.id}) }}" class="btn-action-premium text-danger shadow-sm" target="_blank" title="Export PDF">
-                                            <i class="fas fa-file-export"></i>
-                                        </a>
+                                            <a href="{{ path('admin_bulletin_pdf', {id: bulletin.id}) }}" class="btn-action-premium text-danger shadow-sm" target="_blank" title="Voir PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                            <form action="{{ path('admin_bulletin_generate_pdf', {id: bulletin.id}) }}" method="POST" style="display:inline;">
+                                                <button type="submit" class="btn-action-premium text-success" title="Régénérer PDF">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{{ path('admin_bulletin_generate_pdf', {id: bulletin.id}) }}" method="POST" style="display:inline;">
+                                                <button type="submit" class="btn-action-premium text-info" title="Générer PDF">
+                                                    <i class="fas fa-file-export"></i>
+                                                </button>
+                                            </form>
                                         {% endif %}
                                         
                                         {% if not bulletin.published or bulletin.revoked %}
@@ -395,4 +440,46 @@
     .animate-row-in:nth-child({{ i }}) { animation-delay: {{ 0.04 * i }}s; }
     {% endfor %}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="search"]');
+    const tableBody = document.querySelector('table.table-hover-premium tbody');
+    const rows = tableBody ? tableBody.querySelectorAll('tr.animate-row-in') : [];
+    
+    if (searchInput && rows.length > 0) {
+        // Dynamic search on input
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            rows.forEach(function(row) {
+                const studentName = row.querySelector('td:first-child .fw-800');
+                const studentEmail = row.querySelector('td:first-child .font-monospace');
+                const academicYear = row.querySelector('td:nth-child(2) .fw-800');
+                
+                const name = studentName ? studentName.textContent.toLowerCase() : '';
+                const email = studentEmail ? studentEmail.textContent.toLowerCase() : '';
+                const year = academicYear ? academicYear.textContent.toLowerCase() : '';
+                
+                const matches = name.includes(query) || email.includes(query) || year.includes(query);
+                row.style.display = matches ? '' : 'none';
+            });
+            
+            // Update count
+            const visibleCount = Array.from(rows).filter(r => r.style.display !== 'none').length;
+            const badge = document.querySelector('.badge-premium-logic');
+            if (badge) {
+                badge.innerHTML = '<i class="fas fa-layer-group me-2"></i> ' + visibleCount + ' unités traitées';
+            }
+        });
+        
+        // Submit form on Enter
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                this.closest('form').submit();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

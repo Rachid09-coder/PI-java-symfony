@@ -1,0 +1,675 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Analyse AI - EduSmart{% endblock %}
+
+{% block body %}
+<div class="admin-page animate-fade-in py-4">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container-fluid position-relative z-index-2">
+        <header class="mb-5">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <h1 class="h2 fw-900 text-dark mb-1">
+                        <i class="fas fa-brain text-primary me-2"></i>
+                        Analyse AI des Performances
+                    </h1>
+                    <p class="text-muted small mb-0">Utilisez l'intelligence artificielle pour analyser les performances académiques.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    {% if isConfigured %}
+                    <span class="badge bg-success-soft text-success px-3 py-2 rounded-pill">
+                        <i class="fas fa-check-circle me-1"></i> Groq AI Connecté
+                    </span>
+                    {% else %}
+                    <span class="badge bg-warning-soft text-warning px-3 py-2 rounded-pill">
+                        <i class="fas fa-exclamation-triangle me-1"></i> API Non Configurée
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        {% if not isConfigured %}
+        <div class="alert alert-warning border-0 shadow-sm mb-4" style="border-radius: 16px;">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-key fa-2x text-warning me-3"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Configuration requise</h6>
+                    <p class="mb-0 small">
+                        Ajoutez votre clé API Groq (GRATUITE) dans le fichier <code>.env</code>: 
+                        <code>GROQ_API_KEY=votre_cle_api</code>
+                        <br>
+                        <a href="https://console.groq.com/keys" target="_blank" class="text-primary fw-semibold">
+                            <i class="fas fa-external-link-alt me-1"></i> Obtenir une clé API gratuite
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            {# Section Analyse Individuelle #}
+            <div class="col-lg-6">
+                <div class="card card-premium-glass shadow-lg border-0" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 py-4 px-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse me-3" style="background: linear-gradient(135deg, #6366F1, #8B5CF6); width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user-graduate text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-800 text-dark mb-0">Analyse Individuelle</h5>
+                                <p class="text-muted small mb-0">Évaluation détaillée d'un étudiant</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Sélectionner un étudiant</label>
+                            <select id="studentSelect" class="form-select form-select-premium">
+                                <option value="">-- Choisir un étudiant --</option>
+                                {% for student in students %}
+                                <option value="{{ student.id }}">{{ student.prenom }} {{ student.name }} ({{ student.email }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnAnalyze" class="btn-premium-action flex-grow-1" onclick="analyzeStudent()" {{ not isConfigured ? 'disabled' : '' }}>
+                                <i class="fas fa-chart-line me-2"></i> Analyser
+                            </button>
+                            <button type="button" id="btnRecommend" class="btn-premium-submit" onclick="getRecommendations()" {{ not isConfigured ? 'disabled' : '' }}>
+                                <i class="fas fa-lightbulb me-2"></i> Recommandations
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Section Analyse de Classe #}
+            <div class="col-lg-6">
+                <div class="card card-premium-glass shadow-lg border-0" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 py-4 px-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse me-3" style="background: linear-gradient(135deg, #10B981, #059669); width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-users text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-800 text-dark mb-0">Tendances de Classe</h5>
+                                <p class="text-muted small mb-0">Analyse globale par période</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Année académique</label>
+                                <select id="academicYearSelect" class="form-select form-select-premium">
+                                    <option value="">-- Année --</option>
+                                    {% for year in academicYears %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Semestre</label>
+                                <select id="semesterSelect" class="form-select form-select-premium">
+                                    <option value="">-- Semestre --</option>
+                                    <option value="S1">Semestre 1</option>
+                                    <option value="S2">Semestre 2</option>
+                                    <option value="ANNUEL">Annuel</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-premium-action w-100" onclick="analyzeClass()" {{ not isConfigured ? 'disabled' : '' }}>
+                            <i class="fas fa-chart-pie me-2"></i> Analyser la Classe
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {# Section Chat AI #}
+            <div class="col-12">
+                <div class="card card-premium-glass shadow-lg border-0" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 py-4 px-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse me-3" style="background: linear-gradient(135deg, #F59E0B, #D97706); width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-robot text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-800 text-dark mb-0">Assistant AI</h5>
+                                <p class="text-muted small mb-0">Posez vos questions sur les performances des étudiants</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="chatContainer" class="chat-container mb-3" style="height: 300px; overflow-y: auto; background: #f8fafc; border-radius: 12px; padding: 15px;">
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+                                <p>Sélectionnez un étudiant et posez une question pour commencer</p>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="chatInput" class="form-control form-control-premium" placeholder="Posez une question sur l'étudiant sélectionné..." {{ not isConfigured ? 'disabled' : '' }}>
+                            <button type="button" class="btn-premium-submit" onclick="sendChat()" {{ not isConfigured ? 'disabled' : '' }}>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Zone de résultats #}
+            <div class="col-12">
+                <div id="resultsContainer" class="card card-premium-glass shadow-lg border-0" style="border-radius: 20px; display: none;">
+                    <div class="card-header bg-transparent border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse me-3" style="background: linear-gradient(135deg, #3B82F6, #1D4ED8); width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-file-alt text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-800 text-dark mb-0" id="resultsTitle">Résultats de l'Analyse</h5>
+                                <p class="text-muted small mb-0" id="resultsSubtitle">Généré par Groq AI (Llama 3.3)</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="closeResults()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div id="resultsContent">
+                            {# Contenu dynamique #}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Documentation API #}
+        <div class="card card-premium-glass shadow-sm border-0 mt-4" style="border-radius: 20px;">
+            <div class="card-header bg-transparent border-0 py-3 px-4" data-bs-toggle="collapse" data-bs-target="#apiDocs" style="cursor: pointer;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-code text-primary me-2"></i>
+                        <h6 class="fw-bold mb-0">Documentation API</h6>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            <div class="collapse" id="apiDocs">
+                <div class="card-body px-4 pb-4">
+                    <p class="text-muted small mb-3">Endpoints REST disponibles pour l'intégration :</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Méthode</th>
+                                    <th>Endpoint</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="font-monospace small">
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td>/api/v1/bulletins</td>
+                                    <td>Liste des bulletins (filtres: student_id, academic_year, semester)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td>/api/v1/bulletins/{id}</td>
+                                    <td>Détails d'un bulletin</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td>/api/v1/bulletins/verify/{code}</td>
+                                    <td>Vérifier l'intégrité d'un bulletin</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td>/api/v1/certifications</td>
+                                    <td>Liste des certifications</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td>/api/v1/certifications/verify/{code}</td>
+                                    <td>Vérifier une certification</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td>/api/v1/ai/analyze/student/{id}</td>
+                                    <td>Analyse AI d'un étudiant</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td>/api/v1/ai/recommendations/student/{id}</td>
+                                    <td>Recommandations personnalisées</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td>/api/v1/ai/analyze/class</td>
+                                    <td>Tendances de classe (params: academic_year, semester)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-primary">POST</span></td>
+                                    <td>/api/v1/ai/compare</td>
+                                    <td>Comparer étudiants (body: {student_ids: []})</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-primary">POST</span></td>
+                                    <td>/api/v1/ai/chat/{studentId}</td>
+                                    <td>Chat interactif (body: {message, history})</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-select-premium {
+        border: 2px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+    }
+    .form-select-premium:focus {
+        border-color: #6366F1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+    .form-control-premium {
+        border: 2px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 16px;
+    }
+    .form-control-premium:focus {
+        border-color: #6366F1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+    .btn-premium-action {
+        background: linear-gradient(135deg, #6366F1, #8B5CF6);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-premium-action:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        color: white;
+    }
+    .btn-premium-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .btn-premium-submit {
+        background: linear-gradient(135deg, #10B981, #059669);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-premium-submit:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+    .btn-premium-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .chat-message {
+        margin-bottom: 12px;
+        animation: slideIn 0.3s ease;
+    }
+    .chat-message.user {
+        text-align: right;
+    }
+    .chat-message .bubble {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 16px;
+        max-width: 80%;
+    }
+    .chat-message.user .bubble {
+        background: linear-gradient(135deg, #6366F1, #8B5CF6);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+    .chat-message.assistant .bubble {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-bottom-left-radius: 4px;
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .analysis-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+    .analysis-section h6 {
+        color: #6366F1;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #6366F1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .bg-success-soft { background-color: rgba(16, 185, 129, 0.1); }
+    .bg-warning-soft { background-color: rgba(245, 158, 11, 0.1); }
+</style>
+
+<script>
+let chatHistory = [];
+
+async function analyzeStudent() {
+    const studentId = document.getElementById('studentSelect').value;
+    if (!studentId) {
+        alert('Veuillez sélectionner un étudiant');
+        return;
+    }
+
+    showLoading('Analyse en cours...');
+
+    try {
+        const response = await fetch(`/admin/ai/analyze/${studentId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            displayAnalysis(data);
+        } else {
+            displayError(data.error || 'Erreur lors de l\'analyse');
+        }
+    } catch (error) {
+        displayError('Erreur de connexion: ' + error.message);
+    }
+}
+
+async function getRecommendations() {
+    const studentId = document.getElementById('studentSelect').value;
+    if (!studentId) {
+        alert('Veuillez sélectionner un étudiant');
+        return;
+    }
+
+    showLoading('Génération des recommandations...');
+
+    try {
+        const response = await fetch(`/admin/ai/recommendations/${studentId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            displayRecommendations(data);
+        } else {
+            displayError(data.error || 'Erreur');
+        }
+    } catch (error) {
+        displayError('Erreur: ' + error.message);
+    }
+}
+
+async function analyzeClass() {
+    const year = document.getElementById('academicYearSelect').value;
+    const semester = document.getElementById('semesterSelect').value;
+
+    if (!year || !semester) {
+        alert('Veuillez sélectionner l\'année et le semestre');
+        return;
+    }
+
+    showLoading('Analyse de la classe...');
+
+    try {
+        const response = await fetch(`/admin/ai/class-analysis?academic_year=${encodeURIComponent(year)}&semester=${semester}`);
+        const data = await response.json();
+
+        if (data.success) {
+            displayClassAnalysis(data);
+        } else {
+            displayError(data.error || 'Erreur');
+        }
+    } catch (error) {
+        displayError('Erreur: ' + error.message);
+    }
+}
+
+async function sendChat() {
+    const studentId = document.getElementById('studentSelect').value;
+    const message = document.getElementById('chatInput').value.trim();
+
+    if (!studentId) {
+        alert('Veuillez d\'abord sélectionner un étudiant');
+        return;
+    }
+
+    if (!message) return;
+
+    // Add user message to chat
+    addChatMessage(message, 'user');
+    document.getElementById('chatInput').value = '';
+
+    // Add loading indicator
+    const loadingId = 'loading-' + Date.now();
+    document.getElementById('chatContainer').innerHTML += `
+        <div id="${loadingId}" class="chat-message assistant">
+            <div class="bubble"><div class="loading-spinner"></div> Réflexion...</div>
+        </div>
+    `;
+    scrollChat();
+
+    try {
+        const response = await fetch(`/admin/ai/chat/${studentId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, history: chatHistory })
+        });
+        const data = await response.json();
+
+        // Remove loading
+        document.getElementById(loadingId)?.remove();
+
+        if (data.success) {
+            chatHistory.push({ role: 'user', content: message });
+            chatHistory.push({ role: 'assistant', content: data.response });
+            addChatMessage(data.response, 'assistant');
+        } else {
+            addChatMessage('Erreur: ' + (data.error || 'Réponse invalide'), 'assistant');
+        }
+    } catch (error) {
+        document.getElementById(loadingId)?.remove();
+        addChatMessage('Erreur de connexion', 'assistant');
+    }
+}
+
+function addChatMessage(content, type) {
+    const container = document.getElementById('chatContainer');
+    // Clear placeholder if first message
+    if (container.querySelector('.text-center')) {
+        container.innerHTML = '';
+    }
+    
+    container.innerHTML += `
+        <div class="chat-message ${type}">
+            <div class="bubble">${escapeHtml(content)}</div>
+        </div>
+    `;
+    scrollChat();
+}
+
+function scrollChat() {
+    const container = document.getElementById('chatContainer');
+    container.scrollTop = container.scrollHeight;
+}
+
+function showLoading(message) {
+    const container = document.getElementById('resultsContainer');
+    const content = document.getElementById('resultsContent');
+    
+    document.getElementById('resultsTitle').textContent = 'Analyse en cours';
+    document.getElementById('resultsSubtitle').textContent = message;
+    
+    content.innerHTML = `
+        <div class="text-center py-5">
+            <div class="loading-spinner" style="width: 40px; height: 40px; border-width: 3px;"></div>
+            <p class="mt-3 text-muted">${message}</p>
+        </div>
+    `;
+    container.style.display = 'block';
+}
+
+function displayAnalysis(data) {
+    document.getElementById('resultsTitle').textContent = 'Analyse de ' + data.student.name;
+    document.getElementById('resultsSubtitle').textContent = 'Généré le ' + new Date(data.generatedAt).toLocaleString('fr-FR');
+
+    const analysis = data.analysis;
+    let html = '';
+
+    if (analysis.score) {
+        html += `
+            <div class="d-flex justify-content-center mb-4">
+                <div class="text-center p-4" style="background: linear-gradient(135deg, #6366F1, #8B5CF6); border-radius: 20px; min-width: 150px;">
+                    <div class="text-white opacity-75 small">Score Global</div>
+                    <div class="text-white fw-900" style="font-size: 3rem;">${analysis.score}</div>
+                    <div class="text-white opacity-75 small">/100</div>
+                </div>
+            </div>
+        `;
+    }
+
+    html += `
+        <div class="analysis-section">
+            <h6><i class="fas fa-file-alt me-2"></i>Analyse Complète</h6>
+            <div style="white-space: pre-wrap;">${escapeHtml(analysis.full || data.rawAnalysis)}</div>
+        </div>
+    `;
+
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+function displayRecommendations(data) {
+    document.getElementById('resultsTitle').textContent = 'Recommandations pour ' + data.student;
+    document.getElementById('resultsSubtitle').textContent = 'Généré le ' + new Date(data.generatedAt).toLocaleString('fr-FR');
+
+    const html = `
+        <div class="analysis-section">
+            <h6><i class="fas fa-lightbulb me-2"></i>Recommandations Personnalisées</h6>
+            <div style="white-space: pre-wrap;">${escapeHtml(data.recommendations)}</div>
+        </div>
+    `;
+
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+function displayClassAnalysis(data) {
+    document.getElementById('resultsTitle').textContent = 'Tendances de Classe - ' + data.period;
+    document.getElementById('resultsSubtitle').textContent = data.studentsAnalyzed + ' étudiants analysés';
+
+    let html = '';
+
+    if (data.statistics) {
+        html += `
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background: #f0fdf4; border-radius: 12px;">
+                        <div class="text-success fw-bold" style="font-size: 1.5rem;">${data.statistics.classAverage || 'N/A'}</div>
+                        <div class="small text-muted">Moyenne Classe</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background: #eff6ff; border-radius: 12px;">
+                        <div class="text-primary fw-bold" style="font-size: 1.5rem;">${data.statistics.highestAverage || 'N/A'}</div>
+                        <div class="small text-muted">Plus haute</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background: #fef2f2; border-radius: 12px;">
+                        <div class="text-danger fw-bold" style="font-size: 1.5rem;">${data.statistics.lowestAverage || 'N/A'}</div>
+                        <div class="small text-muted">Plus basse</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background: #faf5ff; border-radius: 12px;">
+                        <div class="text-purple fw-bold" style="font-size: 1.5rem;">${data.statistics.standardDeviation || 'N/A'}</div>
+                        <div class="small text-muted">Écart-type</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    html += `
+        <div class="analysis-section">
+            <h6><i class="fas fa-chart-pie me-2"></i>Analyse Détaillée</h6>
+            <div style="white-space: pre-wrap;">${escapeHtml(data.analysis)}</div>
+        </div>
+    `;
+
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+function displayError(message) {
+    document.getElementById('resultsTitle').textContent = 'Erreur';
+    document.getElementById('resultsSubtitle').textContent = '';
+    
+    document.getElementById('resultsContent').innerHTML = `
+        <div class="alert alert-danger border-0" style="border-radius: 12px;">
+            <i class="fas fa-exclamation-circle me-2"></i>${escapeHtml(message)}
+        </div>
+    `;
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+function closeResults() {
+    document.getElementById('resultsContainer').style.display = 'none';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Enter key for chat
+document.getElementById('chatInput')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendChat();
+    }
+});
+
+// Reset chat when student changes
+document.getElementById('studentSelect')?.addEventListener('change', function() {
+    chatHistory = [];
+    document.getElementById('chatContainer').innerHTML = `
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+            <p>Sélectionnez un étudiant et posez une question pour commencer</p>
+        </div>
+    `;
+});
+</script>
+{% endblock %}

@@ -14,7 +14,7 @@
             </div>
         </div>
 
-        {{ form_start(form, { attr: { class: 'admin-form' } }) }}
+        {{ form_start(form, { attr: { class: 'admin-form' , novalidate: 'novalidate'} }) }}
 
         {% if not form.vars.valid %}
             <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4 animate-shake">
@@ -35,7 +35,6 @@
                     <i class="fas fa-user-graduate input-icon-premium"></i>
                     {{ form_widget(form.student, {'attr': {'class': 'form-select-premium select-lg-premium'}}) }}
                 </div>
-                {{ form_errors(form.student) }}
             </div>
 
             <div class="form-group-dynamic mb-4">
@@ -44,7 +43,6 @@
                     <i class="fas fa-calendar-alt input-icon-premium"></i>
                     {{ form_widget(form.academicYear, {'attr': {'class': 'form-control-premium input-lg-premium', 'placeholder': 'Ex: 2023/2024'}}) }}
                 </div>
-                {{ form_errors(form.academicYear) }}
             </div>
 
             <div class="form-group-dynamic mb-4">
@@ -53,7 +51,6 @@
                     <i class="fas fa-layer-group input-icon-premium"></i>
                     {{ form_widget(form.semester, {'attr': {'class': 'form-control-premium input-lg-premium', 'placeholder': 'Ex: S1'}}) }}
                 </div>
-                {{ form_errors(form.semester) }}
             </div>
 
             <div class="form-group-dynamic mb-4">
@@ -62,17 +59,8 @@
                     <i class="fas fa-star input-icon-premium"></i>
                     {{ form_widget(form.average, {'attr': {'class': 'form-control-premium input-lg-premium', 'placeholder': '0.00'}}) }}
                 </div>
-                {{ form_errors(form.average) }}
             </div>
 
-            <div class="form-group-dynamic col-span-2 mb-4">
-                {{ form_label(form.status, null, {'label_attr': {'class': 'form-label-premium'}}) }}
-                <div class="input-wrapper-premium">
-                    <i class="fas fa-info-circle input-icon-premium"></i>
-                    {{ form_widget(form.status, {'attr': {'class': 'form-select-premium select-lg-premium'}}) }}
-                </div>
-                {{ form_errors(form.status) }}
-            </div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
@@ -247,4 +235,52 @@
         .btn-premium-submit { width: 100%; justify-content: center; }
         .admin-form-actions { flex-direction: column-reverse; gap: 15px; }
     }
+    
+    /* Validation Error Styles */
+    .field-error {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+        animation: shake 0.4s ease;
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.querySelector('.admin-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            form.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+            
+            var isValid = true;
+            var requiredFields = form.querySelectorAll('[required]');
+            
+            requiredFields.forEach(function(field) {
+                if (!field.value || field.value.trim() === '') {
+                    field.classList.add('field-error');
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                var firstError = form.querySelector('.field-error');
+                if (firstError) {
+                    firstError.focus();
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+        
+        form.querySelectorAll('input, select, textarea').forEach(function(field) {
+            field.addEventListener('input', function() {
+                this.classList.remove('field-error');
+            });
+        });
+    }
+});
+</script>

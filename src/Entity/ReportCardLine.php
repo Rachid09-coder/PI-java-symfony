@@ -22,6 +22,18 @@ class ReportCardLine
     #[Assert\NotBlank(message: "Le nom du module est obligatoire.")]
     private ?string $moduleName = null;
 
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\Range(min: 0, max: 20, notInRangeMessage: "La note CC doit être entre {{ min }} et {{ max }}.")]
+    private ?float $noteCC = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\Range(min: 0, max: 20, notInRangeMessage: "La note DS doit être entre {{ min }} et {{ max }}.")]
+    private ?float $noteDS = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\Range(min: 0, max: 20, notInRangeMessage: "La note Exam doit être entre {{ min }} et {{ max }}.")]
+    private ?float $noteExam = null;
+
     #[ORM\Column(type: 'float')]
     #[Assert\NotNull(message: "La note est obligatoire.")]
     #[Assert\Range(min: 0, max: 20, notInRangeMessage: "La note doit être entre {{ min }} et {{ max }}.")]
@@ -46,6 +58,39 @@ class ReportCardLine
 
     public function getModuleName(): ?string { return $this->moduleName; }
     public function setModuleName(string $moduleName): self { $this->moduleName = $moduleName; return $this; }
+
+    public function getNoteCC(): ?float { return $this->noteCC; }
+    public function setNoteCC(?float $noteCC): self { 
+        $this->noteCC = $noteCC; 
+        $this->calculateNote();
+        return $this; 
+    }
+
+    public function getNoteDS(): ?float { return $this->noteDS; }
+    public function setNoteDS(?float $noteDS): self { 
+        $this->noteDS = $noteDS; 
+        $this->calculateNote();
+        return $this; 
+    }
+
+    public function getNoteExam(): ?float { return $this->noteExam; }
+    public function setNoteExam(?float $noteExam): self { 
+        $this->noteExam = $noteExam; 
+        $this->calculateNote();
+        return $this; 
+    }
+
+    /**
+     * Calcule la note pondérée: CC (10%) + DS (20%) + Exam (70%)
+     */
+    public function calculateNote(): void
+    {
+        $cc = $this->noteCC ?? 0;
+        $ds = $this->noteDS ?? 0;
+        $exam = $this->noteExam ?? 0;
+        
+        $this->note = round(($cc * 0.10) + ($ds * 0.20) + ($exam * 0.70), 2);
+    }
 
     public function getNote(): ?float { return $this->note; }
     public function setNote(float $note): self { $this->note = $note; return $this; }

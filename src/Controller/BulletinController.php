@@ -9,6 +9,8 @@ use App\Repository\BulletinRepository;
 use App\Service\AuditService;
 use App\Service\BulletinWorkflowService;
 use App\Service\PdfGeneratorService;
+use App\Service\EmailService;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -24,14 +26,26 @@ class BulletinController extends AbstractController
         private BulletinWorkflowService $workflowService,
         private PdfGeneratorService $pdfService,
         private AuditService $auditService,
+        private EmailService $emailService,
+        private BulletinRepository $bulletinRepository,
+        private SmsService $smsService,
     ) {
     }
 
     #[Route('/', name: 'index', methods: ['GET'])]
-    public function index(BulletinRepository $bulletinRepository): Response
+    public function index(Request $request, BulletinRepository $bulletinRepository): Response
     {
+        $search = $request->query->get('search', '');
+        $sortBy = $request->query->get('sort', 'createdAt');
+        $sortOrder = $request->query->get('order', 'DESC');
+
+        $bulletins = $bulletinRepository->searchAndSort($search ?: null, $sortBy, $sortOrder);
+
         return $this->render('bulletin/index.html.twig', [
-            'bulletins' => $bulletinRepository->findBy([], ['createdAt' => 'DESC']),
+            'bulletins' => $bulletins,
+            'search' => $search,
+            'sortBy' => $sortBy,
+            'sortOrder' => $sortOrder,
         ]);
     }
 
@@ -43,11 +57,19 @@ class BulletinController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Calculer le rang automatiquement
             $em->persist($bulletin);
+            $em->flush();
+            
+            // Recalculer tous les rangs de la même période
+            $this->bulletinRepository->recalculateAllRanks(
+                $bulletin->getAcademicYear(),
+                $bulletin->getSemester()
+            );
             $em->flush();
 
             $this->auditService->log('Bulletin', $bulletin->getId(), 'CREATED', $this->getUser());
-            $this->addFlash('success', 'Bulletin créé avec succès.');
+            $this->addFlash('success', 'Bulletin créé avec succès. Rang calculé automatiquement.');
 
             return $this->redirectToRoute('admin_bulletin_index');
         }
@@ -82,9 +104,16 @@ class BulletinController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $bulletin->setUpdatedAt(new \DateTimeImmutable());
             $em->flush();
+            
+            // Recalculer tous les rangs de la même période
+            $this->bulletinRepository->recalculateAllRanks(
+                $bulletin->getAcademicYear(),
+                $bulletin->getSemester()
+            );
+            $em->flush();
 
             $this->auditService->log('Bulletin', $bulletin->getId(), 'UPDATED', $this->getUser());
-            $this->addFlash('success', 'Bulletin modifié avec succès.');
+            $this->addFlash('success', 'Bulletin modifié avec succès. Rangs recalculés.');
 
             return $this->redirectToRoute('admin_bulletin_index');
         }
@@ -136,7 +165,39 @@ class BulletinController extends AbstractController
             $bulletin->setPdfPath($pdfPath);
 
             $em->flush();
-            $this->addFlash('success', 'Bulletin publié avec succès. PDF généré.');
+            
+            $emailSent = false;
+            $smsSent = false;
+            
+            // Envoyer automatiquement par email à l'étudiant
+            try {
+                $this->emailService->sendBulletinEmail($bulletin);
+                $emailSent = true;
+            } catch (\Exception $mailEx) {
+                // Log silencieusement
+            }
+            
+            // Envoyer automatiquement par SMS à l'étudiant
+            try {
+                if ($this->smsService->isConfigured()) {
+                    $smsResult = $this->smsService->notifyBulletinReady($bulletin);
+                    $smsSent = $smsResult['success'] ?? false;
+                }
+            } catch (\Exception $smsEx) {
+                // Log silencieusement
+            }
+            
+            // Message de confirmation adapté
+            $message = 'Bulletin publié avec succès. PDF généré.';
+            if ($emailSent && $smsSent) {
+                $message .= ' Email et SMS envoyés à l\'étudiant.';
+            } elseif ($emailSent) {
+                $message .= ' Email envoyé à l\'étudiant.';
+            } elseif ($smsSent) {
+                $message .= ' SMS envoyé à l\'étudiant.';
+            }
+            
+            $this->addFlash('success', $message);
         } catch (\LogicException $e) {
             $this->addFlash('error', $e->getMessage());
         }
@@ -166,6 +227,25 @@ class BulletinController extends AbstractController
         );
 
         return $response;
+    }
+
+    #[Route('/{id}/generate-pdf', name: 'generate_pdf', methods: ['POST'])]
+    public function generatePdf(Bulletin $bulletin, Request $request, EntityManagerInterface $em): Response
+    {
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $pdfPath = $this->pdfService->generateBulletinPdf($bulletin, $baseUrl);
+        $bulletin->setPdfPath($pdfPath);
+        $em->flush();
+
+        // Envoyer automatiquement par email à l'étudiant
+        try {
+            $this->emailService->sendBulletinEmail($bulletin);
+            $this->addFlash('success', 'PDF généré avec le template EduSmart et envoyé par email à l\'étudiant.');
+        } catch (\Exception $e) {
+            $this->addFlash('warning', 'PDF généré, mais l\'envoi d\'email a échoué: ' . $e->getMessage());
+        }
+        
+        return $this->redirectToRoute('admin_bulletin_index');
     }
 
     #[Route('/{id}/revoke', name: 'revoke', methods: ['POST'])]
@@ -200,5 +280,37 @@ class BulletinController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_bulletin_index');
+    }
+
+    #[Route('/{id}/send-sms', name: 'send_sms', methods: ['POST'])]
+    public function sendSms(Bulletin $bulletin): Response
+    {
+        if (!$this->smsService->isConfigured()) {
+            $this->addFlash('error', 'Service SMS non configuré. Vérifiez les clés Twilio dans .env');
+            return $this->redirectToRoute('admin_bulletin_show', ['id' => $bulletin->getId()]);
+        }
+
+        $result = $this->smsService->notifyBulletinReady($bulletin);
+
+        if ($result['success']) {
+            $this->addFlash('success', 'SMS envoyé avec succès à l\'étudiant.');
+        } else {
+            $this->addFlash('error', 'Erreur envoi SMS: ' . ($result['error'] ?? 'Erreur inconnue'));
+        }
+
+        return $this->redirectToRoute('admin_bulletin_show', ['id' => $bulletin->getId()]);
+    }
+
+    #[Route('/{id}/send-email', name: 'send_email', methods: ['POST'])]
+    public function sendEmail(Bulletin $bulletin): Response
+    {
+        try {
+            $this->emailService->sendBulletinEmail($bulletin);
+            $this->addFlash('success', 'Email envoyé avec succès à l\'étudiant.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur envoi email: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_bulletin_show', ['id' => $bulletin->getId()]);
     }
 }

@@ -25,6 +25,13 @@ class SignatureAssetController extends AbstractController
         ]);
     }
 
+    #[Route('/init', name: 'admin_signature_asset_init', methods: ['GET', 'POST'])]
+    public function init(): Response
+    {
+        // For now, redirect to new
+        return $this->redirectToRoute('admin_signature_asset_new');
+    }
+
     #[Route('/new', name: 'admin_signature_asset_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, AuditService $audit): Response
     {

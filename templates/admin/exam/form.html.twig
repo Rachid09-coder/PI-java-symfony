@@ -56,6 +56,52 @@
                         {{ form_errors(form.description) }}
                     </div>
 
+                    {# Section Bulletin / Notes #}
+                    <div class="card bg-light border-0 p-3 mb-3">
+                        <h6 class="text-primary mb-3"><i class="fas fa-graduation-cap me-2"></i>Paramètres Bulletin</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.course, 'Cours associé') }}
+                                {{ form_widget(form.course, {'attr': {'class': 'form-select'}}) }}
+                                <small class="text-muted">Le coefficient sera récupéré automatiquement du cours</small>
+                                {{ form_errors(form.course) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.gradeCategory, 'Catégorie de note') }}
+                                {{ form_widget(form.gradeCategory, {'attr': {'class': 'form-select'}}) }}
+                                <small class="text-muted">CC (Quiz/QCM) = 10%, DS = 20%, Exam = 70%</small>
+                                {{ form_errors(form.gradeCategory) }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.moduleName, 'Nom du module (si pas de cours)') }}
+                                {{ form_widget(form.moduleName, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Mathématiques'}}) }}
+                                {{ form_errors(form.moduleName) }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.academicYear, 'Année académique') }}
+                                {{ form_widget(form.academicYear, {'attr': {'class': 'form-control', 'placeholder': '2025-2026'}}) }}
+                                {{ form_errors(form.academicYear) }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.semester, 'Semestre') }}
+                                {{ form_widget(form.semester, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.semester) }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.coefficient, 'Coefficient (si pas de cours)') }}
+                                {{ form_widget(form.coefficient, {'attr': {'class': 'form-control', 'placeholder': '1'}}) }}
+                                {{ form_errors(form.coefficient) }}
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-end mt-4">
                         <button type="submit" class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow">
                             <i class="fas fa-save fs-5"></i>

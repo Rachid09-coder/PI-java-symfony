@@ -1,39 +1,109 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'admin_layout.html.twig' %}
 
-{% block title %}Métier{% endblock %}
-
-{% block header_content %}
-    <div class="page-header">
-        <h1>Détails du métier</h1>
-    </div>
-{% endblock %}
+{% block title %}Details du Metier - EduSmart{% endblock %}
 
 {% block body %}
-    <div class="page-content">
-        <div class="card">
-            <div class="card-body">
-                <table class="table">
-                    <tbody>
-                        <tr>
-                            <th>Id</th>
-                            <td>{{ metier.id }}</td>
-                        </tr>
-                        <tr>
-                            <th>Nom</th>
-                            <td>{{ metier.nom }}</td>
-                        </tr>
-                        <tr>
-                            <th>Description</th>
-                            <td>{{ metier.description }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+<div class="admin-page animate-fade-in py-4">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container-fluid position-relative z-index-2">
+        <header class="mb-5">
+            <a href="{{ path('app_metier_index') }}" class="btn-back-premium mb-3">
+                <i class="fas fa-arrow-left me-2"></i> Retour aux Metiers
+            </a>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <h1 class="h2 fw-900 text-dark mb-1">
+                        <i class="fas fa-briefcase text-primary me-2"></i>
+                        {{ metier.nom }}
+                    </h1>
+                    <p class="text-muted small mb-0">Details complets de la filiere professionnelle.</p>
+                </div>
+                <div class="d-flex gap-3">
+                    <a href="{{ path('app_metier_edit', {'id': metier.id}) }}" class="btn-premium-action shadow-sm">
+                        <i class="fas fa-edit text-warning"></i> <span>Modifier</span>
+                    </a>
+                </div>
             </div>
-            <div class="card-footer">
-                <a href="{{ path('app_metier_index') }}" class="btn btn-outline-secondary">Retour à la liste</a>
-                <a href="{{ path('app_metier_edit', {'id': metier.id}) }}" class="btn btn-primary">Modifier</a>
-                {{ include('metier/_delete_form.html.twig', {metier: metier}) }}
+        </header>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card card-premium-glass shadow-lg border-0 overflow-hidden">
+                    <div class="card-header bg-transparent border-0 py-4 px-4 px-md-5">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse-blue me-3">
+                                <i class="fas fa-info-circle text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-800 text-dark mb-0">Informations</h4>
+                                <p class="text-muted small mb-0">Donnees de la filiere.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5 pt-0">
+                        <div class="info-row mb-4">
+                            <label class="info-label">Identifiant</label>
+                            <div class="info-value">
+                                <code class="id-badge">{{ metier.id }}</code>
+                            </div>
+                        </div>
+                        <div class="info-row mb-4">
+                            <label class="info-label">Nom du Metier</label>
+                            <div class="info-value fw-800 text-dark fs-5">{{ metier.nom }}</div>
+                        </div>
+                        <div class="info-row">
+                            <label class="info-label">Description</label>
+                            <div class="info-value text-muted">{{ metier.description|default('Aucune description fournie.') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card card-premium-glass shadow-lg border-0 overflow-hidden">
+                    <div class="card-header bg-transparent border-0 py-4 px-4">
+                        <h5 class="fw-800 text-dark mb-0"><i class="fas fa-cog me-2 text-muted"></i>Actions</h5>
+                    </div>
+                    <div class="card-body p-4 pt-0">
+                        <div class="d-grid gap-3">
+                            <a href="{{ path('app_metier_edit', {'id': metier.id}) }}" class="btn btn-outline-warning rounded-pill py-3">
+                                <i class="fas fa-edit me-2"></i>Modifier
+                            </a>
+                            <a href="{{ path('app_metier_index') }}" class="btn btn-outline-secondary rounded-pill py-3">
+                                <i class="fas fa-list me-2"></i>Voir tous
+                            </a>
+                            <hr class="my-2">
+                            {{ include('metier/_delete_form.html.twig', {metier: metier}) }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
+
+<style>
+    .fw-900 { font-weight: 900; }
+    .fw-800 { font-weight: 800; }
+    .z-index-2 { z-index: 2; }
+    .orb { position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(130px); opacity: 0.08; z-index: 0; pointer-events: none; }
+    .orb-1 { top: -100px; left: -100px; background: #4f46e5; }
+    .orb-2 { bottom: -100px; right: -100px; background: #10b981; }
+    .card-premium-glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(25px); border: 1px solid rgba(226, 232, 240, 0.5) !important; border-radius: 30px !important; }
+    .icon-pulse-blue { width: 56px; height: 56px; background: rgba(99, 102, 241, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+    .btn-back-premium { display: inline-flex; align-items: center; color: #64748b; text-decoration: none; font-weight: 600; transition: all 0.2s ease; padding: 8px 16px; border-radius: 10px; background: rgba(241, 245, 249, 0.8); }
+    .btn-back-premium:hover { color: #4f46e5; background: #EEF2FF; transform: translateX(-3px); }
+    .btn-premium-action { background: white; color: #1E293B; border: 1px solid #E2E8F0; padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; transition: all 0.3s ease; }
+    .btn-premium-action:hover { background: #F8FAFC; border-color: #6366F1; color: #4F46E5; transform: translateY(-2px); }
+    .info-row { padding: 16px 0; border-bottom: 1px solid #f1f5f9; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px; }
+    .info-value { font-size: 1rem; }
+    .id-badge { background: #F1F5F9; color: #6366F1; padding: 6px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; }
+    .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
 {% endblock %}

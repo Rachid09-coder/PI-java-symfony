@@ -24,7 +24,34 @@
             </div>
         </header>
 
-        {{ form_start(form, {'attr': {'class': 'premium-form'}}) }}
+        {{ form_start(form, {'attr': {'class': 'premium-form', 'novalidate': 'novalidate', 'id': 'certification-form'}}) }}
+        
+        {# Affichage des erreurs globales du formulaire #}
+        {% if form.vars.errors|length > 0 %}
+        <div class="alert alert-danger mb-4 rounded-3 shadow-sm">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Erreurs de validation :</strong>
+            </div>
+            <ul class="mb-0 mt-2">
+                {% for error in form.vars.errors %}
+                    <li>{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {# Flash messages #}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : type }} mb-4 rounded-3 shadow-sm alert-dismissible fade show">
+                    <i class="fas fa-{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'times-circle' : 'info-circle') }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        
         <div class="row justify-content-center">
             <div class="col-xl-10">
                 <div class="card card-premium-glass shadow-lg border-0 overflow-hidden" style="border-radius: 28px;">
@@ -42,70 +69,83 @@
                     
                     <div class="card-body p-4 p-md-5">
                         <div class="row g-4">
-                            <div class="col-md-6">
+                            {# Étape 1: Étudiant #}
+                            <div class="col-12">
+                                <div class="step-header mb-3">
+                                    <span class="step-number">1</span>
+                                    <span class="step-title">Sélectionner l'étudiant</span>
+                                </div>
                                 <div class="form-group-premium">
                                     {{ form_label(form.student, null, {'label_attr': {'class': 'label-premium'}}) }}
                                     <div class="input-glow-wrapper">
-                                        {{ form_widget(form.student, {'attr': {'class': 'form-select-premium select-lg-premium'}}) }}
+                                        {{ form_widget(form.student) }}
                                     </div>
-                                    {{ form_errors(form.student) }}
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
-                                <div class="form-group-premium">
-                                    {{ form_label(form.bulletin, null, {'label_attr': {'class': 'label-premium'}}) }}
-                                    <div class="input-glow-wrapper">
-                                        {{ form_widget(form.bulletin, {'attr': {'class': 'form-select-premium select-lg-premium'}}) }}
-                                    </div>
-                                    <div class="form-status-info mt-2">
-                                        <i class="fas fa-link me-1"></i> Liaison automatique aux notes
-                                    </div>
-                                    {{ form_errors(form.bulletin) }}
+                            {# Étape 2: Type de certification #}
+                            <div class="col-12" id="step-type" style="display: none;">
+                                <div class="step-header mb-3">
+                                    <span class="step-number">2</span>
+                                    <span class="step-title">Type de certification</span>
                                 </div>
-                            </div>
-
-                            <div class="col-md-6">
                                 <div class="form-group-premium">
                                     {{ form_label(form.type, null, {'label_attr': {'class': 'label-premium'}}) }}
                                     <div class="input-glow-wrapper">
-                                        {{ form_widget(form.type, {'attr': {'class': 'form-select-premium'}}) }}
+                                        {{ form_widget(form.type) }}
                                     </div>
-                                    {{ form_errors(form.type) }}
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <div class="form-group-premium">
-                                    {{ form_label(form.status, null, {'label_attr': {'class': 'label-premium'}}) }}
-                                    <div class="input-glow-wrapper">
-                                        {{ form_widget(form.status, {'attr': {'class': 'form-select-premium'}}) }}
-                                    </div>
-                                    {{ form_errors(form.status) }}
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group-premium">
-                                    {{ form_label(form.verificationCode, null, {'label_attr': {'class': 'label-premium'}}) }}
-                                    <div class="input-glow-wrapper">
-                                        {{ form_widget(form.verificationCode, {'attr': {'class': 'form-control-premium', 'placeholder': 'Généré auto si vide'}}) }}
-                                    </div>
-                                    {{ form_errors(form.verificationCode) }}
+                            {# Étape 3: Période (conditionnel) #}
+                            <div class="col-12" id="step-semester" style="display: none;">
+                                <div class="step-header mb-3">
+                                    <span class="step-number">3</span>
+                                    <span class="step-title">Période concernée</span>
                                 </div>
-                            </div>
-                            
-                            <div class="col-md-6">
                                 <div class="form-group-premium">
-                                    {{ form_label(form.validUntil, null, {'label_attr': {'class': 'label-premium'}}) }}
+                                    {{ form_label(form.semesterChoice, null, {'label_attr': {'class': 'label-premium'}}) }}
                                     <div class="input-glow-wrapper">
-                                        {{ form_widget(form.validUntil, {'attr': {'class': 'form-control-premium'}}) }}
+                                        <select id="certification_semesterChoice_select" class="form-select-premium" style="width:100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.95rem;">
+                                            <option value="">Sélectionner la période</option>
+                                        </select>
+                                        {# Hidden input that Symfony will read #}
+                                        <div style="display:none;">{{ form_widget(form.semesterChoice) }}</div>
                                     </div>
-                                    {{ form_errors(form.validUntil) }}
+                                    <div class="form-status-info mt-2" id="semester-info">
+                                        <i class="fas fa-info-circle me-1"></i> Les périodes disponibles sont basées sur les bulletins de l'étudiant
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="col-12 mt-5">
+                            {# Étape 4: Détails supplémentaires #}
+                            <div class="col-12" id="step-details" style="display: none;">
+                                <div class="step-header mb-3">
+                                    <span class="step-number">4</span>
+                                    <span class="step-title">Détails de la certification</span>
+                                </div>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-premium">
+                                            {{ form_label(form.verificationCode, null, {'label_attr': {'class': 'label-premium'}}) }}
+                                            <div class="input-glow-wrapper">
+                                                {{ form_widget(form.verificationCode) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-premium">
+                                            {{ form_label(form.validUntil, null, {'label_attr': {'class': 'label-premium'}}) }}
+                                            <div class="input-glow-wrapper">
+                                                {{ form_widget(form.validUntil) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Upload PDF #}
+                            <div class="col-12 mt-4" id="step-upload" style="display: none;">
                                 <div class="upload-zone-premium p-5 rounded-4 border-dashed animate-pulse-soft">
                                     <div class="text-center">
                                         <div class="icon-upload-wrapper mb-3">
@@ -117,15 +157,14 @@
                                             EduSmart peut également générer ce PDF automatiquement.
                                         </p>
                                         <div class="max-width-400 mx-auto">
-                                            {{ form_widget(form.pdfFile, {'attr': {'class': 'form-control-premium'}}) }}
-                                            {{ form_errors(form.pdfFile) }}
+                                            {{ form_widget(form.pdfFile) }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top border-light">
+                        <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top border-light" id="form-actions" style="display: none;">
                             <a href="{{ path('admin_certification_index') }}" class="btn-premium-cancel px-4">
                                 <i class="fas fa-times me-2"></i> Annuler l'opération
                             </a>
@@ -346,7 +385,296 @@
 
     .border-dashed { border-style: dashed !important; border-width: 2px !important; }
     .max-width-400 { max-width: 400px; }
+
+    /* Validation Error Styles */
+    .field-error {
+        border-color: #ef4444 !important;
+        background-color: rgba(254, 242, 242, 0.5) !important;
+        animation: shakeField 0.4s ease;
+    }
+    .error-message {
+        color: #ef4444;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .error-message i { font-size: 0.7rem; }
+    @keyframes shakeField {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    /* Step indicators */
+    .step-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 2px solid #f1f5f9;
+        margin-bottom: 16px;
+    }
+    .step-number {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+    .step-title {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 1rem;
+    }
+    
+    /* Slide animation */
+    .slide-down {
+        animation: slideDown 0.4s ease-out forwards;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('certification-form');
+    // Use Symfony generated IDs (certification_fieldName)
+    const studentSelect = document.getElementById('certification_student');
+    const typeSelect = document.getElementById('certification_type');
+    const semesterHiddenInput = document.getElementById('certification_semesterChoice');
+    const semesterSelect = document.getElementById('certification_semesterChoice_select');
+    
+    const stepType = document.getElementById('step-type');
+    const stepSemester = document.getElementById('step-semester');
+    const stepDetails = document.getElementById('step-details');
+    const stepUpload = document.getElementById('step-upload');
+    const formActions = document.getElementById('form-actions');
+    const semesterInfo = document.getElementById('semester-info');
+    
+    // Store available semesters for current student
+    let availableSemesters = [];
+    
+    console.log('Form elements:', { studentSelect, typeSelect, semesterSelect });
+    
+    // Types requiring semester selection
+    const typesNeedingSemester = ['NOTES', 'REUSSITE'];
+    
+    // Function to show element with animation
+    function showStep(element) {
+        if (element) {
+            element.style.display = 'block';
+            element.classList.add('slide-down');
+        }
+    }
+    
+    // Function to hide element
+    function hideStep(element) {
+        if (element) {
+            element.style.display = 'none';
+            element.classList.remove('slide-down');
+        }
+    }
+    
+    // Reset form steps from a certain point
+    function resetFromStep(stepNumber) {
+        if (stepNumber <= 2) {
+            hideStep(stepType);
+            typeSelect.value = '';
+        }
+        if (stepNumber <= 3) {
+            hideStep(stepSemester);
+            semesterSelect.innerHTML = '<option value="">S\u00e9lectionner la p\u00e9riode</option>';
+            semesterHiddenInput.value = '';
+            availableSemesters = [];
+        }
+        hideStep(stepDetails);
+        hideStep(stepUpload);
+        formActions.style.display = 'none';
+    }
+    
+    // Load available semesters for student via AJAX
+    function loadAvailableSemesters(studentId) {
+        if (!studentId) return Promise.resolve([]);
+        
+        return fetch('/admin/certification/api/semesters/' + studentId)
+            .then(response => response.json())
+            .then(data => {
+                availableSemesters = data;
+                return data;
+            })
+            .catch(err => {
+                console.error('Erreur chargement semestres:', err);
+                return [];
+            });
+    }
+    
+    // Populate semester dropdown with available options
+    function populateSemesterDropdown(semesters) {
+        semesterSelect.innerHTML = '<option value="">S\u00e9lectionner la p\u00e9riode</option>';
+        semesters.forEach(sem => {
+            const option = document.createElement('option');
+            option.value = sem.value;
+            option.textContent = sem.label;
+            semesterSelect.appendChild(option);
+        });
+        
+        if (semesters.length === 0) {
+            semesterInfo.innerHTML = '<i class="fas fa-exclamation-triangle me-1 text-warning"></i> Aucun bulletin disponible pour cet étudiant';
+        } else {
+            semesterInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i> ' + semesters.length + ' période(s) disponible(s)';
+        }
+    }
+    
+    // Student selection change
+    studentSelect.addEventListener('change', function() {
+        resetFromStep(2);
+        if (this.value) {
+            // Load available semesters for this student
+            loadAvailableSemesters(this.value).then(() => {
+                showStep(stepType);
+            });
+        }
+    });
+    
+    // Type selection change
+    typeSelect.addEventListener('change', function() {
+        hideStep(stepSemester);
+        hideStep(stepDetails);
+        hideStep(stepUpload);
+        formActions.style.display = 'none';
+        
+        if (this.value) {
+            if (typesNeedingSemester.includes(this.value)) {
+                // Show semester choice for these types (only if semesters are available)
+                if (availableSemesters.length > 0) {
+                    populateSemesterDropdown(availableSemesters);
+                    showStep(stepSemester);
+                } else {
+                    // No bulletins available, show warning and still allow proceeding
+                    populateSemesterDropdown([]);
+                    showStep(stepSemester);
+                }
+            } else {
+                // Skip to details for other types (SCOLARITE, DIPLOME, STAGE, PRESENCE)
+                showStep(stepDetails);
+                showStep(stepUpload);
+                formActions.style.display = 'flex';
+            }
+        }
+    });
+    
+    // Semester choice change - go directly to details
+    semesterSelect.addEventListener('change', function() {
+        // Sync hidden input with selected value
+        semesterHiddenInput.value = this.value;
+        
+        hideStep(stepDetails);
+        hideStep(stepUpload);
+        formActions.style.display = 'none';
+        
+        if (this.value) {
+            showStep(stepDetails);
+            showStep(stepUpload);
+            formActions.style.display = 'flex';
+        }
+    });
+    
+    // Initial state - check if editing
+    {% if certification.id %}
+    // Show all steps when editing
+    showStep(stepType);
+    if (typesNeedingSemester.includes(typeSelect.value)) {
+        loadAvailableSemesters(studentSelect.value).then(() => {
+            populateSemesterDropdown(availableSemesters);
+            showStep(stepSemester);
+        });
+    }
+    showStep(stepDetails);
+    showStep(stepUpload);
+    formActions.style.display = 'flex';
+    {% endif %}
+    
+    // Validation rules
+    const validations = {
+        student: { required: true, message: 'Veuillez sélectionner un étudiant' },
+        type: { required: true, message: 'Veuillez choisir un type de certification' }
+    };
+    
+    // Clear previous errors
+    function clearErrors() {
+        form.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+        form.querySelectorAll('.error-message').forEach(el => el.remove());
+    }
+    
+    // Show error for field
+    function showError(field, message) {
+        field.classList.add('field-error');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
+        field.parentElement.appendChild(errorDiv);
+    }
+    
+    // Date validation
+    function isValidDate(dateStr) {
+        if (!dateStr) return true;
+        const date = new Date(dateStr);
+        return date instanceof Date && !isNaN(date);
+    }
+    
+    form.addEventListener('submit', function(e) {
+        clearErrors();
+        let isValid = true;
+        
+        if (!studentSelect.value) {
+            showError(studentSelect, validations.student.message);
+            isValid = false;
+        }
+        
+        if (!typeSelect.value) {
+            showError(typeSelect, validations.type.message);
+            isValid = false;
+        }
+        
+        const validUntilInput = form.querySelector('[name*="[validUntil]"]');
+        if (validUntilInput && validUntilInput.value && !isValidDate(validUntilInput.value)) {
+            showError(validUntilInput, 'Format de date invalide');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            const firstError = form.querySelector('.field-error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+    
+    // Real-time validation on blur
+    form.querySelectorAll('select, input').forEach(field => {
+        field.addEventListener('blur', function() {
+            const wrapper = this.closest('.form-group-premium');
+            if (wrapper) {
+                wrapper.querySelectorAll('.error-message').forEach(e => e.remove());
+                this.classList.remove('field-error');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}
 
 

@@ -65,6 +65,8 @@
                             <tr>
                                 <th class="ps-4">Référentiel de l'Examen</th>
                                 <th class="text-center">Classification</th>
+                                <th class="text-center">Cours/Module</th>
+                                <th class="text-center">Catégorie</th>
                                 <th class="text-center">Structure</th>
                                 <th class="text-center">Dimensions Time</th>
                                 <th class="pe-4 text-end">Opérations</th>
@@ -81,6 +83,35 @@
                                     <span class="badge-hologram">
                                         {{ exam.type }}
                                     </span>
+                                </td>
+                                <td class="text-center">
+                                    {% if exam.course %}
+                                        <span class="badge bg-info text-white">{{ exam.course.title }}</span>
+                                        {% if exam.course.coefficient %}
+                                            <br><small class="text-muted">Coef: {{ exam.course.coefficient }}</small>
+                                        {% endif %}
+                                    {% elseif exam.moduleName %}
+                                        <span class="text-secondary">{{ exam.moduleName }}</span>
+                                        {% if exam.coefficient %}
+                                            <br><small class="text-muted">Coef: {{ exam.coefficient }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if exam.gradeCategory == 'cc' %}
+                                        <span class="badge bg-success">CC (10%)</span>
+                                    {% elseif exam.gradeCategory == 'ds' %}
+                                        <span class="badge bg-warning text-dark">DS (20%)</span>
+                                    {% elseif exam.gradeCategory == 'exam' %}
+                                        <span class="badge bg-danger">Exam (70%)</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                    {% if exam.semester %}
+                                        <br><small class="text-muted">S{{ exam.semester }}</small>
+                                    {% endif %}
                                 </td>
                                 <td class="text-center">
                                     <div class="data-badge-blue">
