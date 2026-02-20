@@ -36,6 +36,10 @@ class Course
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $pdfPath = null;
 
+    /** Contenu du cours généré par l’IA (affiché à l’étudiant). */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $generatedContent = null;
+
     /**
      * @var Collection<int, Module>
      */
@@ -43,11 +47,18 @@ class Course
     #[ORM\JoinTable(name: 'course_module')]
     private Collection $modules;
 
+    /**
+     * @var Collection<int, ForumThread>
+     */
+    #[ORM\OneToMany(targetEntity: ForumThread::class, mappedBy: 'course', cascade: ['remove'], orphanRemoval: true)]
+    private Collection $forumThreads;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->status = 'DRAFT';
         $this->modules = new ArrayCollection();
+        $this->forumThreads = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -132,6 +143,17 @@ class Course
         return $this;
     }
 
+    public function getGeneratedContent(): ?string
+    {
+        return $this->generatedContent;
+    }
+
+    public function setGeneratedContent(?string $generatedContent): self
+    {
+        $this->generatedContent = $generatedContent;
+        return $this;
+    }
+
     /**
      * @return Collection<int, Module>
      */
@@ -151,6 +173,33 @@ class Course
     public function removeModule(Module $module): self
     {
         $this->modules->removeElement($module);
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ForumThread>
+     */
+    public function getForumThreads(): Collection
+    {
+        return $this->forumThreads;
+    }
+
+    public function addForumThread(ForumThread $forumThread): self
+    {
+        if (!$this->forumThreads->contains($forumThread)) {
+            $this->forumThreads->add($forumThread);
+            $forumThread->setCourse($this);
+        }
+        return $this;
+    }
+
+    public function removeForumThread(ForumThread $forumThread): self
+    {
+        if ($this->forumThreads->removeElement($forumThread)) {
+            if ($forumThread->getCourse() === $this) {
+                $forumThread->setCourse(null);
+            }
+        }
         return $this;
     }
 }

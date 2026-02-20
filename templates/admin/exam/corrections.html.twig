@@ -1,0 +1,102 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Correction des copies — {{ exam.title }} — EduSmart{% endblock %}
+
+{% block body %}
+<div class="exam-corrections">
+    <header class="exam-corrections-header">
+        <a href="{{ path('admin_exam_dashboard', {id: exam.id}) }}" class="exam-corrections-back">
+            <i class="fas fa-arrow-left"></i> Tableau de bord
+        </a>
+        <h1 class="exam-corrections-title"><i class="fas fa-pen-fancy"></i> Correction des copies</h1>
+        <p class="exam-corrections-subtitle">{{ exam.title }} · Saisissez la note et validez chaque rendu.</p>
+    </header>
+
+    {% for message in app.flashes('success') %}
+        <div class="exam-corrections-flash success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="exam-corrections-flash error">{{ message }}</div>
+    {% endfor %}
+
+    <form action="{{ path('admin_exam_save_grades', {id: exam.id}) }}" method="post" class="exam-corrections-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('exam_grades_' ~ exam.id) }}">
+        <div class="exam-corrections-table-card">
+            <table class="exam-corrections-table">
+                <thead>
+                    <tr>
+                        <th>Candidat</th>
+                        <th>Rendu (PDF)</th>
+                        <th>Note / 20</th>
+                        <th>Validé</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in submissions %}
+                    {% set fileUrl = s.filePath starts with 'uploads/' ? asset(s.filePath) : asset('uploads/' ~ s.filePath) %}
+                    <tr>
+                        <td>
+                            <strong>{{ s.student ? (s.student.name ?? s.student.email) : (s.candidateIdentifier ?? 'Anonyme') }}</strong>
+                            {% if s.student %}<br><span class="exam-corrections-email">{{ s.student.email }}</span>{% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ fileUrl }}" target="_blank" rel="noopener" class="exam-corrections-pdf-link">
+                                <i class="fas fa-file-pdf"></i> Voir la copie
+                            </a>
+                        </td>
+                        <td>
+                            <input type="number" name="grades[{{ s.id }}]" value="{{ s.grade is not null ? s.grade : '' }}" min="0" max="20" step="0.25" placeholder="—" class="exam-corrections-grade-input">
+                        </td>
+                        <td>
+                            <select name="passed[{{ s.id }}]" class="exam-corrections-passed-select">
+                                <option value="0" {{ s.isPassed is same as(false) ? 'selected' : '' }}>Non</option>
+                                <option value="1" {{ s.isPassed is same as(true) ? 'selected' : '' }}>Oui</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="exam-corrections-empty">Aucun rendu à corriger pour cet examen.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if submissions|length > 0 %}
+            <div class="exam-corrections-actions">
+                <button type="submit" class="exam-corrections-submit">
+                    <i class="fas fa-save"></i> Enregistrer les notes
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<style>
+.exam-corrections { max-width: 1000px; margin: 0 auto; padding: 24px; }
+.exam-corrections-header { margin-bottom: 28px; }
+.exam-corrections-back { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-weight: 600; margin-bottom: 12px; }
+.exam-corrections-back:hover { color: #3b49a2; }
+.exam-corrections-title { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0; display: flex; align-items: center; gap: 12px; }
+.exam-corrections-subtitle { font-size: 0.95rem; color: var(--text-secondary); margin: 0; }
+.exam-corrections-flash { padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-weight: 600; }
+.exam-corrections-flash.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+.exam-corrections-flash.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+.exam-corrections-table-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; }
+.exam-corrections-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.exam-corrections-table th { text-align: left; padding: 16px 20px; background: #f8fafc; color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; border-bottom: 2px solid var(--border-color); }
+.exam-corrections-table td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); vertical-align: middle; }
+.exam-corrections-table tbody tr:last-child td { border-bottom: none; }
+.exam-corrections-table tbody tr:hover { background: rgba(59,73,162,0.03); }
+.exam-corrections-email { font-size: 0.82rem; color: var(--text-secondary); font-weight: 400; }
+.exam-corrections-pdf-link { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: #fee2e2; color: #b91c1c; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.9rem; }
+.exam-corrections-pdf-link:hover { background: #fecaca; color: #991b1b; }
+.exam-corrections-grade-input { width: 90px; padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 1rem; font-weight: 700; text-align: center; }
+.exam-corrections-grade-input:focus { outline: none; border-color: #3b49a2; box-shadow: 0 0 0 3px rgba(59,73,162,0.15); }
+.exam-corrections-passed-select { padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; font-weight: 600; background: var(--card-bg); color: var(--text-primary); min-width: 100px; }
+.exam-corrections-actions { padding: 20px; border-top: 1px solid var(--border-color); background: #f8fafc; }
+.exam-corrections-submit { display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background: #3b49a2; color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; }
+.exam-corrections-submit:hover { background: #4f46e5; }
+.exam-corrections-empty { text-align: center; color: var(--text-secondary); padding: 48px 20px !important; }
+</style>
+{% endblock %}

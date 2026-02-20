@@ -1,0 +1,92 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Forum — {{ course.title }} — EduSmart{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .forum-page { padding: 0 20px; }
+    .forum-breadcrumb { margin-bottom: 24px; }
+    .forum-breadcrumb a { color: #64748B; text-decoration: none; font-weight: 600; }
+    .forum-breadcrumb a:hover { color: #667eea; }
+    .forum-breadcrumb span { color: #94a3b8; margin: 0 8px; }
+    .forum-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
+    .forum-header h1 { font-size: 1.75rem; font-weight: 800; color: #1e293b; margin: 0; }
+    .btn-new-thread {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 0.9rem;
+        background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none;
+        border: none; cursor: pointer; transition: all 0.3s ease;
+    }
+    .btn-new-thread:hover { color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.35); }
+    .forum-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.04); overflow: hidden; }
+    .forum-list { list-style: none; margin: 0; padding: 0; }
+    .forum-thread-item {
+        display: flex; align-items: center; gap: 20px; padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9; text-decoration: none; color: inherit; transition: background 0.2s;
+    }
+    .forum-thread-item:last-child { border-bottom: none; }
+    .forum-thread-item:hover { background: #f8fafc; }
+    .forum-thread-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #667eea22, #764ba222); display: flex; align-items: center; justify-content: center; color: #667eea; flex-shrink: 0; }
+    .forum-thread-body { flex: 1; min-width: 0; }
+    .forum-thread-title { font-weight: 700; font-size: 1.05rem; color: #1e293b; margin-bottom: 4px; }
+    .forum-thread-meta { font-size: 0.85rem; color: #64748b; }
+    .forum-thread-meta .author { font-weight: 600; color: #475569; }
+    .forum-thread-stats { font-size: 0.85rem; color: #64748b; white-space: nowrap; }
+    .forum-empty { text-align: center; padding: 60px 20px; color: #64748b; }
+    .forum-empty i { font-size: 3rem; color: #cbd5e1; margin-bottom: 16px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="forum-page">
+    <div class="forum-breadcrumb">
+        <a href="{{ path('student_courses') }}">Cours</a>
+        <span>/</span>
+        <a href="{{ path('student_course_details', {id: course.id}) }}">{{ course.title }}</a>
+        <span>/</span>
+        <span>Forum</span>
+    </div>
+
+    <div class="forum-header">
+        <h1><i class="fas fa-comments" style="color: #667eea; margin-right: 10px;"></i> Forum du cours</h1>
+        <a href="{{ path('forum_new_thread', {id: course.id}) }}" class="btn-new-thread">
+            <i class="fas fa-plus"></i> Nouveau sujet
+        </a>
+    </div>
+
+    <div class="forum-card">
+        {% if threads|length > 0 %}
+            <ul class="forum-list">
+                {% for thread in threads %}
+                    <a href="{{ path('forum_thread', {id: course.id, threadId: thread.id}) }}" class="forum-thread-item">
+                        <div class="forum-thread-icon"><i class="fas fa-comment-dots"></i></div>
+                        <div class="forum-thread-body">
+                            <div class="forum-thread-title">{{ thread.title }}</div>
+                            <div class="forum-thread-meta">
+                                Par <span class="author">{{ thread.author.prenom }} {{ thread.author.name }}</span>
+                                · {{ thread.createdAt|date('d/m/Y H:i') }}
+                                {% if thread.updatedAt != thread.createdAt %}
+                                    · Modifié {{ thread.updatedAt|date('d/m/Y') }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="forum-thread-stats">
+                            {{ thread.posts|length }} message{{ thread.posts|length > 1 ? 's' : '' }}
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: #cbd5e1;"></i>
+                    </a>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="forum-empty">
+                <div><i class="fas fa-comments"></i></div>
+                <h3 style="color: #475569; margin-bottom: 8px;">Aucun sujet pour le moment</h3>
+                <p>Lancez la discussion en créant le premier sujet.</p>
+                <a href="{{ path('forum_new_thread', {id: course.id}) }}" class="btn-new-thread" style="margin-top: 20px;">
+                    <i class="fas fa-plus"></i> Créer un sujet
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

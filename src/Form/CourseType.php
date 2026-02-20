@@ -36,6 +36,11 @@ class CourseType extends AbstractType
                 'required' => false,
                 'attr' => array_merge($inputAttr, ['rows' => 6, 'placeholder' => 'Décrivez le contenu du cours...']),
             ])
+            ->add('generatedContent', TextareaType::class, [
+                'label' => 'Contenu du cours (généré par l’IA, affiché à l’étudiant)',
+                'required' => false,
+                'attr' => array_merge($inputAttr, ['rows' => 14, 'placeholder' => 'Contenu pédagogique généré par l’Assistant IA ou saisi manuellement.']),
+            ])
             ->add('price', MoneyType::class, [
                 'label' => 'Prix (€)',
                 'currency' => 'EUR',

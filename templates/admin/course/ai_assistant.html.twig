@@ -1,0 +1,256 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Assistant IA — Plan de cours — EduSmart{% endblock %}
+
+{% block body %}
+<div class="ai-assistant-page">
+    <header class="ai-assistant-header">
+        <a href="{{ path('admin_courses_manage') }}" class="ai-assistant-back">
+            <i class="fas fa-arrow-left"></i> Gestion des cours
+        </a>
+        <h1 class="ai-assistant-title"><i class="fas fa-magic"></i> Smart Lesson Assistant</h1>
+        <p class="ai-assistant-subtitle">Générez un plan de cours structuré (objectifs, concepts, exercices, quiz) à partir du titre, du niveau et de la durée.</p>
+    </header>
+
+    <div class="ai-assistant-form-card">
+        <h2 class="ai-assistant-form-title"><i class="fas fa-edit"></i> Paramètres du cours</h2>
+        <form id="aiGenerateForm" class="ai-assistant-form">
+            <div class="ai-assistant-fields">
+                <div class="ai-field">
+                    <label for="ai_title">Titre du cours <span class="required">*</span></label>
+                    <input type="text" id="ai_title" name="title" required placeholder="ex: Introduction au Machine Learning" autocomplete="off">
+                </div>
+                <div class="ai-field">
+                    <label for="ai_level">Niveau</label>
+                    <select id="ai_level" name="level">
+                        <option value="Débutant">Débutant</option>
+                        <option value="Intermédiaire">Intermédiaire</option>
+                        <option value="Avancé">Avancé</option>
+                    </select>
+                </div>
+                <div class="ai-field">
+                    <label for="ai_duration">Durée</label>
+                    <input type="text" id="ai_duration" name="duration" placeholder="ex: 2h, 6 séances, 1 semestre" value="2h">
+                </div>
+            </div>
+            <button type="submit" class="ai-assistant-btn-generate" id="aiSubmitBtn">
+                <i class="fas fa-wand-magic-sparkles"></i> Générer le plan
+            </button>
+        </form>
+    </div>
+
+    <div id="aiLoading" class="ai-assistant-loading" style="display: none;">
+        <div class="ai-loading-spinner"></div>
+        <p>Génération du plan en cours…</p>
+    </div>
+
+    <div id="aiResult" class="ai-assistant-result" style="display: none;">
+        <h2 class="ai-result-title"><i class="fas fa-file-alt"></i> Plan généré</h2>
+        <div class="ai-result-sections">
+            <section class="ai-result-section">
+                <h3><i class="fas fa-list-ol"></i> Plan du cours (outline)</h3>
+                <ul id="aiOutline"></ul>
+            </section>
+            <section class="ai-result-section">
+                <h3><i class="fas fa-bullseye"></i> Objectifs pédagogiques</h3>
+                <ul id="aiObjectives"></ul>
+            </section>
+            <section class="ai-result-section">
+                <h3><i class="fas fa-lightbulb"></i> Concepts clés</h3>
+                <ul id="aiConcepts"></ul>
+            </section>
+            <section class="ai-result-section">
+                <h3><i class="fas fa-dumbbell"></i> Exercices suggérés</h3>
+                <ul id="aiExercises"></ul>
+            </section>
+            <section class="ai-result-section">
+                <h3><i class="fas fa-question-circle"></i> Questions de quiz</h3>
+                <div id="aiQuiz"></div>
+            </section>
+        </div>
+        <div class="ai-result-actions" id="aiPlanActions">
+            <button type="button" class="ai-btn-generate-content" id="aiBtnGenerateContent">
+                <i class="fas fa-book-open"></i> Générer le contenu du cours
+            </button>
+        </div>
+    </div>
+
+    <div id="aiContentLoading" class="ai-assistant-loading" style="display: none;">
+        <div class="ai-loading-spinner"></div>
+        <p>Génération du contenu pédagogique…</p>
+    </div>
+
+    <div id="aiContentResult" class="ai-assistant-result ai-content-result" style="display: none;">
+        <h2 class="ai-result-title"><i class="fas fa-book-reader"></i> Contenu du cours (affiché à l’étudiant)</h2>
+        <div class="ai-content-body" id="aiContentBody"></div>
+        <form action="{{ path('admin_course_create_from_ai') }}" method="post" class="ai-create-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('course_create_from_ai') }}">
+            <input type="hidden" name="title" id="aiCreateTitle">
+            <input type="hidden" name="content" id="aiCreateContent">
+            <button type="submit" class="ai-btn-use">
+                <i class="fas fa-plus"></i> Créer un cours avec ce contenu
+            </button>
+        </form>
+    </div>
+
+    <div id="aiError" class="ai-assistant-error" style="display: none;"></div>
+</div>
+
+<style>
+.ai-assistant-page { max-width: 900px; margin: 0 auto; padding: 28px 24px; }
+.ai-assistant-header { margin-bottom: 32px; }
+.ai-assistant-back { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-weight: 600; margin-bottom: 14px; }
+.ai-assistant-back:hover { color: #4facfe; }
+.ai-assistant-title { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin: 0 0 8px 0; display: flex; align-items: center; gap: 12px; }
+.ai-assistant-subtitle { font-size: 0.95rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+.ai-assistant-form-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 28px; margin-bottom: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+.ai-assistant-form-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px; }
+.ai-assistant-fields { display: grid; grid-template-columns: 1fr auto auto; gap: 20px; align-items: end; margin-bottom: 24px; }
+@media (max-width: 700px) { .ai-assistant-fields { grid-template-columns: 1fr; } }
+.ai-field label { display: block; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; font-size: 0.88rem; }
+.ai-field .required { color: #ef4444; }
+.ai-field input, .ai-field select { width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; background: var(--bg-secondary); color: var(--text-primary); }
+.ai-field input:focus, .ai-field select:focus { outline: none; border-color: #4facfe; }
+.ai-assistant-btn-generate { display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border: none; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+.ai-assistant-btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.4); }
+.ai-assistant-btn-generate:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+.ai-assistant-loading { text-align: center; padding: 48px; background: linear-gradient(135deg, rgba(79,172,254,0.06), rgba(0,242,254,0.04)); border-radius: 20px; margin-bottom: 28px; }
+.ai-loading-spinner { width: 48px; height: 48px; border: 4px solid var(--border-color); border-top-color: #4facfe; border-radius: 50%; margin: 0 auto 16px; animation: ai-spin 0.8s linear infinite; }
+@keyframes ai-spin { to { transform: rotate(360deg); } }
+.ai-assistant-loading p { margin: 0; color: var(--text-secondary); font-weight: 600; }
+.ai-assistant-result { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 28px; margin-bottom: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+.ai-result-title { font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px; }
+.ai-result-sections { display: flex; flex-direction: column; gap: 24px; }
+.ai-result-section { padding: 20px; background: #f8fafc; border-radius: 14px; border-left: 4px solid #4facfe; }
+.ai-result-section h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+.ai-result-section ul { margin: 0; padding-left: 20px; color: var(--text-primary); line-height: 1.7; }
+.ai-result-section li { margin-bottom: 6px; }
+.ai-result-section .quiz-item { margin-bottom: 16px; padding: 14px; background: #fff; border-radius: 10px; border: 1px solid var(--border-color); }
+.ai-result-section .quiz-item .q { font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.ai-result-section .quiz-item .opts { padding-left: 16px; color: var(--text-secondary); font-size: 0.9rem; }
+.ai-result-actions { margin-top: 24px; }
+.ai-btn-use { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #4facfe, #00f2fe); color: #fff; border-radius: 12px; text-decoration: none; font-weight: 700; transition: transform 0.2s; }
+.ai-btn-use:hover { color: #fff; transform: translateY(-2px); }
+.ai-assistant-error { padding: 16px; background: #fee2e2; color: #991b1b; border-radius: 12px; margin-top: 16px; font-weight: 600; }
+.ai-btn-generate-content { display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background: linear-gradient(135deg, #059669, #10b981); color: #fff; border: none; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-right: 12px; }
+.ai-btn-generate-content:hover { opacity: 0.95; transform: translateY(-2px); }
+.ai-btn-generate-content:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+.ai-content-result .ai-content-body { max-height: 400px; overflow-y: auto; padding: 20px; background: #f8fafc; border-radius: 14px; margin-bottom: 24px; white-space: pre-wrap; font-family: inherit; line-height: 1.7; color: var(--text-primary); }
+.ai-create-form { margin-top: 16px; }
+</style>
+
+<script>
+document.getElementById('aiGenerateForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var btn = document.getElementById('aiSubmitBtn');
+    var loading = document.getElementById('aiLoading');
+    var result = document.getElementById('aiResult');
+    var errEl = document.getElementById('aiError');
+    var title = document.getElementById('ai_title').value.trim();
+    var level = document.getElementById('ai_level').value;
+    var duration = document.getElementById('ai_duration').value.trim() || '1h';
+
+    if (!title) {
+        errEl.textContent = 'Veuillez saisir le titre du cours.';
+        errEl.style.display = 'block';
+        return;
+    }
+    errEl.style.display = 'none';
+    result.style.display = 'none';
+    loading.style.display = 'block';
+    btn.disabled = true;
+
+    fetch('{{ path('admin_course_generate_plan') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ title: title, level: level, duration: duration })
+    })
+    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+    .then(function(o) {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        if (!o.ok) {
+            errEl.textContent = o.data.error || 'Erreur lors de la génération.';
+            errEl.style.display = 'block';
+            return;
+        }
+        var d = o.data;
+        var ul = function(arr, id) {
+            var el = document.getElementById(id);
+            el.innerHTML = '';
+            (arr || []).forEach(function(t) { var li = document.createElement('li'); li.textContent = t; el.appendChild(li); });
+        };
+        ul(d.outline || [], 'aiOutline');
+        ul(d.objectives || [], 'aiObjectives');
+        ul(d.key_concepts || [], 'aiConcepts');
+        ul(d.suggested_exercises || [], 'aiExercises');
+        var quizEl = document.getElementById('aiQuiz');
+        quizEl.innerHTML = '';
+        (d.quiz_questions || []).forEach(function(q) {
+            var div = document.createElement('div');
+            div.className = 'quiz-item';
+            var opts = q.options || [];
+            var correct = parseInt(q.correct, 10) || 0;
+            var optsHtml = opts.map(function(opt, i) { return (i === correct ? '✓ ' : '') + opt; }).join('<br>');
+            div.innerHTML = '<div class="q">' + (q.question || '') + '</div><div class="opts">' + optsHtml + '</div>';
+            quizEl.appendChild(div);
+        });
+        window._aiLastPlan = o.data;
+        result.style.display = 'block';
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(function() {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        errEl.textContent = 'Erreur réseau ou serveur. Réessayez.';
+        errEl.style.display = 'block';
+    });
+});
+
+document.getElementById('aiBtnGenerateContent').addEventListener('click', function() {
+    var plan = window._aiLastPlan;
+    if (!plan) return;
+    var title = document.getElementById('ai_title').value.trim();
+    var level = document.getElementById('ai_level').value;
+    var duration = document.getElementById('ai_duration').value.trim() || '1h';
+    var loading = document.getElementById('aiContentLoading');
+    var result = document.getElementById('aiContentResult');
+    var errEl = document.getElementById('aiError');
+    var btn = document.getElementById('aiBtnGenerateContent');
+
+    errEl.style.display = 'none';
+    loading.style.display = 'block';
+    result.style.display = 'none';
+    btn.disabled = true;
+
+    fetch('{{ path('admin_course_generate_content') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ title: title, level: level, duration: duration, plan: plan })
+    })
+    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+    .then(function(o) {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        if (!o.ok) {
+            errEl.textContent = o.data.error || 'Erreur lors de la génération du contenu.';
+            errEl.style.display = 'block';
+            return;
+        }
+        var content = o.data.content || '';
+        window._aiLastContent = content;
+        document.getElementById('aiContentBody').textContent = content;
+        document.getElementById('aiCreateTitle').value = title;
+        document.getElementById('aiCreateContent').value = content;
+        result.style.display = 'block';
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(function() {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        errEl.textContent = 'Erreur réseau. Réessayez.';
+        errEl.style.display = 'block';
+    });
+});
+</script>
+{% endblock %}
