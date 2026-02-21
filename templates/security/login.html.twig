@@ -47,7 +47,6 @@
                     {{ error.messageKey|trans(error.messageData, 'security') }}
                 </div>
                 {% endif %}
-                    <button type="button" style="position: absolute; right: 15px; top: 14px; border: none; background: none; color: #64748B; cursor: pointer;"><i class="far fa-eye"></i></button>
                 </div>
             </div>
 
@@ -57,6 +56,16 @@
                 Se connecter
             </button>
         </form>
+
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+            <div style="flex: 1; height: 1px; background: #E2E8F0;"></div>
+            <span style="color: #94A3B8; font-size: 0.85rem; font-weight: 500;">ou se connecter avec</span>
+            <div style="flex: 1; height: 1px; background: #E2E8F0;"></div>
+        </div>
+
+        <a href="/auth/google" style="padding: 12px; border-radius: 12px; border: 1px solid #E2E8F0; background: white; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; text-decoration: none; color: inherit; transition: all 0.2s; margin-bottom: 25px;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
+        </a>
 
         <div style="text-align: center;">
             <p style="color: #64748B; font-size: 0.9rem;">Pas encore de compte ? <a href="{{ path('app_register') }}" style="color: #3B49A2; font-weight: 700; text-decoration: none;">Créer un compte</a></p>

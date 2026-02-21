@@ -25,6 +25,10 @@ security:
                 target: app_login
 
     access_control:
+        # Allow public access to authentication routes
+        - { path: ^/auth/google, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/(login|register), roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
         # Accès restreints selon le rôle
         - { path: ^/admin, roles: [ROLE_PROFESSEUR, ROLE_ADMIN] }
         - { path: ^/student, roles: ROLE_ETUDIANT }
