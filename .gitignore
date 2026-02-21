@@ -1,3 +1,23 @@
+/.env
+/.env.local
+/.env.*.local
+/.phpunit.result.cache
+/build/
+/node_modules/
+/public/build/
+/public/bundles/
+/var/
+/vendor/
+/public/uploads/
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
+/var/log/
+/var/cache/
+/.sass-cache/
+.secrets/
+!/.gitkeep
 
 ###> symfony/framework-bundle ###
 /.env.local
