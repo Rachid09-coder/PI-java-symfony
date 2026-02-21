@@ -11,13 +11,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class AuthController extends AbstractController
 {
     #[Route('/auth/login', name: 'app_auth_login', methods: ['GET'])]
     public function login(): Response
     {
-        return $this->render('auth/login.html.twig');
+        // Redirect legacy/auth-specific login URL to the main login route
+        return $this->redirectToRoute('app_login');
     }
 
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
