@@ -81,6 +81,272 @@
             .theme-toggle:hover {
                 transform: scale(1.1);
             }
+
+            /* ========== DARK MODE COMPREHENSIVE TEXT FIXES ========== */
+            [data-theme="dark"] .text-dark {
+                color: #F1F5F9 !important;
+            }
+
+            [data-theme="dark"] .text-muted {
+                color: #94A3B8 !important;
+            }
+
+            [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3,
+            [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 {
+                color: #F1F5F9 !important;
+            }
+
+            [data-theme="dark"] p {
+                color: #CBD5E1 !important;
+            }
+
+            [data-theme="dark"] span {
+                color: #CBD5E1;
+            }
+
+            [data-theme="dark"] label, [data-theme="dark"] .form-label {
+                color: #E2E8F0 !important;
+            }
+
+            [data-theme="dark"] .form-select, [data-theme="dark"] .form-control {
+                background-color: #334155 !important;
+                color: #F1F5F9 !important;
+                border-color: #475569 !important;
+            }
+
+            [data-theme="dark"] .form-select option {
+                background-color: #1E293B;
+                color: #F1F5F9;
+            }
+
+            [data-theme="dark"] table {
+                color: #E2E8F0 !important;
+            }
+
+            [data-theme="dark"] table th {
+                color: #94A3B8 !important;
+            }
+
+            [data-theme="dark"] table td {
+                color: #CBD5E1 !important;
+                border-color: #334155 !important;
+            }
+
+            [data-theme="dark"] table td span[style*="font-weight"] {
+                color: #F1F5F9 !important;
+            }
+
+            [data-theme="dark"] tr {
+                border-color: #334155 !important;
+            }
+
+            /* Card premium glass in dark mode */
+            [data-theme="dark"] .card-premium-glass {
+                background: #1E293B !important;
+                border-color: #334155 !important;
+            }
+
+            /* Stat cards & values */
+            [data-theme="dark"] .stat-value {
+                color: #F1F5F9 !important;
+            }
+
+            /* Chat container */
+            [data-theme="dark"] #chatContainer {
+                background: #0F172A !important;
+            }
+
+            [data-theme="dark"] .chat-message.assistant .bubble {
+                background: #334155 !important;
+                border-color: #475569 !important;
+                color: #E2E8F0 !important;
+            }
+
+            /* Analysis sections */
+            [data-theme="dark"] .analysis-section {
+                background: #0F172A !important;
+                color: #E2E8F0 !important;
+            }
+
+            /* Results container */
+            [data-theme="dark"] #resultsContainer {
+                background: #1E293B !important;
+            }
+
+            /* Alerts */
+            [data-theme="dark"] .alert {
+                background: #1E293B !important;
+                color: #E2E8F0 !important;
+            }
+
+            /* Inline color overrides for hardcoded styles */
+            [data-theme="dark"] [style*="color: #1E293B"],
+            [data-theme="dark"] [style*="color: #1e293b"],
+            [data-theme="dark"] [style*="color:#1E293B"],
+            [data-theme="dark"] [style*="color:#1e293b"] {
+                color: #F1F5F9 !important;
+            }
+
+            [data-theme="dark"] [style*="color: #64748B"],
+            [data-theme="dark"] [style*="color: #64748b"],
+            [data-theme="dark"] [style*="color:#64748B"],
+            [data-theme="dark"] [style*="color:#64748b"] {
+                color: #94A3B8 !important;
+            }
+
+            /* Badge & status colors preservation */
+            [data-theme="dark"] .badge.bg-success,
+            [data-theme="dark"] .badge.bg-primary,
+            [data-theme="dark"] .badge.bg-warning,
+            [data-theme="dark"] .badge.bg-danger {
+                color: white !important;
+            }
+
+            [data-theme="dark"] .badge.bg-success-soft {
+                background: rgba(16, 185, 129, 0.15) !important;
+            }
+
+            [data-theme="dark"] .badge.bg-warning-soft {
+                background: rgba(245, 158, 11, 0.15) !important;
+            }
+
+            /* Status badge (Actif, etc.) */
+            [data-theme="dark"] span[style*="background: #D1FAE5"] {
+                background: rgba(16, 185, 129, 0.2) !important;
+                color: #34D399 !important;
+            }
+
+            /* API Docs table in dark mode */
+            [data-theme="dark"] .table {
+                color: #E2E8F0 !important;
+            }
+
+            [data-theme="dark"] .font-monospace {
+                color: #CBD5E1 !important;
+            }
+
+            /* Form text & links */
+            [data-theme="dark"] .form-text {
+                color: #94A3B8 !important;
+            }
+
+            [data-theme="dark"] a.nav-item {
+                color: rgba(255,255,255,0.7);
+            }
+
+            /* Collapse sections (Documentation API) */
+            [data-theme="dark"] .collapse .card-body {
+                color: #CBD5E1 !important;
+            }
+
+            /* Date premium class */
+            [data-theme="dark"] .date-premium {
+                color: #F1F5F9 !important;
+            }
+
+            /* Header text */
+            [data-theme="dark"] .header .page-title {
+                color: #CBD5E1 !important;
+            }
+
+            /* Button outlines */
+            [data-theme="dark"] .btn-outline-secondary {
+                border-color: #475569 !important;
+                color: #94A3B8 !important;
+            }
+
+            [data-theme="dark"] .btn-outline-secondary:hover {
+                background: #334155 !important;
+                color: #F1F5F9 !important;
+            }
+
+            /* Initials avatar in dark mode */
+            [data-theme="dark"] div[style*="background: #DBEAFE"] {
+                background: rgba(99, 102, 241, 0.2) !important;
+                color: #818CF8 !important;
+            }
+
+            /* Certification & bulletin specific */
+            [data-theme="dark"] .badge-status-active {
+                background: rgba(16, 185, 129, 0.15) !important;
+                color: #34D399 !important;
+            }
+
+            [data-theme="dark"] code {
+                color: #F472B6 !important;
+                background: #1E293B !important;
+            }
+
+            /* Admin card from _edusmart_styles */
+            [data-theme="dark"] .admin-card {
+                background: #1E293B !important;
+                box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            [data-theme="dark"] .admin-card-title,
+            [data-theme="dark"] .admin-card-subtitle {
+                color: #E2E8F0 !important;
+            }
+
+            /* bg-light badges in dark mode */
+            [data-theme="dark"] .bg-light {
+                background-color: #334155 !important;
+                color: #E2E8F0 !important;
+            }
+
+            [data-theme="dark"] .bg-light.text-dark {
+                color: #F1F5F9 !important;
+            }
+
+            /* Generic input, select, textarea */
+            [data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea {
+                background-color: #334155 !important;
+                color: #F1F5F9 !important;
+                border-color: #475569 !important;
+            }
+
+            /* Table row borders */
+            [data-theme="dark"] tbody tr {
+                border-bottom-color: #334155 !important;
+            }
+
+            /* Modal dark mode */
+            [data-theme="dark"] .modal-content {
+                background-color: #1E293B !important;
+                color: #E2E8F0 !important;
+                border-color: #334155 !important;
+            }
+
+            [data-theme="dark"] .modal-header {
+                border-bottom-color: #334155 !important;
+            }
+
+            [data-theme="dark"] .modal-footer {
+                border-top-color: #334155 !important;
+            }
+
+            [data-theme="dark"] .btn-close {
+                filter: invert(1) !important;
+            }
+
+            /* Info value text in show pages */
+            [data-theme="dark"] .info-value {
+                color: #F1F5F9 !important;
+            }
+
+            /* Dropdown menus */
+            [data-theme="dark"] .dropdown-menu {
+                background-color: #1E293B !important;
+                border-color: #334155 !important;
+            }
+
+            [data-theme="dark"] .dropdown-item {
+                color: #E2E8F0 !important;
+            }
+
+            [data-theme="dark"] .dropdown-item:hover {
+                background-color: #334155 !important;
+            }
         </style>
         {% block stylesheets %}{% endblock %}
     </head>
