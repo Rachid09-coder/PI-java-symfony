@@ -5,6 +5,9 @@ namespace App\Service;
 use App\Entity\User;
 use App\Repository\BulletinRepository;
 use App\Repository\CertificationRepository;
+use App\Repository\CourseRepository;
+use App\Repository\GradeRepository;
+use App\Repository\UserRepository;
 use OpenAI;
 
 /**
@@ -19,6 +22,9 @@ class AiService
     public function __construct(
         private BulletinRepository $bulletinRepository,
         private CertificationRepository $certificationRepository,
+        private UserRepository $userRepository,
+        private GradeRepository $gradeRepository,
+        private CourseRepository $courseRepository,
         string $groqApiKey = ''
     ) {
         $this->apiKey = $groqApiKey ?: ($_ENV['GROQ_API_KEY'] ?? '');
@@ -93,7 +99,7 @@ class AiService
         $prompt = $this->buildAnalysisPrompt($studentData);
 
         try {
-            $analysisText = $this->callAI($prompt, 'Tu es un expert en analyse de performances académiques pour EduSmart. Réponds en français.');
+            $analysisText = $this->callAI($prompt, 'Tu es EduSmart Assistant, expert en analyse de performances académiques pour la plateforme EduSmart. Tu ne traites que les sujets liés à l\'éducation et aux performances scolaires. Réponds en français.');
 
             return [
                 'success' => true,
@@ -141,7 +147,7 @@ class AiService
         $prompt = $this->buildComparisonPrompt($studentsData);
 
         try {
-            $response = $this->callAI($prompt, 'Tu es un expert en analyse comparative académique. Réponds en français.');
+            $response = $this->callAI($prompt, 'Tu es EduSmart Assistant, expert en analyse comparative académique pour la plateforme EduSmart. Tu ne traites que les sujets liés à l\'éducation. Réponds en français.');
 
             return [
                 'success' => true,
@@ -172,7 +178,7 @@ class AiService
         $prompt = $this->buildRecommendationsPrompt($studentData);
 
         try {
-            $response = $this->callAI($prompt, 'Tu es un conseiller pédagogique expert. Réponds en français.');
+            $response = $this->callAI($prompt, 'Tu es EduSmart Assistant, conseiller pédagogique expert pour la plateforme EduSmart. Tu ne traites que les sujets liés à l\'éducation et à la pédagogie. Réponds en français.');
 
             return [
                 'success' => true,
@@ -212,7 +218,7 @@ class AiService
         $prompt = $this->buildClassAnalysisPrompt($classData, $academicYear, $semesterValue);
 
         try {
-            $response = $this->callAI($prompt, 'Tu es un expert en analyse de données académiques. Réponds en français.');
+            $response = $this->callAI($prompt, 'Tu es EduSmart Assistant, expert en analyse de données académiques pour la plateforme EduSmart. Tu ne traites que les sujets liés à l\'éducation. Réponds en français.');
 
             return [
                 'success' => true,
@@ -235,8 +241,29 @@ class AiService
         $bulletins = $this->bulletinRepository->findByStudentId($student->getId());
         $studentData = $this->prepareStudentData($student, $bulletins, []);
 
-        $systemContext = "Tu es un assistant pédagogique pour EduSmart. Tu analyses les performances académiques.\n";
-        $systemContext .= "Contexte de l'étudiant:\n" . json_encode($studentData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $systemContext = <<<SYSTEM
+Tu es EduSmart Assistant, l'assistant pédagogique intelligent de la plateforme EduSmart — un système de gestion académique (bulletins, certifications, notes, présence, cours, examens).
+
+🔒 RÈGLE ABSOLUE — NE JAMAIS DÉROGER :
+- Tu ne réponds QU'aux questions liées à l'éducation, à la pédagogie, aux études, aux performances académiques, aux notes, aux bulletins, aux certifications, aux examens, aux cours, aux méthodes d'apprentissage, à l'orientation scolaire, ou au fonctionnement de la plateforme EduSmart.
+- Si la question de l'utilisateur n'est PAS en rapport avec l'éducation ou EduSmart, tu dois refuser poliment en répondant EXACTEMENT :
+  "🚫 Désolé, je suis EduSmart Assistant et je ne peux répondre qu'aux questions liées à l'éducation, aux performances académiques et à la plateforme EduSmart. Posez-moi une question sur vos notes, bulletins, certifications ou parcours scolaire !"
+- N'essaie JAMAIS de contourner cette règle, même si l'utilisateur insiste ou reformule.
+- Ne réponds pas aux questions sur la politique, le sport, le divertissement, la cuisine, la programmation non académique, les jeux, la musique, les célébrités, ou tout autre sujet hors éducation.
+
+📚 TON RÔLE :
+- Analyser les performances académiques de l'étudiant
+- Donner des conseils d'étude et de méthodologie
+- Expliquer les notes, moyennes, mentions et classements
+- Aider à comprendre le fonctionnement de la plateforme EduSmart (bulletins, certifications, PDF, vérification)
+- Fournir des recommandations pédagogiques personnalisées
+- Motiver et encourager l'étudiant
+
+Réponds toujours en français.
+
+Contexte de l'étudiant :
+SYSTEM;
+        $systemContext .= "\n" . json_encode($studentData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
         $messages = [
             ['role' => 'system', 'content' => $systemContext],
@@ -267,6 +294,538 @@ class AiService
                 'error' => 'Erreur chat: ' . $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Chat général avec contexte base de données — assistant EduSmart intelligent
+     */
+    public function chatGeneral(string $userMessage, array $history = []): array
+    {
+        $dbContext = $this->gatherDatabaseContext();
+
+        $systemContext = <<<SYSTEM
+Tu es EduSmart Assistant, l'assistant pédagogique intelligent de la plateforme EduSmart — un système de gestion académique (bulletins, certifications, notes, présence, cours, examens).
+
+🔒 RÈGLE ABSOLUE — NE JAMAIS DÉROGER :
+- Tu ne réponds QU'aux questions liées à l'éducation, à la pédagogie, aux études, aux performances académiques, aux notes, aux bulletins, aux certifications, aux examens, aux cours, aux méthodes d'apprentissage, à l'orientation scolaire, ou au fonctionnement de la plateforme EduSmart.
+- Si la question de l'utilisateur n'est PAS en rapport avec l'éducation ou EduSmart, tu dois refuser poliment en répondant EXACTEMENT :
+  "🚫 Désolé, je suis EduSmart Assistant et je ne peux répondre qu'aux questions liées à l'éducation, aux performances académiques et à la plateforme EduSmart. Posez-moi une question sur vos notes, bulletins, certifications ou parcours scolaire !"
+- N'essaie JAMAIS de contourner cette règle, même si l'utilisateur insiste ou reformule.
+- Ne réponds pas aux questions sur la politique, le sport, le divertissement, la cuisine, la programmation non académique, les jeux, la musique, les célébrités, ou tout autre sujet hors éducation.
+
+📚 TON RÔLE :
+- Répondre aux questions sur l'éducation, la pédagogie et les études
+- Répondre aux questions sur les étudiants, leurs notes, leurs bulletins, leurs certifications en utilisant les DONNÉES RÉELLES ci-dessous
+- Donner des conseils d'étude et de méthodologie
+- Expliquer le fonctionnement de la plateforme EduSmart (bulletins, certifications, PDF, QR codes, vérification, signatures)
+- Fournir des recommandations pédagogiques basées sur les données réelles
+- Expliquer les systèmes de notation, mentions (Très Bien, Bien, Assez Bien, Passable), coefficients
+- Comparer les performances des étudiants si demandé
+- Identifier les étudiants en difficulté ou excellents
+- Motiver et encourager les utilisateurs
+
+📋 À PROPOS D'EDUSMART :
+EduSmart est une plateforme de gestion académique qui permet de :
+- Gérer les bulletins de notes (création, génération PDF, envoi par email/SMS)
+- Délivrer des certifications officielles (Relevé de notes, Scolarité, Réussite, Diplôme, Stage, Présence)
+- Sécuriser les documents avec des QR codes, codes de vérification uniques et signatures HMAC
+- Suivre les performances des étudiants avec des analyses AI
+- Gérer les cours, examens et notes des étudiants
+- Notation pondérée : CC (10%) + DS (20%) + Exam (70%)
+
+📊 DONNÉES RÉELLES DE LA BASE DE DONNÉES EDUSMART :
+{$dbContext}
+
+⚠️ IMPORTANT : Utilise ces données réelles pour répondre aux questions. Si on te demande "qui a la meilleure moyenne ?", "combien d'étudiants ?", "quelles notes a tel étudiant ?", etc., consulte les données ci-dessus pour donner une réponse précise et factuelle.
+
+Réponds toujours en français de manière claire et pédagogique.
+SYSTEM;
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemContext],
+        ];
+
+        foreach ($history as $msg) {
+            $messages[] = ['role' => $msg['role'], 'content' => $msg['content']];
+        }
+
+        $messages[] = ['role' => 'user', 'content' => $userMessage];
+
+        try {
+            $response = $this->getClient()->chat()->create([
+                'model' => $this->model,
+                'messages' => $messages,
+                'max_tokens' => 1000,
+                'temperature' => 0.7,
+            ]);
+
+            return [
+                'success' => true,
+                'response' => $response->choices[0]->message->content,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Erreur chat: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Prédiction de réussite — analyse les tendances et prédit les résultats futurs
+     */
+    public function predictSuccess(): array
+    {
+        $students = $this->userRepository->findBy(['role' => 'etudiant']);
+        $predictions = [];
+
+        foreach ($students as $student) {
+            $bulletins = $this->bulletinRepository->findByStudentId($student->getId());
+            if (empty($bulletins)) continue;
+
+            $averages = array_filter(array_map(fn($b) => $b->getAverage(), $bulletins));
+            if (empty($averages)) continue;
+
+            $globalAvg = round(array_sum($averages) / count($averages), 2);
+            $lastBulletin = end($bulletins);
+            $moduleDetails = [];
+
+            foreach ($lastBulletin->getReportCardLines() as $line) {
+                $moduleDetails[] = [
+                    'module' => $line->getModuleName(),
+                    'note' => $line->getNote(),
+                    'noteCC' => $line->getNoteCC(),
+                    'noteDS' => $line->getNoteDS(),
+                    'noteExam' => $line->getNoteExam(),
+                ];
+            }
+
+            $predictions[] = [
+                'name' => $student->getPrenom() . ' ' . $student->getName(),
+                'globalAverage' => $globalAvg,
+                'lastAverage' => $lastBulletin->getAverage(),
+                'mention' => $lastBulletin->getMention(),
+                'totalBulletins' => count($bulletins),
+                'progression' => $this->calculateProgression(array_values($averages)),
+                'modules' => $moduleDetails,
+            ];
+        }
+
+        if (empty($predictions)) {
+            return ['success' => false, 'error' => 'Aucune donnée disponible pour la prédiction'];
+        }
+
+        $json = json_encode($predictions, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        $prompt = <<<PROMPT
+En te basant sur les données académiques réelles suivantes, fais une PRÉDICTION DE RÉUSSITE pour chaque étudiant.
+
+DONNÉES DES ÉTUDIANTS:
+{$json}
+
+POUR CHAQUE ÉTUDIANT, FOURNIS:
+1. 🎯 **Probabilité de réussite** (en pourcentage estimé)
+2. 📊 **Niveau de risque** : ✅ Faible / ⚠️ Moyen / 🔴 Élevé
+3. 📈 **Tendance** : En progression / Stable / En régression
+4. 💡 **Actions prioritaires** pour améliorer les chances de réussite
+
+Termine par un 📋 **RÉSUMÉ GLOBAL** : combien d'étudiants sont à risque, combien sont en bonne voie, et les actions collectives recommandées.
+
+Sois précis, utilise les vrais noms et les vraies notes. Réponds en français.
+PROMPT;
+
+        try {
+            $response = $this->callAI($prompt, 'Tu es EduSmart Assistant, expert en analyse prédictive académique. Tu analyses les données réelles pour prédire les résultats futurs des étudiants. Réponds en français.');
+
+            return [
+                'success' => true,
+                'predictions' => $response,
+                'studentsAnalyzed' => count($predictions),
+                'generatedAt' => (new \DateTimeImmutable())->format('c'),
+            ];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error' => 'Erreur: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Détection d'anomalies — identifie les incohérences dans les notes
+     */
+    public function detectAnomalies(): array
+    {
+        $bulletins = $this->bulletinRepository->findAll();
+        $anomalyData = [];
+
+        foreach ($bulletins as $bulletin) {
+            $studentName = $bulletin->getStudent()
+                ? $bulletin->getStudent()->getPrenom() . ' ' . $bulletin->getStudent()->getName()
+                : 'Inconnu';
+
+            $lines = [];
+            foreach ($bulletin->getReportCardLines() as $line) {
+                $lines[] = [
+                    'module' => $line->getModuleName(),
+                    'noteCC' => $line->getNoteCC(),
+                    'noteDS' => $line->getNoteDS(),
+                    'noteExam' => $line->getNoteExam(),
+                    'noteFinal' => $line->getNote(),
+                    'coefficient' => $line->getCoefficient(),
+                ];
+            }
+
+            $anomalyData[] = [
+                'student' => $studentName,
+                'period' => $bulletin->getAcademicYear() . ' - ' . $bulletin->getSemester(),
+                'average' => $bulletin->getAverage(),
+                'mention' => $bulletin->getMention(),
+                'rank' => $bulletin->getClassRank(),
+                'status' => $bulletin->getStatus(),
+                'modules' => $lines,
+            ];
+        }
+
+        if (empty($anomalyData)) {
+            return ['success' => false, 'error' => 'Aucun bulletin disponible'];
+        }
+
+        $json = json_encode($anomalyData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        $prompt = <<<PROMPT
+Analyse les bulletins suivants pour DÉTECTER DES ANOMALIES et incohérences.
+
+DONNÉES DES BULLETINS:
+{$json}
+
+DÉTECTE ET SIGNALE:
+1. 🔍 **Écarts suspects** : Notes CC très élevées mais Exam très basses (ou inversement)
+2. 📉 **Chutes brutales** : Baisse significative d'un étudiant entre périodes
+3. ⚠️ **Incohérences** : Moyennes mal calculées, mentions non conformes aux notes
+4. 🎯 **Notes extrêmes** : Notes de 0 ou 20 parfaites qui méritent vérification
+5. 📊 **Patterns suspects** : Notes identiques sur plusieurs modules, résultats statistiquement improbables
+
+Pour chaque anomalie trouvée, indique:
+- 👤 L'étudiant concerné
+- 📚 Le module/période
+- 🔴 Le type d'anomalie
+- 💡 La recommandation
+
+Termine par un résumé : combien d'anomalies détectées et à quel niveau de gravité.
+
+Réponds en français. Sois factuel et précis.
+PROMPT;
+
+        try {
+            $response = $this->callAI($prompt, 'Tu es EduSmart Assistant, expert en audit et contrôle qualité des données académiques. Tu détectes les incohérences et anomalies. Réponds en français.');
+
+            return [
+                'success' => true,
+                'anomalies' => $response,
+                'bulletinsAnalyzed' => count($anomalyData),
+                'generatedAt' => (new \DateTimeImmutable())->format('c'),
+            ];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error' => 'Erreur: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Bilan des certifications — audit complet des certifications émises
+     */
+    public function auditCertifications(): array
+    {
+        $certifications = $this->certificationRepository->findAll();
+        $students = $this->userRepository->findBy(['role' => 'etudiant']);
+
+        if (empty($certifications)) {
+            return ['success' => false, 'error' => 'Aucune certification trouvée'];
+        }
+
+        $certData = [];
+        foreach ($certifications as $cert) {
+            $studentName = $cert->getStudent()
+                ? $cert->getStudent()->getPrenom() . ' ' . $cert->getStudent()->getName()
+                : 'Inconnu';
+
+            // Get student's average from bulletins
+            $studentAvg = null;
+            if ($cert->getStudent()) {
+                $bulletins = $this->bulletinRepository->findByStudentId($cert->getStudent()->getId());
+                $avgs = array_filter(array_map(fn($b) => $b->getAverage(), $bulletins));
+                if (!empty($avgs)) {
+                    $studentAvg = round(array_sum($avgs) / count($avgs), 2);
+                }
+            }
+
+            $certData[] = [
+                'student' => $studentName,
+                'type' => $cert->getType(),
+                'typeLabel' => $cert->getTypeLabel(),
+                'status' => $cert->getStatus(),
+                'issuedAt' => $cert->getIssuedAt()->format('d/m/Y'),
+                'validUntil' => $cert->getValidUntil() ? $cert->getValidUntil()->format('d/m/Y') : 'Illimité',
+                'isRevoked' => $cert->isRevoked(),
+                'studentAverage' => $studentAvg,
+            ];
+        }
+
+        // Build summary statistics
+        $byType = [];
+        $byStatus = [];
+        foreach ($certData as $c) {
+            $byType[$c['typeLabel']] = ($byType[$c['typeLabel']] ?? 0) + 1;
+            $byStatus[$c['status']] = ($byStatus[$c['status']] ?? 0) + 1;
+        }
+
+        $json = json_encode([
+            'certifications' => $certData,
+            'statistics' => [
+                'total' => count($certData),
+                'byType' => $byType,
+                'byStatus' => $byStatus,
+                'totalStudents' => count($students),
+            ],
+        ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        $prompt = <<<PROMPT
+Réalise un BILAN COMPLET des certifications émises sur la plateforme EduSmart.
+
+DONNÉES:
+{$json}
+
+ANALYSE DEMANDÉE:
+1. 📊 **Statistiques générales** : Total, répartition par type, par statut
+2. 🏆 **Top certifications** : Types les plus délivrés et pourquoi
+3. 👥 **Couverture étudiante** : Quel pourcentage d'étudiants a reçu des certifications ?
+4. ⚠️ **Alertes** : Certifications révoquées, expirées, ou étudiants sans certification
+5. 🔍 **Cohérence** : Les certifications de réussite correspondent-elles aux moyennes des étudiants ?
+6. 💡 **Recommandations** : Quelles certifications manquent ? Quels étudiants méritent d'être certifiés ?
+7. 📈 **Indicateurs de qualité** : Taux de certification, diversité des types émis
+
+Réponds en français, de manière structurée et professionnelle.
+PROMPT;
+
+        try {
+            $response = $this->callAI($prompt, 'Tu es EduSmart Assistant, expert en audit et gestion documentaire académique. Tu analyses les certifications pour détecter les opportunités et anomalies. Réponds en français.');
+
+            return [
+                'success' => true,
+                'audit' => $response,
+                'stats' => [
+                    'total' => count($certData),
+                    'byType' => $byType,
+                    'byStatus' => $byStatus,
+                ],
+                'generatedAt' => (new \DateTimeImmutable())->format('c'),
+            ];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error' => 'Erreur: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Suggestions de certifications — recommande les certifications éligibles par étudiant
+     */
+    public function suggestCertifications(): array
+    {
+        $students = $this->userRepository->findBy(['role' => 'etudiant']);
+        $eligibilityData = [];
+
+        foreach ($students as $student) {
+            $bulletins = $this->bulletinRepository->findByStudentId($student->getId());
+            $certifications = $this->certificationRepository->findBy(['student' => $student]);
+
+            $existingTypes = array_map(fn($c) => $c->getType(), $certifications);
+            $averages = array_filter(array_map(fn($b) => $b->getAverage(), $bulletins));
+            $globalAvg = !empty($averages) ? round(array_sum($averages) / count($averages), 2) : null;
+
+            // Get mention from latest bulletin
+            $lastMention = null;
+            if (!empty($bulletins)) {
+                $lastBulletin = end($bulletins);
+                $lastMention = $lastBulletin->getMention();
+            }
+
+            $eligibilityData[] = [
+                'name' => $student->getPrenom() . ' ' . $student->getName(),
+                'email' => $student->getEmail(),
+                'globalAverage' => $globalAvg,
+                'lastMention' => $lastMention,
+                'totalBulletins' => count($bulletins),
+                'existingCertifications' => $existingTypes,
+                'allCertificationTypes' => ['SCOLARITE', 'REUSSITE', 'NOTES', 'DIPLOME', 'STAGE', 'PRESENCE'],
+            ];
+        }
+
+        if (empty($eligibilityData)) {
+            return ['success' => false, 'error' => 'Aucun étudiant trouvé'];
+        }
+
+        $json = json_encode($eligibilityData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        $prompt = <<<PROMPT
+En te basant sur les données académiques suivantes, RECOMMANDE les certifications que chaque étudiant devrait recevoir.
+
+TYPES DE CERTIFICATIONS DISPONIBLES SUR EDUSMART:
+- SCOLARITE : Attestation de scolarité (tout étudiant inscrit)
+- REUSSITE : Certificat de réussite (moyenne >= 10/20)
+- NOTES : Relevé de notes (tout étudiant ayant des bulletins)
+- DIPLOME : Diplôme interne (moyenne >= 14/20 avec mention Bien ou Très Bien)
+- STAGE : Attestation de stage (si applicable)
+- PRESENCE : Attestation de présence (tout étudiant inscrit)
+
+DONNÉES DES ÉTUDIANTS:
+{$json}
+
+POUR CHAQUE ÉTUDIANT:
+1. ✅ **Certifications éligibles** qu'il n'a PAS encore
+2. 🎯 **Priorité** : Haute / Moyenne / Basse
+3. 💡 **Justification** basée sur les notes et la moyenne
+4. ⚠️ **Manques** : Ce qui empêche l'obtention de certaines certifications
+
+Termine par un 📋 **PLAN D'ACTION** global pour l'émission des certifications manquantes.
+
+Sois précis et utilise les vrais noms et données. Réponds en français.
+PROMPT;
+
+        try {
+            $response = $this->callAI($prompt, 'Tu es EduSmart Assistant, expert en certification académique et gestion documentaire. Tu recommandes les certifications appropriées. Réponds en français.');
+
+            return [
+                'success' => true,
+                'suggestions' => $response,
+                'studentsAnalyzed' => count($eligibilityData),
+                'generatedAt' => (new \DateTimeImmutable())->format('c'),
+            ];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error' => 'Erreur: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Rassemble les données de la base de données pour le contexte AI
+     */
+    private function gatherDatabaseContext(): string
+    {
+        $context = '';
+
+        // 1. Les étudiants
+        $students = $this->userRepository->findBy(['role' => 'etudiant'], ['name' => 'ASC']);
+        $context .= "=== ÉTUDIANTS ({count} total) ===\n";
+        $context = str_replace('{count}', (string) count($students), $context);
+
+        foreach ($students as $student) {
+            $context .= "- {$student->getPrenom()} {$student->getName()} (ID: {$student->getId()}, Email: {$student->getEmail()}, Tél: {$student->getNumtel()})\n";
+        }
+
+        // 2. Les bulletins avec détails des notes
+        $bulletins = $this->bulletinRepository->findAll();
+        $context .= "\n=== BULLETINS (" . count($bulletins) . " total) ===\n";
+
+        foreach ($bulletins as $bulletin) {
+            $studentName = $bulletin->getStudent() 
+                ? $bulletin->getStudent()->getPrenom() . ' ' . $bulletin->getStudent()->getName() 
+                : 'Inconnu';
+            $context .= "\n📄 Bulletin de {$studentName} — {$bulletin->getAcademicYear()} {$bulletin->getSemester()}\n";
+            $context .= "   Moyenne: {$bulletin->getAverage()}/20 | Mention: {$bulletin->getMention()} | Rang: {$bulletin->getClassRank()} | Statut: {$bulletin->getStatus()}\n";
+
+            // Détails des matières (ReportCardLines)
+            $lines = $bulletin->getReportCardLines();
+            if (count($lines) > 0) {
+                $context .= "   Détail des notes:\n";
+                foreach ($lines as $line) {
+                    $context .= "     • {$line->getModuleName()}: CC={$line->getNoteCC()}, DS={$line->getNoteDS()}, Exam={$line->getNoteExam()}, Note finale={$line->getNote()}/20 (coeff {$line->getCoefficient()})\n";
+                }
+            }
+        }
+
+        // 3. Les certifications
+        $certifications = $this->certificationRepository->findAll();
+        $context .= "\n=== CERTIFICATIONS (" . count($certifications) . " total) ===\n";
+
+        $certByType = [];
+        foreach ($certifications as $cert) {
+            $type = $cert->getType();
+            if (!isset($certByType[$type])) {
+                $certByType[$type] = 0;
+            }
+            $certByType[$type]++;
+        }
+
+        foreach ($certByType as $type => $count) {
+            $context .= "- {$type}: {$count} certification(s)\n";
+        }
+
+        foreach ($certifications as $cert) {
+            $studentName = $cert->getStudent()
+                ? $cert->getStudent()->getPrenom() . ' ' . $cert->getStudent()->getName()
+                : 'Inconnu';
+            $context .= "  • {$cert->getTypeLabel()} pour {$studentName} — Statut: {$cert->getStatus()} | Émis le: {$cert->getIssuedAt()->format('d/m/Y')}\n";
+        }
+
+        // 4. Les cours
+        $courses = $this->courseRepository->findAll();
+        $context .= "\n=== COURS (" . count($courses) . " total) ===\n";
+        foreach ($courses as $course) {
+            $context .= "- {$course->getTitle()} (Coefficient: {$course->getCoefficient()}, Statut: {$course->getStatus()})\n";
+        }
+
+        // 5. Les notes (Grades) — résumé par étudiant
+        $grades = $this->gradeRepository->findAll();
+        $context .= "\n=== NOTES/GRADES (" . count($grades) . " total) ===\n";
+
+        $gradesByStudent = [];
+        foreach ($grades as $grade) {
+            $studentName = $grade->getStudent()
+                ? $grade->getStudent()->getPrenom() . ' ' . $grade->getStudent()->getName()
+                : 'Inconnu';
+            if (!isset($gradesByStudent[$studentName])) {
+                $gradesByStudent[$studentName] = [];
+            }
+            $gradesByStudent[$studentName][] = [
+                'module' => $grade->getModule() ? $grade->getModule()->getTitle() : 'N/A',
+                'note' => $grade->getNote(),
+                'coefficient' => $grade->getCoefficient(),
+                'session' => $grade->getSession(),
+                'year' => $grade->getAcademicYear(),
+                'semester' => $grade->getSemester(),
+            ];
+        }
+
+        foreach ($gradesByStudent as $studentName => $studentGrades) {
+            $totalWeighted = 0;
+            $totalCoeff = 0;
+            foreach ($studentGrades as $g) {
+                $totalWeighted += $g['note'] * $g['coefficient'];
+                $totalCoeff += $g['coefficient'];
+            }
+            $avg = $totalCoeff > 0 ? round($totalWeighted / $totalCoeff, 2) : 0;
+
+            $context .= "\n📊 {$studentName} (Moyenne pondérée des grades: {$avg}/20)\n";
+            foreach ($studentGrades as $g) {
+                $context .= "   • {$g['module']}: {$g['note']}/20 (coeff {$g['coefficient']}, {$g['session']}, {$g['year']} {$g['semester']})\n";
+            }
+        }
+
+        // 6. Statistiques globales
+        $context .= "\n=== STATISTIQUES GLOBALES ===\n";
+        $context .= "- Nombre total d'étudiants: " . count($students) . "\n";
+        $context .= "- Nombre total de bulletins: " . count($bulletins) . "\n";
+        $context .= "- Nombre total de certifications: " . count($certifications) . "\n";
+        $context .= "- Nombre total de cours: " . count($courses) . "\n";
+        $context .= "- Nombre total de notes: " . count($grades) . "\n";
+
+        // Moyennes globales depuis les bulletins
+        $allAverages = array_filter(array_map(fn($b) => $b->getAverage(), $bulletins), fn($a) => $a !== null);
+        if (count($allAverages) > 0) {
+            $globalAvg = round(array_sum($allAverages) / count($allAverages), 2);
+            $bestAvg = max($allAverages);
+            $worstAvg = min($allAverages);
+            $context .= "- Moyenne générale (tous bulletins): {$globalAvg}/20\n";
+            $context .= "- Meilleure moyenne: {$bestAvg}/20\n";
+            $context .= "- Plus basse moyenne: {$worstAvg}/20\n";
+        }
+
+        return $context;
     }
 
     private function prepareStudentData(User $student, array $bulletins, array $certifications): array

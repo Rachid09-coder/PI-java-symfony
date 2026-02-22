@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>EduSmart — Récapitulatif & Scénario de Validation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1E293B;
+            line-height: 1.6;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+        }
+
+        @media print {
+            body { padding: 20px; font-size: 11px; }
+            .page-break { page-break-before: always; }
+            .no-print { display: none; }
+            h1 { font-size: 22px; }
+            h2 { font-size: 16px; }
+            h3 { font-size: 13px; }
+            table { font-size: 10px; }
+            .phase-box { padding: 12px !important; }
+        }
+
+        /* COVER */
+        .cover {
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%);
+            border-radius: 20px;
+            color: white;
+        }
+        .cover h1 { font-size: 32px; font-weight: 900; margin-bottom: 10px; }
+        .cover h2 { font-size: 18px; font-weight: 400; opacity: 0.9; margin-bottom: 30px; }
+        .cover .info { font-size: 14px; opacity: 0.8; }
+        .cover .info strong { opacity: 1; }
+        .cover .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 30px;
+            margin: 5px;
+            font-size: 13px;
+        }
+
+        /* HEADERS */
+        h1 { font-size: 26px; font-weight: 900; color: #1E293B; margin: 30px 0 15px; }
+        h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #6366F1;
+            margin: 25px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 3px solid #E2E8F0;
+        }
+        h3 { font-size: 14px; font-weight: 700; color: #334155; margin: 15px 0 8px; }
+
+        /* TABLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 20px;
+            font-size: 12px;
+        }
+        th {
+            background: #F1F5F9;
+            color: #475569;
+            font-weight: 700;
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 2px solid #CBD5E1;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #E2E8F0;
+            vertical-align: top;
+        }
+        tr:hover { background: #F8FAFC; }
+        code {
+            background: #F1F5F9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #6366F1;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* WORKFLOW */
+        .workflow {
+            background: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            margin: 10px 0 15px;
+            color: #475569;
+        }
+
+        /* PHASE BOXES */
+        .phase-box {
+            background: #FAFBFF;
+            border-left: 4px solid #6366F1;
+            border-radius: 0 12px 12px 0;
+            padding: 16px 20px;
+            margin: 15px 0;
+        }
+        .phase-box.green { border-left-color: #10B981; background: #F0FDF4; }
+        .phase-box.orange { border-left-color: #F59E0B; background: #FFFBEB; }
+        .phase-box.red { border-left-color: #EF4444; background: #FEF2F2; }
+        .phase-box.purple { border-left-color: #8B5CF6; background: #FAF5FF; }
+        .phase-title {
+            font-weight: 800;
+            font-size: 14px;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        .phase-time {
+            display: inline-block;
+            background: #6366F1;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .phase-box.green .phase-time { background: #10B981; }
+        .phase-box.orange .phase-time { background: #F59E0B; }
+        .phase-box.red .phase-time { background: #EF4444; }
+        .phase-box.purple .phase-time { background: #8B5CF6; }
+
+        .step { margin: 4px 0; padding-left: 5px; font-size: 12.5px; }
+        .step-num {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            background: #6366F1;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 22px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-right: 6px;
+        }
+
+        .say-box {
+            background: #EEF2FF;
+            border: 1px dashed #6366F1;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 8px 0;
+            font-size: 12px;
+            color: #4338CA;
+        }
+        .say-box::before { content: '💬 À DIRE : '; font-weight: 700; }
+
+        /* SUMMARY GRID */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #F8FAFC, #EEF2FF);
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .summary-card .number {
+            font-size: 28px;
+            font-weight: 900;
+            color: #6366F1;
+        }
+        .summary-card .label {
+            font-size: 11px;
+            color: #64748B;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .toc { columns: 2; column-gap: 30px; }
+        .toc-item { padding: 4px 0; font-size: 13px; break-inside: avoid; }
+        .toc-item a { color: #6366F1; text-decoration: none; }
+
+        .separator { height: 2px; background: linear-gradient(90deg, #6366F1, #A855F7, #6366F1); margin: 30px 0; border-radius: 1px; }
+
+        ul { margin: 5px 0 10px 20px; }
+        li { margin: 3px 0; font-size: 12.5px; }
+
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(99,102,241,0.4);
+            z-index: 999;
+        }
+        .print-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(99,102,241,0.5); }
+    </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Enregistrer en PDF</button>
+
+<!-- ===================== COVER ===================== -->
+<div class="cover">
+    <h1>📚 EduSmart</h1>
+    <h2>Module Bulletin & Certification</h2>
+    <p class="info" style="margin-bottom: 15px;">
+        <strong>Rachid GHARBI</strong> — ESPRIT — Année 2025/2026
+    </p>
+    <div>
+        <span class="badge">📋 Récapitulatif Complet</span>
+        <span class="badge">🎬 Scénario de Démonstration</span>
+    </div>
+    <p class="info" style="margin-top: 20px;">
+        Symfony 7.x • PHP 8+ • Groq AI (LLaMA 3.3 70B) • Twilio • DomPDF<br>
+        <strong>~68 routes • 12 services • 28 endpoints API • 14 fonctionnalités AI</strong>
+    </p>
+</div>
+
+<!-- ===================== PARTIE 1 : RECAP ===================== -->
+<h1>📋 PARTIE 1 — Récapitulatif Complet du Module</h1>
+
+<div class="separator"></div>
+
+<!-- SUMMARY CARDS -->
+<div class="summary-grid">
+    <div class="summary-card">
+        <div class="number">~68</div>
+        <div class="label">Routes totales</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">12</div>
+        <div class="label">Services métier</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">28</div>
+        <div class="label">Endpoints API REST</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">14</div>
+        <div class="label">Fonctionnalités AI</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">10</div>
+        <div class="label">Routes CRUD</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">5</div>
+        <div class="label">Actions Workflow</div>
+    </div>
+</div>
+
+<!-- 1. CRUD BULLETINS -->
+<h2>🔵 1. CRUD Bulletins (5 opérations)</h2>
+<table>
+    <tr><th>Opération</th><th>Route</th><th>Détails</th></tr>
+    <tr><td><strong>Lister</strong></td><td><code>GET /admin/bulletin/</code></td><td>Liste avec recherche & tri & pagination</td></tr>
+    <tr><td><strong>Créer</strong></td><td><code>GET/POST /admin/bulletin/new</code></td><td>Calcul automatique du rang</td></tr>
+    <tr><td><strong>Afficher</strong></td><td><code>GET /admin/bulletin/{id}</code></td><td>Vue détaillée avec lignes de notes</td></tr>
+    <tr><td><strong>Modifier</strong></td><td><code>GET/POST /admin/bulletin/{id}/edit</code></td><td>Verrouillé si publié ; recalcul des rangs</td></tr>
+    <tr><td><strong>Supprimer</strong></td><td><code>POST /admin/bulletin/{id}</code></td><td>Protection CSRF ; impossible si publié</td></tr>
+</table>
+
+<!-- 2. CRUD CERTIFICATIONS -->
+<h2>🔵 2. CRUD Certifications (5 opérations)</h2>
+<table>
+    <tr><th>Opération</th><th>Route</th><th>Détails</th></tr>
+    <tr><td><strong>Lister</strong></td><td><code>GET /admin/certification/</code></td><td>Liste avec recherche & tri & pagination</td></tr>
+    <tr><td><strong>Créer</strong></td><td><code>GET/POST /admin/certification/new</code></td><td>Auto : code vérification, numéro unique (EDU-YYYY-XX-NNNNNN), HMAC</td></tr>
+    <tr><td><strong>Afficher</strong></td><td><code>GET /admin/certification/{id}</code></td><td>Vue détaillée</td></tr>
+    <tr><td><strong>Modifier</strong></td><td><code>GET/POST /admin/certification/{id}/edit</code></td><td>Bloqué si révoqué ; re-signe HMAC</td></tr>
+    <tr><td><strong>Supprimer</strong></td><td><code>POST /admin/certification/{id}/delete</code></td><td>Protection CSRF + audit log</td></tr>
+</table>
+<p><strong>6 types :</strong> SCOLARITE, REUSSITE, NOTES, DIPLOME, STAGE, PRESENCE</p>
+
+<!-- 3. RECHERCHE & TRI -->
+<h2>🔵 3. Recherche & Tri</h2>
+<table>
+    <tr><th>Fonctionnalité</th><th>Module</th><th>Détails</th></tr>
+    <tr><td><strong>Recherche serveur</strong></td><td>Bulletins + Certifs</td><td><code>Repository::searchAndSort()</code> — paramètre <code>?search=</code></td></tr>
+    <tr><td><strong>Tri multi-colonnes</strong></td><td>Bulletins + Certifs</td><td>Paramètres <code>sort</code> + <code>order</code> (ASC/DESC)</td></tr>
+    <tr><td><strong>Recherche dynamique (client)</strong></td><td>Bulletins + Certifs</td><td>Filtrage instantané pendant la frappe en JavaScript</td></tr>
+    <tr><td><strong>Compteur dynamique</strong></td><td>Bulletins + Certifs</td><td>Nombre de résultats mis à jour en temps réel</td></tr>
+    <tr><td><strong>Entrée → recherche serveur</strong></td><td>Bulletins + Certifs</td><td>Touche Entrée déclenche la requête serveur</td></tr>
+</table>
+
+<!-- 4. WORKFLOW -->
+<h2>🟣 4. Workflow des Statuts</h2>
+<h3>Bulletin — Machine à états</h3>
+<div class="workflow">
+    BROUILLON ──► VÉRIFIÉ ──► VALIDÉ ──► PUBLIÉ<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;▲&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└──────────── RÉVOQUÉ ◄──────────────┘
+</div>
+<table>
+    <tr><th>Action</th><th>Route</th><th>Transition</th></tr>
+    <tr><td>Vérifier</td><td><code>POST .../verify-status</code></td><td>Brouillon → Vérifié</td></tr>
+    <tr><td>Valider</td><td><code>POST .../validate</code></td><td>Vérifié → Validé (enregistre validateur + date)</td></tr>
+    <tr><td>Publier</td><td><code>POST .../publish</code></td><td>Validé → Publié (PDF + HMAC + code + email + SMS auto)</td></tr>
+    <tr><td>Révoquer</td><td><code>POST .../revoke</code></td><td>Raison obligatoire, seulement si publié</td></tr>
+</table>
+
+<h3>Certification — Workflow</h3>
+<div class="workflow">
+    ACTIVE ──► REVOKED (révocation manuelle) &nbsp;&nbsp;|&nbsp;&nbsp; ACTIVE ──► EXPIRED (automatique si validUntil dépassé)
+</div>
+<p>Le statut est <strong>automatique</strong> — retiré des formulaires, change uniquement via boutons workflow.</p>
+
+<!-- 5. PDF -->
+<h2>🟣 5. Génération PDF (DomPDF)</h2>
+<table>
+    <tr><th>Méthode</th><th>Détails</th></tr>
+    <tr><td><code>generateBulletinPdf()</code></td><td>Template Twig, QR code intégré, logo + signature + cachet</td></tr>
+    <tr><td><code>generateCertificationPdf()</code></td><td>Design officiel EduSmart, QR code, signature numérique</td></tr>
+</table>
+<p>Format A4 portrait. Assets gérés via <code>SignatureAssetController</code>. Stockage : <code>public/uploads/</code></p>
+
+<!-- 6. QR CODE -->
+<h2>🟣 6. QR Code (Endroid QR Code)</h2>
+<table>
+    <tr><th>Méthode</th><th>Détails</th></tr>
+    <tr><td><code>generateBase64(url)</code></td><td>QR code en Base64 PNG pour intégration dans les PDFs</td></tr>
+    <tr><td><code>generateToFile(url, path)</code></td><td>Sauvegarde QR code en fichier</td></tr>
+</table>
+<p>Le QR pointe vers <code>/verify/{code}</code> — page publique de vérification. Haute correction d'erreur, 200px.</p>
+
+<!-- 7. HMAC -->
+<h2>🟣 7. Sécurité HMAC-SHA256</h2>
+<table>
+    <tr><th>Méthode</th><th>Détails</th></tr>
+    <tr><td><code>signBulletin()</code></td><td>HMAC-SHA256 sur : studentId + name + year + semester + average + lignes sérialisées</td></tr>
+    <tr><td><code>signCertification()</code></td><td>HMAC-SHA256 sur : studentId + type + uniqueNumber + verificationCode + issuedAt</td></tr>
+    <tr><td><code>verifyBulletin()</code></td><td>Comparaison timing-safe avec <code>hash_equals()</code></td></tr>
+    <tr><td><code>verifyCertification()</code></td><td>Idem — empêche les attaques par timing</td></tr>
+</table>
+<p><strong>Objectif :</strong> Garantir que les documents n'ont pas été falsifiés après émission.</p>
+
+<!-- 8. VERIFICATION -->
+<h2>🟣 8. Vérification Publique</h2>
+<p><strong>Route :</strong> <code>GET /verify/{code}</code> — accessible sans authentification</p>
+<ul>
+    <li>Recherche bulletin OU certification par <code>verificationCode</code></li>
+    <li>Affiche : type, nom masqué (vie privée: <code>Ra*** G***</code>), année, statut</li>
+    <li>Vérifie l'intégrité HMAC en temps réel</li>
+    <li>Affiche raison de révocation si applicable</li>
+</ul>
+
+<!-- 9. EMAIL -->
+<h2>🟣 9. Service Email (Symfony Mailer / Gmail SMTP)</h2>
+<table>
+    <tr><th>Méthode</th><th>Détails</th></tr>
+    <tr><td><code>sendBulletinEmail()</code></td><td>Email HTML premium (design gradient) + PDF en pièce jointe</td></tr>
+    <tr><td><code>sendCertificationEmail()</code></td><td>Email HTML premium + PDF en pièce jointe</td></tr>
+</table>
+<p>Auto-déclenché à la publication. Envoi manuel possible via bouton dédié.</p>
+
+<!-- 10. SMS -->
+<h2>🟣 10. Service SMS (Twilio API)</h2>
+<table>
+    <tr><th>Méthode</th><th>Détails</th></tr>
+    <tr><td><code>notifyBulletinReady()</code></td><td>Notification formatée à l'étudiant</td></tr>
+    <tr><td><code>notifyCertificationReady()</code></td><td>Notification avec numéro unique + code vérification</td></tr>
+    <tr><td><code>sendValidationReminder()</code></td><td>Rappel pour documents en attente</td></tr>
+    <tr><td><code>formatPhoneNumber()</code></td><td>Formatage E.164 (06... → +336...)</td></tr>
+</table>
+
+<!-- 11. AUDIT -->
+<h2>🟣 11. Audit Log</h2>
+<p><code>AuditService::log(entityType, entityId, action, user, details)</code> — enregistre dans l'entité <code>AuditLog</code></p>
+<p><strong>Actions tracées :</strong> CREATED, UPDATED, DELETED, VERIFIED, VALIDATED, PUBLISHED, REVOKED, PDF_GENERATED</p>
+<p><strong>Route admin :</strong> <code>GET /admin/audit-log/</code> avec filtres par type, ID, limite</p>
+
+<!-- 12. CALCUL NOTES -->
+<h2>🟣 12. Calcul des Notes</h2>
+<table>
+    <tr><th>Méthode</th><th>Détails</th></tr>
+    <tr><td><code>getStudentGradesData()</code></td><td>Agrège examens → notes pondérées (CC 10% + DS 20% + Exam 70%)</td></tr>
+    <tr><td><code>generateReportCardLines()</code></td><td>Auto-génère les lignes du bulletin depuis les examens</td></tr>
+    <tr><td><code>computeMention()</code></td><td>≥16: Très Bien, ≥14: Bien, ≥12: AB, ≥10: Passable, sinon: Insuffisant</td></tr>
+    <tr><td><code>calculateRanks()</code></td><td>Calcul batch des rangs pour toute une période</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- 13. AI -->
+<h2>🔴 13. Intelligence Artificielle (Groq — LLaMA 3.3 70B)</h2>
+<h3>10 fonctionnalités AI côté Admin</h3>
+<table>
+    <tr><th>#</th><th>Fonctionnalité</th><th>Route</th><th>Description</th></tr>
+    <tr><td>1</td><td><strong>Analyse individuelle</strong></td><td><code>GET .../analyze/{id}</code></td><td>Résumé, forces, faiblesses, tendance, score/100</td></tr>
+    <tr><td>2</td><td><strong>Recommandations</strong></td><td><code>GET .../recommendations/{id}</code></td><td>Méthodes d'étude, objectifs SMART, plan d'action</td></tr>
+    <tr><td>3</td><td><strong>Tendances de classe</strong></td><td><code>GET .../class-analysis</code></td><td>Moyenne classe, écart-type, distribution, modules</td></tr>
+    <tr><td>4</td><td><strong>Comparaison</strong></td><td><code>POST .../compare</code></td><td>Comparaison multi-étudiants (2+)</td></tr>
+    <tr><td>5</td><td><strong>Chatbot AI général</strong></td><td><code>POST .../chat</code></td><td>Chat découplé, contexte DB complet, restreint éducation</td></tr>
+    <tr><td>6</td><td><strong>Prédiction réussite</strong></td><td><code>GET .../predict-success</code></td><td>Probabilité %, risque (Faible/Moyen/Élevé), tendance</td></tr>
+    <tr><td>7</td><td><strong>Détection anomalies</strong></td><td><code>GET .../detect-anomalies</code></td><td>Écarts suspects, chutes brutales, patterns anormaux</td></tr>
+    <tr><td>8</td><td><strong>Bilan certifications</strong></td><td><code>GET .../certification-overview</code></td><td>Audit complet, stats par type/statut, couverture</td></tr>
+    <tr><td>9</td><td><strong>Suggestions certifs</strong></td><td><code>GET .../suggest-certifications</code></td><td>Éligibilité par étudiant, priorité, justification</td></tr>
+    <tr><td>10</td><td><strong>Dashboard AI</strong></td><td><code>GET /admin/ai/</code></td><td>Page principale avec toutes les fonctionnalités</td></tr>
+</table>
+
+<h3>4 fonctionnalités AI côté Étudiant</h3>
+<table>
+    <tr><th>#</th><th>Fonctionnalité</th><th>Route</th></tr>
+    <tr><td>1</td><td>Mon analyse</td><td><code>GET /student/ai/my-analysis</code></td></tr>
+    <tr><td>2</td><td>Mes recommandations</td><td><code>GET /student/ai/my-recommendations</code></td></tr>
+    <tr><td>3</td><td>Chat AI étudiant</td><td><code>POST /student/ai/chat</code></td></tr>
+    <tr><td>4</td><td>Page AI dédiée</td><td><code>GET /student/ai/</code></td></tr>
+</table>
+
+<h3>Caractéristiques techniques AI</h3>
+<ul>
+    <li><strong>Retry avec backoff exponentiel</strong> sur rate limits (3 tentatives)</li>
+    <li><strong>Contexte DB complet</strong> : <code>gatherDatabaseContext()</code> injecte étudiants, bulletins, certifications, notes, cours</li>
+    <li><strong>Guardrails éducation</strong> : le chatbot refuse les questions hors éducation</li>
+    <li><strong>2 providers AI</strong> : Groq (LLaMA 3.3 — principal) + Gemini (backup)</li>
+</ul>
+
+<!-- 14. API REST -->
+<h2>🟢 14. API REST Complètes (28 endpoints)</h2>
+
+<h3>API Bulletins — 6 endpoints (<code>/api/v1/bulletins</code>)</h3>
+<table>
+    <tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr>
+    <tr><td>GET</td><td><code>/api/v1/bulletins</code></td><td>Liste avec filtres + pagination</td></tr>
+    <tr><td>GET</td><td><code>/api/v1/bulletins/{id}</code></td><td>Détails avec notes</td></tr>
+    <tr><td>GET</td><td><code>.../student/{studentId}</code></td><td>Bulletins d'un étudiant</td></tr>
+    <tr><td>GET</td><td><code>.../verify/{code}</code></td><td>Vérification HMAC via API</td></tr>
+    <tr><td>GET</td><td><code>.../student/{id}/stats</code></td><td>Stats (moyenne, max/min, mentions, progression)</td></tr>
+    <tr><td>POST</td><td><code>.../{id}/generate-pdf</code></td><td>Génération PDF via API</td></tr>
+</table>
+
+<h3>API Certifications — 8 endpoints (<code>/api/v1/certifications</code>)</h3>
+<table>
+    <tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr>
+    <tr><td>GET</td><td><code>/api/v1/certifications</code></td><td>Liste avec filtres + pagination</td></tr>
+    <tr><td>GET</td><td><code>.../{id}</code></td><td>Détails</td></tr>
+    <tr><td>GET</td><td><code>.../student/{studentId}</code></td><td>Certifications d'un étudiant</td></tr>
+    <tr><td>GET</td><td><code>.../verify/{code}</code></td><td>Vérification complète (HMAC + actif + non expiré)</td></tr>
+    <tr><td>GET</td><td><code>.../verify-number/{uniqueNumber}</code></td><td>Vérification par numéro unique</td></tr>
+    <tr><td>GET</td><td><code>.../student/{id}/stats</code></td><td>Stats par type/statut</td></tr>
+    <tr><td>POST</td><td><code>.../{id}/generate-pdf</code></td><td>Génération PDF via API</td></tr>
+    <tr><td>GET</td><td><code>.../types</code></td><td>Types disponibles</td></tr>
+</table>
+
+<h3>API AI — 6 endpoints &nbsp;|&nbsp; API SMS — 6 endpoints &nbsp;|&nbsp; API Notes — 2 endpoints</h3>
+<table>
+    <tr><th>API</th><th>Endpoints clés</th></tr>
+    <tr><td><strong>AI</strong> (<code>/api/v1/ai</code>)</td><td>analyze/student, recommendations, compare, analyze/class, chat, health</td></tr>
+    <tr><td><strong>SMS</strong> (<code>/api/v1/sms</code>)</td><td>health, notify/bulletin, notify/certification, send, bulk/bulletins, bulk/certifications</td></tr>
+    <tr><td><strong>Notes</strong> (<code>/api/grades</code>)</td><td>student/{id} (notes pondérées), check/{id} (existence)</td></tr>
+</table>
+
+<!-- 15. SERVICES -->
+<h2>⚙️ 15. Les 12 Services Métier</h2>
+<table>
+    <tr><th>Service</th><th>Responsabilité</th></tr>
+    <tr><td><code>AiService</code></td><td>IA via Groq (LLaMA 3.3 70B) — 10+ méthodes</td></tr>
+    <tr><td><code>GeminiAiService</code></td><td>IA via Google Gemini (backup)</td></tr>
+    <tr><td><code>PdfGeneratorService</code></td><td>Génération PDF DomPDF</td></tr>
+    <tr><td><code>EmailService</code></td><td>Envoi emails HTML avec Symfony Mailer</td></tr>
+    <tr><td><code>SmsService</code></td><td>SMS via Twilio API</td></tr>
+    <tr><td><code>HmacService</code></td><td>Signatures HMAC-SHA256</td></tr>
+    <tr><td><code>QrCodeService</code></td><td>QR codes (Endroid)</td></tr>
+    <tr><td><code>VerificationCodeService</code></td><td>Codes de vérification uniques</td></tr>
+    <tr><td><code>BulletinWorkflowService</code></td><td>Machine à états bulletins</td></tr>
+    <tr><td><code>AuditService</code></td><td>Journalisation des actions</td></tr>
+    <tr><td><code>GradeCalculationService</code></td><td>Calcul notes & rangs</td></tr>
+    <tr><td><code>FileUploaderService</code></td><td>Upload de fichiers</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ===================== PARTIE 2 : SCENARIO ===================== -->
+<h1>🎬 PARTIE 2 — Scénario de Démonstration</h1>
+<div class="separator"></div>
+<p style="text-align: center; font-size: 14px; color: #64748B; margin-bottom: 20px;">
+    <strong>Durée estimée : 15-20 minutes</strong> &nbsp;|&nbsp; 
+    Prérequis : Serveur Symfony lancé, base de données avec données
+</p>
+
+<!-- PHASE 1 -->
+<div class="phase-box">
+    <div class="phase-title">📌 PHASE 1 — Connexion & Dashboard <span class="phase-time">1 min</span></div>
+    <div class="step"><span class="step-num">1</span> Ouvrir <code>http://127.0.0.1:8000/</code></div>
+    <div class="step"><span class="step-num">2</span> Se connecter en tant qu'<strong>admin</strong></div>
+    <div class="step"><span class="step-num">3</span> Montrer le <strong>dashboard admin</strong> — vue d'ensemble</div>
+</div>
+
+<!-- PHASE 2 -->
+<div class="phase-box green">
+    <div class="phase-title">📌 PHASE 2 — CRUD Bulletins <span class="phase-time" style="background:#10B981">3 min</span></div>
+    <div class="step"><span class="step-num">4</span> <strong>Bulletins</strong> → <strong>Nouveau Bulletin</strong></div>
+    <div class="step"><span class="step-num">5</span> Sélectionner étudiant, année, semestre</div>
+    <div class="step"><span class="step-num">6</span> Ajouter des lignes de notes (modules avec CC, DS, Exam)</div>
+    <div class="step"><span class="step-num">7</span> <strong>Montrer :</strong> calcul automatique moyenne (CC 10% + DS 20% + Exam 70%)</div>
+    <div class="step"><span class="step-num">8</span> <strong>Montrer :</strong> mention attribuée automatiquement</div>
+    <div class="step"><span class="step-num">9</span> <strong>Montrer :</strong> statut = <code>Brouillon</code> — pas modifiable manuellement</div>
+    <div class="step"><span class="step-num">10</span> Sauvegarder → bulletin créé</div>
+    <br>
+    <div class="step"><span class="step-num">11</span> Retour liste → <strong>taper dans la recherche</strong> → filtrage dynamique en temps réel</div>
+    <div class="step"><span class="step-num">12</span> Montrer le <strong>compteur</strong> qui se met à jour</div>
+    <div class="step"><span class="step-num">13</span> Cliquer sur les <strong>en-têtes de colonnes</strong> pour trier</div>
+    <div class="step"><span class="step-num">14</span> Modifier un bulletin → changer une note → Sauvegarder</div>
+</div>
+
+<!-- PHASE 3 -->
+<div class="phase-box purple">
+    <div class="phase-title">📌 PHASE 3 — Workflow des Statuts <span class="phase-time" style="background:#8B5CF6">2 min</span></div>
+    <div class="step"><span class="step-num">15</span> Ouvrir un bulletin <code>Brouillon</code></div>
+    <div class="step"><span class="step-num">16</span> Cliquer <strong>Vérifier</strong> → statut <code>Vérifié</code> ✅</div>
+    <div class="step"><span class="step-num">17</span> Cliquer <strong>Valider</strong> → statut <code>Validé</code> ✅</div>
+    <div class="step"><span class="step-num">18</span> Cliquer <strong>Publier</strong> → statut <code>Publié</code> ✅</div>
+    <div class="step"><span class="step-num">19</span> <strong>Montrer :</strong> PDF généré + HMAC signé + code vérif + email envoyé automatiquement</div>
+    <div class="step"><span class="step-num">20</span> Montrer le bouton <strong>Révoquer</strong> → saisir raison → bulletin révoqué</div>
+    <div class="say-box">Le statut suit un workflow strict : Brouillon → Vérifié → Validé → Publié. Pas de changement manuel. Chaque transition est tracée dans l'audit log.</div>
+</div>
+
+<!-- PHASE 4 -->
+<div class="phase-box">
+    <div class="phase-title">📌 PHASE 4 — PDF & QR Code <span class="phase-time">1 min</span></div>
+    <div class="step"><span class="step-num">21</span> Sur un bulletin publié → <strong>Télécharger PDF</strong></div>
+    <div class="step"><span class="step-num">22</span> Montrer : design EduSmart, notes, logo, signature, cachet</div>
+    <div class="step"><span class="step-num">23</span> Montrer le <strong>QR Code</strong> intégré dans le PDF</div>
+    <div class="step"><span class="step-num">24</span> Scanner le QR → ouvre la page de vérification publique</div>
+</div>
+
+<!-- PHASE 5 -->
+<div class="phase-box orange">
+    <div class="phase-title">📌 PHASE 5 — Vérification Publique & HMAC <span class="phase-time" style="background:#F59E0B">1 min</span></div>
+    <div class="step"><span class="step-num">25</span> Aller sur <code>/verify/{code}</code> (via QR ou en tapant le code)</div>
+    <div class="step"><span class="step-num">26</span> Montrer : type, nom masqué (vie privée), statut</div>
+    <div class="step"><span class="step-num">27</span> Montrer : <strong>"Intégrité vérifiée ✅"</strong> = vérification HMAC-SHA256</div>
+    <div class="say-box">Si quelqu'un modifie le document dans la base, le HMAC ne correspondra plus et ça affichera "Document falsifié".</div>
+</div>
+
+<!-- PHASE 6 -->
+<div class="phase-box green">
+    <div class="phase-title">📌 PHASE 6 — Email & SMS <span class="phase-time" style="background:#10B981">1 min</span></div>
+    <div class="step"><span class="step-num">28</span> Sur un bulletin publié → cliquer <strong>Envoyer Email</strong> 📧</div>
+    <div class="step"><span class="step-num">29</span> Montrer la boîte de réception (email HTML premium + PDF joint)</div>
+    <div class="step"><span class="step-num">30</span> Cliquer <strong>Envoyer SMS</strong> 📱 (si Twilio configuré)</div>
+    <div class="say-box">L'email et le SMS sont aussi envoyés automatiquement lors de la publication. Le SMS formate le numéro français en +33.</div>
+</div>
+
+<!-- PHASE 7 -->
+<div class="phase-box">
+    <div class="phase-title">📌 PHASE 7 — CRUD Certifications <span class="phase-time">2 min</span></div>
+    <div class="step"><span class="step-num">31</span> <strong>Certifications</strong> → <strong>Nouvelle Certification</strong></div>
+    <div class="step"><span class="step-num">32</span> Sélectionner étudiant → montrer les <strong>semestres chargés dynamiquement</strong> (API interne)</div>
+    <div class="step"><span class="step-num">33</span> Choisir type <code>REUSSITE</code> → Sauvegarder</div>
+    <div class="step"><span class="step-num">34</span> Montrer : numéro unique <code>EDU-2026-RE-000001</code>, code vérif, HMAC</div>
+    <div class="step"><span class="step-num">35</span> Recherche dynamique sur la liste + tri par colonnes</div>
+    <div class="step"><span class="step-num">36</span> <strong>Générer PDF</strong> → télécharger → montrer QR code</div>
+    <div class="step"><span class="step-num">37</span> <strong>Envoyer Email</strong> + <strong>Envoyer SMS</strong></div>
+    <div class="step"><span class="step-num">38</span> <strong>Révoquer</strong> → saisir raison → vérifier sur <code>/verify/{code}</code> → "Révoqué"</div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- PHASE 8 -->
+<div class="phase-box red">
+    <div class="phase-title">📌 PHASE 8 — Intelligence Artificielle ⭐ <span class="phase-time" style="background:#EF4444">4 min</span></div>
+    <div class="step"><span class="step-num">39</span> Aller dans <strong>Analyse AI</strong> (<code>/admin/ai/</code>)</div>
+    <div class="step"><span class="step-num">40</span> Montrer le badge <strong>"Groq AI Connecté"</strong> ✅</div>
+    <br>
+    <strong style="color: #6366F1;">Analyse individuelle :</strong>
+    <div class="step"><span class="step-num">41</span> Sélectionner un étudiant → <strong>Analyser</strong> → score/100, forces, faiblesses</div>
+    <div class="step"><span class="step-num">42</span> <strong>Recommandations</strong> → conseils personnalisés, objectifs SMART</div>
+    <br>
+    <strong style="color: #10B981;">Tendances de classe :</strong>
+    <div class="step"><span class="step-num">43</span> Année + semestre → <strong>Analyser la Classe</strong> → moyenne, écart-type, distribution</div>
+    <br>
+    <strong style="color: #F59E0B;">Prédiction de réussite :</strong>
+    <div class="step"><span class="step-num">44</span> Cliquer <strong>Prédiction de Réussite</strong> 🎯 → probabilité %, risque, tendance pour chaque étudiant</div>
+    <div class="say-box">L'IA analyse les données réelles de la base pour prédire quels étudiants risquent l'échec.</div>
+    <br>
+    <strong style="color: #EF4444;">Détection d'anomalies :</strong>
+    <div class="step"><span class="step-num">45</span> Cliquer <strong>Détecter Anomalies</strong> 🔍 → écarts suspects, chutes brutales, incohérences</div>
+    <div class="say-box">Ça permet de détecter les erreurs de saisie ou les fraudes potentielles.</div>
+    <br>
+    <strong style="color: #8B5CF6;">Certifications AI :</strong>
+    <div class="step"><span class="step-num">46</span> Cliquer <strong>Bilan Global</strong> 📋 → stats, couverture, alertes, recommandations</div>
+    <div class="step"><span class="step-num">47</span> Cliquer <strong>Suggestions</strong> ✨ → certifications éligibles par étudiant avec priorité</div>
+    <div class="say-box">L'IA compare les données de chaque étudiant avec les 6 types de certifications et recommande celles qui manquent.</div>
+    <br>
+    <strong style="color: #D97706;">Chatbot AI :</strong>
+    <div class="step"><span class="step-num">48</span> Taper : <strong>"Quel étudiant a la meilleure moyenne ?"</strong> → réponse avec vrais noms/notes</div>
+    <div class="step"><span class="step-num">49</span> Taper : <strong>"Combien de certifications ont été émises ?"</strong> → données réelles</div>
+    <div class="step"><span class="step-num">50</span> Taper : <strong>"Quelle est la capitale de la France ?"</strong> → <strong>refusé</strong> (restreint éducation)</div>
+    <div class="say-box">Le chatbot a accès à toute la base de données en temps réel mais est strictement restreint aux questions éducatives.</div>
+</div>
+
+<!-- PHASE 9 -->
+<div class="phase-box green">
+    <div class="phase-title">📌 PHASE 9 — API REST <span class="phase-time" style="background:#10B981">2 min</span></div>
+    <div class="step"><span class="step-num">51</span> Ouvrir navigateur et montrer :</div>
+    <div class="step" style="padding-left: 40px;"><code>GET /api/v1/bulletins</code> → liste JSON avec pagination</div>
+    <div class="step" style="padding-left: 40px;"><code>GET /api/v1/bulletins/verify/{code}</code> → vérification via API</div>
+    <div class="step" style="padding-left: 40px;"><code>GET /api/v1/certifications/types</code> → types disponibles</div>
+    <div class="step" style="padding-left: 40px;"><code>GET /api/v1/certifications/student/{id}/stats</code> → statistiques</div>
+    <div class="step" style="padding-left: 40px;"><code>GET /api/v1/sms/health</code> → santé du service SMS</div>
+    <div class="step" style="padding-left: 40px;"><code>GET /api/v1/ai/health</code> → santé IA + liste features</div>
+    <div class="say-box">Toutes les fonctionnalités sont aussi accessibles via API REST pour intégration avec d'autres systèmes. 28 endpoints au total.</div>
+</div>
+
+<!-- PHASE 10 -->
+<div class="phase-box purple">
+    <div class="phase-title">📌 PHASE 10 — Audit Log & Espace Étudiant <span class="phase-time" style="background:#8B5CF6">1 min</span></div>
+    <div class="step"><span class="step-num">52</span> <strong>Audit Log</strong> → montrer toutes les actions tracées</div>
+    <div class="say-box">Chaque action sur un bulletin ou certification est enregistrée avec l'utilisateur et la date.</div>
+    <div class="step"><span class="step-num">53</span> Se déconnecter → se reconnecter en <strong>étudiant</strong></div>
+    <div class="step"><span class="step-num">54</span> Montrer : Mes Bulletins, Mes Certifications</div>
+    <div class="step"><span class="step-num">55</span> <strong>Mon Analyse AI</strong> → lancer analyse + chatbot étudiant</div>
+</div>
+
+<!-- PHASE 11 -->
+<div class="phase-box orange">
+    <div class="phase-title">📌 PHASE 11 — Dark Mode (Bonus) <span class="phase-time" style="background:#F59E0B">15 sec</span></div>
+    <div class="step"><span class="step-num">56</span> Cliquer le <strong>toggle dark mode</strong> 🌙 → tout est lisible</div>
+    <div class="say-box">Le thème est sauvegardé en localStorage.</div>
+</div>
+
+<div class="separator"></div>
+
+<!-- POINTS CLES -->
+<h2>📝 Points Clés à Mentionner au Prof</h2>
+<table>
+    <tr><th>À dire</th><th>Détail technique</th></tr>
+    <tr><td>"12 services métier"</td><td>AiService, PdfGenerator, Email, SMS, HMAC, QrCode, VerificationCode, Workflow, Audit, GradeCalc, GeminiAi, FileUploader</td></tr>
+    <tr><td>"~68 routes au total"</td><td>CRUD + Workflow + API REST + AI + Student</td></tr>
+    <tr><td>"28 endpoints API REST"</td><td>6 bulletins + 8 certifications + 6 AI + 6 SMS + 2 grades</td></tr>
+    <tr><td>"14 fonctionnalités AI"</td><td>10 admin + 4 étudiant</td></tr>
+    <tr><td>"Sécurité HMAC-SHA256"</td><td>Signature + vérification timing-safe avec hash_equals</td></tr>
+    <tr><td>"Workflow machine à états"</td><td>Transitions contrôlées, pas de changement manuel possible</td></tr>
+    <tr><td>"2 providers AI"</td><td>Groq (LLaMA 3.3 — principal) + Gemini (backup)</td></tr>
+    <tr><td>"Design premium"</td><td>Glass morphism, gradients, animations, dark mode complet</td></tr>
+    <tr><td>"Pondération notes"</td><td>CC 10% + DS 20% + Exam 70%</td></tr>
+    <tr><td>"Chatbot avec contexte DB"</td><td>Accès temps réel à toutes les données, restreint éducation</td></tr>
+</table>
+
+<div style="text-align: center; margin-top: 40px; padding: 20px; background: #F8FAFC; border-radius: 12px;">
+    <p style="font-size: 16px; font-weight: 800; color: #6366F1;">🚀 Bonne chance pour la validation !</p>
+    <p style="font-size: 12px; color: #94A3B8;">
+        EduSmart v2.1 — Rachid GHARBI — ESPRIT — 22 Février 2026
+    </p>
+</div>
+
+</body>
+</html>

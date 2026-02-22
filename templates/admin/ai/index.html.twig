@@ -129,6 +129,62 @@
                 </div>
             </div>
 
+            {# Section Prédiction & Anomalies #}
+            <div class="col-lg-6">
+                <div class="card card-premium-glass shadow-lg border-0" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 py-4 px-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse me-3" style="background: linear-gradient(135deg, #F59E0B, #D97706); width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-chart-bar text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-800 text-dark mb-0">Prédiction & Anomalies</h5>
+                                <p class="text-muted small mb-0">Prédiction de réussite et détection d'incohérences</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <p class="text-muted small mb-3">Analyse l'ensemble des bulletins pour prédire la réussite des étudiants ou détecter des anomalies dans les notes.</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-premium-predict flex-grow-1" onclick="predictSuccess()" {{ not isConfigured ? 'disabled' : '' }}>
+                                <i class="fas fa-crystal-ball me-2"></i> Prédiction de Réussite
+                            </button>
+                            <button type="button" class="btn-premium-anomaly flex-grow-1" onclick="detectAnomalies()" {{ not isConfigured ? 'disabled' : '' }}>
+                                <i class="fas fa-search me-2"></i> Détecter Anomalies
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Section Certifications AI #}
+            <div class="col-lg-6">
+                <div class="card card-premium-glass shadow-lg border-0" style="border-radius: 20px;">
+                    <div class="card-header bg-transparent border-0 py-4 px-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse me-3" style="background: linear-gradient(135deg, #EF4444, #DC2626); width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-certificate text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-800 text-dark mb-0">Outils Certifications</h5>
+                                <p class="text-muted small mb-0">Audit et suggestions de certifications</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <p class="text-muted small mb-3">Bilan global des certifications émises et suggestions de certifications éligibles par étudiant.</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-premium-cert flex-grow-1" onclick="suggestCertifications()" {{ not isConfigured ? 'disabled' : '' }}>
+                                <i class="fas fa-magic me-2"></i> Suggestions
+                            </button>
+                            <button type="button" class="btn-premium-audit flex-grow-1" onclick="certificationOverview()" {{ not isConfigured ? 'disabled' : '' }}>
+                                <i class="fas fa-clipboard-check me-2"></i> Bilan Global
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {# Section Chat AI #}
             <div class="col-12">
                 <div class="card card-premium-glass shadow-lg border-0" style="border-radius: 20px;">
@@ -139,7 +195,7 @@
                             </div>
                             <div>
                                 <h5 class="fw-800 text-dark mb-0">Assistant AI</h5>
-                                <p class="text-muted small mb-0">Posez vos questions sur les performances des étudiants</p>
+                                <p class="text-muted small mb-0">Assistant pédagogique EduSmart — posez vos questions sur l'éducation</p>
                             </div>
                         </div>
                     </div>
@@ -147,11 +203,11 @@
                         <div id="chatContainer" class="chat-container mb-3" style="height: 300px; overflow-y: auto; background: #f8fafc; border-radius: 12px; padding: 15px;">
                             <div class="text-center text-muted py-5">
                                 <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
-                                <p>Sélectionnez un étudiant et posez une question pour commencer</p>
+                                <p>Posez une question sur l'éducation ou la plateforme EduSmart pour commencer</p>
                             </div>
                         </div>
                         <div class="input-group">
-                            <input type="text" id="chatInput" class="form-control form-control-premium" placeholder="Posez une question sur l'étudiant sélectionné..." {{ not isConfigured ? 'disabled' : '' }}>
+                            <input type="text" id="chatInput" class="form-control form-control-premium" placeholder="Posez une question sur l'éducation, les notes, les certifications..." {{ not isConfigured ? 'disabled' : '' }}>
                             <button type="button" class="btn-premium-submit" onclick="sendChat()" {{ not isConfigured ? 'disabled' : '' }}>
                                 <i class="fas fa-paper-plane"></i>
                             </button>
@@ -258,8 +314,8 @@
                                 </tr>
                                 <tr>
                                     <td><span class="badge bg-primary">POST</span></td>
-                                    <td>/api/v1/ai/chat/{studentId}</td>
-                                    <td>Chat interactif (body: {message, history})</td>
+                                    <td>/api/v1/ai/chat</td>
+                                    <td>Chat interactif général (body: {message, history})</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -379,6 +435,66 @@
     }
     .bg-success-soft { background-color: rgba(16, 185, 129, 0.1); }
     .bg-warning-soft { background-color: rgba(245, 158, 11, 0.1); }
+    .btn-premium-predict {
+        background: linear-gradient(135deg, #F59E0B, #D97706);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-premium-predict:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        color: white;
+    }
+    .btn-premium-predict:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-premium-anomaly {
+        background: linear-gradient(135deg, #EF4444, #DC2626);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-premium-anomaly:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        color: white;
+    }
+    .btn-premium-anomaly:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-premium-cert {
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-premium-cert:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        color: white;
+    }
+    .btn-premium-cert:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-premium-audit {
+        background: linear-gradient(135deg, #EC4899, #DB2777);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-premium-audit:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(236, 72, 153, 0.3);
+        color: white;
+    }
+    .btn-premium-audit:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
 
 <script>
@@ -456,13 +572,7 @@ async function analyzeClass() {
 }
 
 async function sendChat() {
-    const studentId = document.getElementById('studentSelect').value;
     const message = document.getElementById('chatInput').value.trim();
-
-    if (!studentId) {
-        alert('Veuillez d\'abord sélectionner un étudiant');
-        return;
-    }
 
     if (!message) return;
 
@@ -480,7 +590,7 @@ async function sendChat() {
     scrollChat();
 
     try {
-        const response = await fetch(`/admin/ai/chat/${studentId}`, {
+        const response = await fetch(`/admin/ai/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message, history: chatHistory })
@@ -654,6 +764,186 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ===== NOUVELLES FONCTIONNALITÉS AI =====
+
+async function predictSuccess() {
+    showLoading('Prédiction de réussite en cours... (analyse de tous les étudiants)');
+
+    try {
+        const response = await fetch('/admin/ai/predict-success');
+        const data = await response.json();
+
+        if (data.success) {
+            displayPrediction(data);
+        } else {
+            displayError(data.error || 'Erreur lors de la prédiction');
+        }
+    } catch (error) {
+        displayError('Erreur de connexion: ' + error.message);
+    }
+}
+
+async function detectAnomalies() {
+    showLoading('Détection d\'anomalies en cours... (audit de tous les bulletins)');
+
+    try {
+        const response = await fetch('/admin/ai/detect-anomalies');
+        const data = await response.json();
+
+        if (data.success) {
+            displayAnomalies(data);
+        } else {
+            displayError(data.error || 'Erreur lors de la détection');
+        }
+    } catch (error) {
+        displayError('Erreur de connexion: ' + error.message);
+    }
+}
+
+async function certificationOverview() {
+    showLoading('Audit des certifications en cours...');
+
+    try {
+        const response = await fetch('/admin/ai/certification-overview');
+        const data = await response.json();
+
+        if (data.success) {
+            displayCertOverview(data);
+        } else {
+            displayError(data.error || 'Erreur lors de l\'audit');
+        }
+    } catch (error) {
+        displayError('Erreur de connexion: ' + error.message);
+    }
+}
+
+async function suggestCertifications() {
+    showLoading('Analyse des éligibilités en cours...');
+
+    try {
+        const response = await fetch('/admin/ai/suggest-certifications');
+        const data = await response.json();
+
+        if (data.success) {
+            displaySuggestions(data);
+        } else {
+            displayError(data.error || 'Erreur lors des suggestions');
+        }
+    } catch (error) {
+        displayError('Erreur de connexion: ' + error.message);
+    }
+}
+
+// ===== DISPLAY FUNCTIONS =====
+
+function displayPrediction(data) {
+    document.getElementById('resultsTitle').textContent = '🎯 Prédiction de Réussite';
+    document.getElementById('resultsSubtitle').textContent = data.studentsAnalyzed + ' étudiants analysés — ' + new Date(data.generatedAt).toLocaleString('fr-FR');
+
+    const html = `
+        <div class="d-flex justify-content-center mb-4">
+            <div class="text-center p-4" style="background: linear-gradient(135deg, #F59E0B, #D97706); border-radius: 20px; min-width: 150px;">
+                <div class="text-white opacity-75 small">Étudiants Analysés</div>
+                <div class="text-white fw-900" style="font-size: 3rem;">${data.studentsAnalyzed}</div>
+                <div class="text-white opacity-75 small">prédictions générées</div>
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h6><i class="fas fa-chart-line me-2"></i>Prédictions Détaillées</h6>
+            <div style="white-space: pre-wrap;">${escapeHtml(data.predictions)}</div>
+        </div>
+    `;
+
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+function displayAnomalies(data) {
+    document.getElementById('resultsTitle').textContent = '🔍 Détection d\'Anomalies';
+    document.getElementById('resultsSubtitle').textContent = data.bulletinsAnalyzed + ' bulletins audités — ' + new Date(data.generatedAt).toLocaleString('fr-FR');
+
+    const html = `
+        <div class="d-flex justify-content-center mb-4">
+            <div class="text-center p-4" style="background: linear-gradient(135deg, #EF4444, #DC2626); border-radius: 20px; min-width: 150px;">
+                <div class="text-white opacity-75 small">Bulletins Audités</div>
+                <div class="text-white fw-900" style="font-size: 3rem;">${data.bulletinsAnalyzed}</div>
+                <div class="text-white opacity-75 small">analysés pour anomalies</div>
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h6><i class="fas fa-exclamation-triangle me-2"></i>Rapport d'Anomalies</h6>
+            <div style="white-space: pre-wrap;">${escapeHtml(data.anomalies)}</div>
+        </div>
+    `;
+
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+function displayCertOverview(data) {
+    document.getElementById('resultsTitle').textContent = '📋 Bilan des Certifications';
+    document.getElementById('resultsSubtitle').textContent = 'Audit complet — ' + new Date(data.generatedAt).toLocaleString('fr-FR');
+
+    let statsHtml = '';
+    if (data.stats) {
+        statsHtml = `
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="text-center p-3" style="background: #faf5ff; border-radius: 12px;">
+                        <div class="text-purple fw-bold" style="font-size: 1.5rem;">${data.stats.total}</div>
+                        <div class="small text-muted">Total Certifications</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-3" style="background: #f0fdf4; border-radius: 12px;">
+                        <div class="text-success fw-bold" style="font-size: 1.5rem;">${data.stats.byStatus?.ACTIVE || 0}</div>
+                        <div class="small text-muted">Actives</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-3" style="background: #fef2f2; border-radius: 12px;">
+                        <div class="text-danger fw-bold" style="font-size: 1.5rem;">${(data.stats.byStatus?.REVOKED || 0) + (data.stats.byStatus?.EXPIRED || 0)}</div>
+                        <div class="small text-muted">Révoquées/Expirées</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    const html = `
+        ${statsHtml}
+        <div class="analysis-section">
+            <h6><i class="fas fa-clipboard-check me-2"></i>Audit Détaillé</h6>
+            <div style="white-space: pre-wrap;">${escapeHtml(data.audit)}</div>
+        </div>
+    `;
+
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+function displaySuggestions(data) {
+    document.getElementById('resultsTitle').textContent = '✨ Suggestions de Certifications';
+    document.getElementById('resultsSubtitle').textContent = data.studentsAnalyzed + ' étudiants évalués — ' + new Date(data.generatedAt).toLocaleString('fr-FR');
+
+    const html = `
+        <div class="d-flex justify-content-center mb-4">
+            <div class="text-center p-4" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED); border-radius: 20px; min-width: 150px;">
+                <div class="text-white opacity-75 small">Étudiants Évalués</div>
+                <div class="text-white fw-900" style="font-size: 3rem;">${data.studentsAnalyzed}</div>
+                <div class="text-white opacity-75 small">éligibilités vérifiées</div>
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h6><i class="fas fa-certificate me-2"></i>Recommandations de Certifications</h6>
+            <div style="white-space: pre-wrap;">${escapeHtml(data.suggestions)}</div>
+        </div>
+    `;
+
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
 // Enter key for chat
 document.getElementById('chatInput')?.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -661,15 +951,6 @@ document.getElementById('chatInput')?.addEventListener('keypress', function(e) {
     }
 });
 
-// Reset chat when student changes
-document.getElementById('studentSelect')?.addEventListener('change', function() {
-    chatHistory = [];
-    document.getElementById('chatContainer').innerHTML = `
-        <div class="text-center text-muted py-5">
-            <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
-            <p>Sélectionnez un étudiant et posez une question pour commencer</p>
-        </div>
-    `;
-});
+
 </script>
 {% endblock %}

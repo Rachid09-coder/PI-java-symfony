@@ -232,38 +232,112 @@ GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```php
 class AiService
 {
-    // Analyse les performances d'un étudiant
-    public function analyzeStudentPerformance(User $student): array
+    // Constructeur — injecte BulletinRepository, CertificationRepository, UserRepository, GradeRepository, CourseRepository
     
-    // Chat interactif avec l'AI
-    public function chat(string $message, array $context = []): string
+    // === ANALYSE ===
+    public function analyzeStudentPerformance(User $student): array  // Analyse individuelle
+    public function compareStudents(array $studentIds): array        // Comparaison de 2+ étudiants
+    public function generateRecommendations(User $student): array    // Recommandations personnalisées
+    public function analyzeClassTrends(string $year, string $semester): array // Tendances de classe
     
-    // Vérifie si l'API est configurée
-    public function isConfigured(): bool
+    // === CHATBOT ===
+    public function chat(User $student, string $message, array $history): array // Chat spécifique étudiant
+    public function chatGeneral(string $message, array $history): array         // Chat général (indépendant)
+    
+    // === PRÉDICTION & ANOMALIES (Nouveau 22/02/2026) ===
+    public function predictSuccess(): array            // Prédiction de réussite pour tous les étudiants
+    public function detectAnomalies(): array            // Détection d'anomalies dans les notes
+    
+    // === CERTIFICATIONS AI (Nouveau 22/02/2026) ===
+    public function auditCertifications(): array        // Bilan complet des certifications émises
+    public function suggestCertifications(): array      // Suggestions de certifications éligibles
+    
+    // === MÉTHODES PRIVÉES ===
+    private function callAI(string $prompt, string $systemPrompt): string  // Appel Groq avec retry/rate-limit
+    private function gatherDatabaseContext(): string    // Contexte DB complet pour le chatbot
+    private function prepareStudentData(User $student): array
+    private function prepareClassData(array $bulletins): array
+    private function calculateProgression(array $averages): array
+    private function calculateStdDev(array $values): float
 }
 ```
 
 ### Fonctionnalités AI
 
-#### 1. Analyse de Performance (Admin)
+#### 1. Analyse Individuelle (Admin)
 - Analyse automatique des bulletins de l'étudiant
 - Identification des points forts et faiblesses
 - Recommandations personnalisées
-- Prédictions de trajectoire
+- Score global sur 100
 
-#### 2. Analyse AI Étudiant
+#### 2. Tendances de Classe (Admin)
+- Analyse globale par année académique / semestre
+- Moyenne de classe, écart-type, plus haute/basse notes
+- Recommandations pour la classe
+
+#### 3. Comparaison d'Étudiants (Admin)
+- Comparaison de 2+ étudiants sélectionnés
+- Analyse comparative des performances
+
+#### 4. Chatbot AI Général (Admin)
+- **Indépendant** de la sélection d'étudiant (découplé le 22/02/2026)
+- **Contexte base de données** : Le chatbot a accès à toutes les données réelles (étudiants, bulletins, certifications, notes, cours) via `gatherDatabaseContext()`
+- Historique de conversation maintenu
+- Restreint aux questions éducatives
+
+#### 5. Prédiction de Réussite (Nouveau 22/02/2026)
+- Analyse l'ensemble des bulletins de tous les étudiants
+- Prédit la probabilité de réussite (en %)
+- Indique le niveau de risque : ✅ Faible / ⚠️ Moyen / 🔴 Élevé
+- Tendance : En progression / Stable / En régression
+- Actions prioritaires recommandées
+- Résumé global de la classe
+
+#### 6. Détection d'Anomalies (Nouveau 22/02/2026)
+- Audit automatique de tous les bulletins
+- Détecte les écarts suspects (CC élevé mais Exam bas)
+- Identifie les chutes brutales entre périodes
+- Signale les incohérences (moyennes, mentions)
+- Repère les notes extrêmes (0 ou 20)
+- Patterns suspects (notes identiques sur plusieurs modules)
+
+#### 7. Bilan Global des Certifications (Nouveau 22/02/2026)
+- Audit complet de toutes les certifications émises
+- Statistiques : total, répartition par type et par statut
+- Couverture étudiante (% d'étudiants certifiés)
+- Cohérence certifications de réussite vs moyennes
+- Alertes : certifications révoquées, expirées, étudiants sans certification
+- Indicateurs de qualité
+
+#### 8. Suggestions de Certifications (Nouveau 22/02/2026)
+- Analyse chaque étudiant par rapport aux 6 types de certifications
+- Compare les certifications existantes vs éligibles
+- Priorité : Haute / Moyenne / Basse
+- Justification basée sur les notes et la moyenne
+- Plan d'action global pour les certifications manquantes
+
+#### 9. Analyse AI Étudiant
 L'espace étudiant dispose d'une page dédiée (`/student/ai`) avec:
 - **Analyse de Performance**: Analyse complète des bulletins
 - **Chatbot AI**: Discussion interactive pour conseils personnalisés
 - Interface premium avec design moderne
 
 ### Routes AI
-| Route | Accès | Description |
-|-------|-------|-------------|
-| `/admin/ai/analyze/{id}` | Admin | Analyser un étudiant |
-| `/student/ai` | Étudiant | Page AI étudiant |
-| `/student/ai/analyze` | Étudiant | Lancer l'analyse |
-| `/student/ai/chat` | Étudiant | Endpoint chatbot |
+| Route | Méthode | Accès | Description |
+|-------|---------|-------|-------------|
+| `/admin/ai/` | GET | Admin | Page principale analyse AI |
+| `/admin/ai/analyze/{studentId}` | GET | Admin | Analyser un étudiant |
+| `/admin/ai/recommendations/{studentId}` | GET | Admin | Recommandations personnalisées |
+| `/admin/ai/class-analysis` | GET | Admin | Tendances de classe (params: academic_year, semester) |
+| `/admin/ai/compare` | POST | Admin | Comparer des étudiants (body: student_ids[]) |
+| `/admin/ai/chat` | POST | Admin | Chat AI général (body: message, history) |
+| `/admin/ai/predict-success` | GET | Admin | Prédiction de réussite (tous les étudiants) |
+| `/admin/ai/detect-anomalies` | GET | Admin | Détection d'anomalies (tous les bulletins) |
+| `/admin/ai/certification-overview` | GET | Admin | Bilan global des certifications |
+| `/admin/ai/suggest-certifications` | GET | Admin | Suggestions de certifications éligibles |
+| `/student/ai` | GET | Étudiant | Page AI étudiant |
+| `/student/ai/analyze` | GET | Étudiant | Lancer l'analyse |
+| `/student/ai/chat` | POST | Étudiant | Endpoint chatbot |
 
 ---
 
@@ -404,7 +478,29 @@ public function log(string $entityType, int $entityId, string $action, ?User $us
 
 ---
 
-## 🎨 Interface Utilisateur
+## � Mode Sombre (Dark Mode)
+
+### Implémentation
+Le mode sombre est disponible dans le layout administration (`admin_layout.html.twig`) via un toggle thème.
+
+### Stockage
+Le thème est sauvegardé en `localStorage` sous la clé `admin-theme`.
+
+### Couverture CSS
+Les overrides `[data-theme="dark"]` couvrent:
+- `.text-dark` → `#E2E8F0`
+- Titres `h1`-`h6` → `#F1F5F9`
+- Paragraphes et labels → `#CBD5E1`
+- Formulaires (`.form-control`, `.form-select`) → fond sombre + texte clair
+- Tableaux → lignes alternées sombres
+- Cartes et modals → fonds `#1E293B`
+- Chat (`.chat-container`, `.bubble`) → fonds adaptés
+- Badges, dropdowns, couleurs inline hardcodées
+- Alertes et inputs de recherche
+
+---
+
+## �🎨 Interface Utilisateur
 
 ### Layouts Principaux
 | Fichier | Usage |
@@ -500,6 +596,12 @@ symfony server:start
 | Gestion des examens | ✅ |
 | Interface responsive premium | ✅ |
 | Favicon EduSmart | ✅ |
+| Mode sombre (Dark Mode) | ✅ |
+| Chatbot AI découplé avec contexte DB | ✅ |
+| Prédiction de réussite AI | ✅ |
+| Détection d'anomalies AI | ✅ |
+| Bilan global certifications AI | ✅ |
+| Suggestions certifications AI | ✅ |
 
 ### 🔄 Modifications Récentes (20/02/2026)
 1. **Statut automatique**: Le champ statut a été retiré des formulaires bulletin/certification. Il change uniquement via les boutons workflow.
@@ -507,6 +609,16 @@ symfony server:start
 3. **Recherche dynamique**: Filtrage en temps réel sur les listes bulletins et certifications.
 4. **Correction Mode Professeur**: Le bouton n'apparaît plus pour les étudiants.
 5. **Simplification header AI**: Retrait du logo redondant de la page AI étudiant.
+
+### 🔄 Modifications Récentes (22/02/2026)
+1. **Chatbot AI découplé**: Le chatbot n'est plus lié à la sélection d'un étudiant. Nouvelle méthode `chatGeneral()` indépendante, route changée de `/chat/{studentId}` à `/chat`.
+2. **Contexte base de données dans le chatbot**: Le chatbot a désormais accès à toutes les données réelles de la plateforme (étudiants, bulletins, certifications, notes, cours) via `gatherDatabaseContext()`. Il peut répondre à des questions comme "Quels étudiants ont la meilleure moyenne ?".
+3. **Correction dark mode**: Correction complète du texte illisible en mode sombre. Ajout de 200+ lignes de CSS dans `admin_layout.html.twig` sous `[data-theme="dark"]` couvrant : `.text-dark`, titres, paragraphes, formulaires, tableaux, cartes, chat, badges, modals, dropdowns, couleurs inline.
+4. **Prédiction de Réussite AI**: Nouvelle fonctionnalité qui analyse tous les étudiants et prédit leur probabilité de réussite avec niveau de risque et tendance.
+5. **Détection d'Anomalies AI**: Audit automatique de tous les bulletins pour détecter les incohérences, écarts suspects, chutes brutales et patterns anormaux.
+6. **Bilan Global des Certifications AI**: Audit complet des certifications émises — statistiques par type/statut, couverture étudiante, cohérence avec les moyennes, alertes.
+7. **Suggestions de Certifications AI**: Recommandation des certifications éligibles pour chaque étudiant en comparant avec les 6 types disponibles (SCOLARITE, REUSSITE, NOTES, DIPLOME, STAGE, PRESENCE).
+8. **Interface AI enrichie**: 2 nouvelles cartes premium sur la page Analyse AI ("Prédiction & Anomalies" et "Outils Certifications") avec boutons stylisés et fonctions d'affichage dédiées.
 
 ---
 
@@ -550,5 +662,5 @@ Pour toute question technique concernant EduSmart:
 
 ---
 
-**Documentation générée le 20 Février 2026**
-**Version EduSmart: 2.0**
+**Documentation mise à jour le 22 Février 2026**
+**Version EduSmart: 2.1**

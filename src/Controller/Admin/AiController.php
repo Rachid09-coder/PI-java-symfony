@@ -138,20 +138,11 @@ class AiController extends AbstractController
     }
 
     /**
-     * Chat avec l'AI (AJAX)
+     * Chat général avec l'AI (AJAX) — indépendant de la sélection d'étudiant
      */
-    #[Route('/chat/{studentId}', name: 'admin_ai_chat', methods: ['POST'])]
-    public function chat(int $studentId, Request $request): JsonResponse
+    #[Route('/chat', name: 'admin_ai_chat', methods: ['POST'])]
+    public function chat(Request $request): JsonResponse
     {
-        $student = $this->userRepository->find($studentId);
-
-        if (!$student) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => 'Étudiant non trouvé'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
         $data = json_decode($request->getContent(), true);
         $message = $data['message'] ?? '';
         $history = $data['history'] ?? [];
@@ -163,7 +154,51 @@ class AiController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $result = $this->aiService->chat($student, $message, $history);
+        $result = $this->aiService->chatGeneral($message, $history);
+
+        return new JsonResponse($result);
+    }
+
+    /**
+     * Prédiction de réussite (AJAX)
+     */
+    #[Route('/predict-success', name: 'admin_ai_predict_success', methods: ['GET'])]
+    public function predictSuccess(): JsonResponse
+    {
+        $result = $this->aiService->predictSuccess();
+
+        return new JsonResponse($result);
+    }
+
+    /**
+     * Détection d'anomalies (AJAX)
+     */
+    #[Route('/detect-anomalies', name: 'admin_ai_detect_anomalies', methods: ['GET'])]
+    public function detectAnomalies(): JsonResponse
+    {
+        $result = $this->aiService->detectAnomalies();
+
+        return new JsonResponse($result);
+    }
+
+    /**
+     * Bilan des certifications (AJAX)
+     */
+    #[Route('/certification-overview', name: 'admin_ai_certification_overview', methods: ['GET'])]
+    public function certificationOverview(): JsonResponse
+    {
+        $result = $this->aiService->auditCertifications();
+
+        return new JsonResponse($result);
+    }
+
+    /**
+     * Suggestions de certifications (AJAX)
+     */
+    #[Route('/suggest-certifications', name: 'admin_ai_suggest_certifications', methods: ['GET'])]
+    public function suggestCertifications(): JsonResponse
+    {
+        $result = $this->aiService->suggestCertifications();
 
         return new JsonResponse($result);
     }
