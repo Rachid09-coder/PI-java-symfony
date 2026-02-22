@@ -55,6 +55,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $googleId = null;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $faceDescriptor = null;
+
     // --- MÉTHODES REQUISES PAR USERINTERFACE ---
 
     /**
@@ -117,4 +120,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getGoogleId(): ?string { return $this->googleId; }
     public function setGoogleId(?string $googleId): static { $this->googleId = $googleId; return $this; }
+
+    public function getFaceDescriptor(): ?array { return $this->faceDescriptor; }
+    public function setFaceDescriptor(?array $faceDescriptor): static { $this->faceDescriptor = $faceDescriptor; return $this; }
 }
