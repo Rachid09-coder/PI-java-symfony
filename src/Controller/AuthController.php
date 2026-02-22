@@ -47,6 +47,14 @@ final class AuthController extends AbstractController
                 $hasher->hashPassword($user, (string) $user->getPassword())
             );
 
+            // Attach any pending face descriptor stored in session during registration
+            $pending = $request->getSession()->get('face_descriptor_pending');
+            if (is_array($pending) && count($pending) > 0) {
+                $user->setFaceDescriptor($pending);
+                // clear session
+                $request->getSession()->remove('face_descriptor_pending');
+            }
+
             $em->persist($user);
             $em->flush();
 

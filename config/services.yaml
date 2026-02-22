@@ -8,6 +8,8 @@ parameters:
     oauth_google_client_id: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
     oauth_google_client_secret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
     oauth_google_callback_url: '%env(OAUTH_GOOGLE_CALLBACK_URL)%'
+    recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
+    recaptcha_secret: '%env(RECAPTCHA_SECRET)%'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -28,3 +30,6 @@ services:
     App\Service\FileUploader:
         arguments:
             $targetDirectory: '%uploads_directory%'
+    App\Security\FormAuthenticator:
+        arguments:
+            $recaptchaSecret: '%recaptcha_secret%'
