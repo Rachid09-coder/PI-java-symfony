@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register Face{% endblock %}
+
+{% block body %}
+<h1>Register your face</h1>
+<div>
+    <video id="video" width="320" height="240" autoplay muted></video>
+</div>
+<div>
+    <button id="capture">Capture & Save</button>
+    <p id="status">Loading models...</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+const csrfToken = {{ csrf_token|json_encode|raw }};
+const faceRegisterUrl = {{ path('face_register')|json_encode|raw }};
+const modelUrl = {{ asset('models')|json_encode|raw }};
+const statusEl = document.getElementById('status');
+const video = document.getElementById('video');
+
+async function loadModels() {
+    const MODEL_URL = modelUrl;
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL + '/tiny_face_detector');
+    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL + '/face_landmark_68');
+    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL + '/face_recognition');
+}
+
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+    } catch (e) {
+        statusEl.textContent = 'Cannot access camera: ' + e.message;
+    }
+}
+
+async function captureDescriptor() {
+    statusEl.textContent = 'Detecting face...';
+    const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+    if (!detections) {
+        statusEl.textContent = 'No face detected. Try again.';
+        return null;
+    }
+    const descriptor = Array.from(detections.descriptor);
+    return descriptor;
+}
+
+document.getElementById('capture').addEventListener('click', async () => {
+    const descriptor = await captureDescriptor();
+    if (!descriptor) return;
+
+    statusEl.textContent = 'Saving...';
+
+    let resp;
+    try {
+        resp = await fetch(faceRegisterUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ descriptor: descriptor, _csrf_token: csrfToken })
+        });
+    } catch (e) {
+        statusEl.textContent = 'Network error: ' + e.message;
+        return;
+    }
+
+    let data;
+    try {
+        data = await resp.json();
+    } catch (e) {
+        statusEl.textContent = 'Invalid response from server';
+        return;
+    }
+
+    if (data.success) {
+        statusEl.textContent = 'Face saved successfully.';
+    } else {
+        statusEl.textContent = 'Save failed: ' + (data.message || resp.statusText);
+    }
+});
+
+(async () => {
+    await loadModels();
+    statusEl.textContent = 'Models loaded';
+    await startCamera();
+})();
+</script>
+
+{% endblock %}

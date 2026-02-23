@@ -52,6 +52,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $resetTokenExpiresAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleId = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $faceDescriptor = null;
+
     // --- MÉTHODES REQUISES PAR USERINTERFACE ---
 
     /**
@@ -115,4 +121,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     // Alias for SMS service compatibility
     public function getPhone(): ?string { return $this->numtel; }
+
+    public function getGoogleId(): ?string { return $this->googleId; }
+    public function setGoogleId(?string $googleId): static { $this->googleId = $googleId; return $this; }
+
+    public function getFaceDescriptor(): ?array { return $this->faceDescriptor; }
+    public function setFaceDescriptor(?array $faceDescriptor): static { $this->faceDescriptor = $faceDescriptor; return $this; }
 }

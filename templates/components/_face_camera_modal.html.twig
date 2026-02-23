@@ -1,0 +1,25 @@
+{# Reusable Face Camera Modal - Bootstrap 5 markup #}
+<div class="modal fade" id="faceCameraModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Face ID</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="position-relative d-inline-block" style="border-radius:12px; overflow:hidden;">
+          <video id="face-video" autoplay muted playsinline style="width:320px; height:240px; object-fit:cover; border-radius:12px;"></video>
+          <canvas id="face-overlay" width="320" height="240" class="position-absolute" style="top:0; left:0; pointer-events:none;"></canvas>
+        </div>
+        <div id="face-status" class="mt-2">Initializing...</div>
+        <div class="spinner-border text-primary mt-2" id="face-spinner" role="status" style="display:none;"></div>
+        <div class="alert alert-success mt-2" id="face-success" role="alert" style="display:none; border-radius:8px;"></div>
+        <div class="alert alert-danger mt-2" id="face-error" role="alert" style="display:none; border-radius:8px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="face-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="face-capture" disabled>Capture</button>
+      </div>
+    </div>
+  </div>
+</div>

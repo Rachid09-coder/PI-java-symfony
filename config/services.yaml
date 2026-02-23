@@ -22,6 +22,12 @@ parameters:
     app.twilio_auth_token: '%env(default:twilio_default:TWILIO_AUTH_TOKEN)%'
     app.twilio_from_number: '%env(default:twilio_default:TWILIO_FROM_NUMBER)%'
     twilio_default: ''
+    # OAuth Google & reCAPTCHA (yassine-user)
+    oauth_google_client_id: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
+    oauth_google_client_secret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
+    oauth_google_callback_url: '%env(OAUTH_GOOGLE_CALLBACK_URL)%'
+    recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
+    recaptcha_secret: '%env(RECAPTCHA_SECRET)%'
 
 services:
     # default configuration for services in *this* file
@@ -43,7 +49,6 @@ services:
     App\Service\FileUploader:
         arguments:
             $targetDirectory: '%uploads_directory%'
-
     App\Service\AiCourseGeneratorService:
         arguments:
             $openaiApiKey: '%env(default::OPENAI_API_KEY)%'
@@ -77,3 +82,7 @@ services:
             $twilioAccountSid: '%app.twilio_account_sid%'
             $twilioAuthToken: '%app.twilio_auth_token%'
             $twilioFromNumber: '%app.twilio_from_number%'
+
+    App\Security\FormAuthenticator:
+        arguments:
+            $recaptchaSecret: '%recaptcha_secret%'
