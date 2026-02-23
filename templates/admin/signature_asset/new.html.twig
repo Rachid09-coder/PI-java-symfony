@@ -1,0 +1,95 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Nouvel Actif de Signature - EduSmart{% endblock %}
+
+{% block body %}
+<div class="admin-page animate-fade-in py-4">
+    {# Orbes décoratives pour la touche futuriste #}
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container-fluid position-relative z-index-2">
+        <header class="mb-5">
+            <a href="{{ path('admin_signature_asset_index') }}" class="btn-back-premium mb-3">
+                <i class="fas fa-arrow-left me-2"></i> Retour aux Actifs
+            </a>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <h1 class="h2 fw-900 text-dark mb-1">Nouvel Actif de Signature</h1>
+                    <p class="text-muted small mb-0">Ajoutez un logo, signature ou cachet pour les documents officiels.</p>
+                </div>
+                <div class="badge-premium-logic">
+                    <i class="fas fa-upload me-2"></i> Upload Sécurisé
+                </div>
+            </div>
+        </header>
+
+        {{ form_start(form, {'attr': {'class': 'premium-form'}}) }}
+        <div class="row justify-content-center">
+            <div class="col-xl-8">
+                <div class="card card-premium-glass shadow-lg border-0 overflow-hidden" style="border-radius: 28px;">
+                    <div class="card-header bg-transparent border-bottom border-light py-4 px-4 p-md-5 pb-md-0 border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-pulse me-3">
+                                <i class="fas fa-signature fa-2x text-primary-gradient"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-800 text-dark mb-0">Configuration de l'Actif</h4>
+                                <p class="text-muted small mb-0">Définissez le type et uploadez l'image.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group-premium">
+                                    {{ form_label(form.type, null, {'label_attr': {'class': 'label-premium'}}) }}
+                                    <div class="input-glow-wrapper">
+                                        {{ form_widget(form.type, {'attr': {'class': 'form-select-premium select-lg-premium'}}) }}
+                                    </div>
+                                    <div class="form-text text-muted small">
+                                        {{ form_help(form.type) }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-premium">
+                                    {{ form_label(form.name, null, {'label_attr': {'class': 'label-premium'}}) }}
+                                    <div class="input-glow-wrapper">
+                                        {{ form_widget(form.name, {'attr': {'class': 'form-control-premium', 'placeholder': 'Ex: Signature Directeur'}}) }}
+                                    </div>
+                                    <div class="form-text text-muted small">
+                                        {{ form_help(form.name) }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group-premium">
+                                    {{ form_label(form.imageFile, null, {'label_attr': {'class': 'label-premium'}}) }}
+                                    <div class="input-glow-wrapper">
+                                        {{ form_widget(form.imageFile, {'attr': {'class': 'form-control-premium file-input-premium'}}) }}
+                                    </div>
+                                    <div class="form-text text-muted small">
+                                        Formats acceptés: PNG, JPG, GIF. Taille max: 2MB.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 d-flex justify-content-between align-items-center">
+                            <a href="{{ path('admin_signature_asset_index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i> Annuler
+                            </a>
+                            <button class="btn btn-premium-primary px-4">
+                                <i class="fas fa-save me-2"></i> Créer l'Actif
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

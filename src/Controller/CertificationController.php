@@ -4,9 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Certification;
 use App\Form\CertificationType;
-use App\Repository\CertificationRepository;
+use App\Repository\BulletinRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -14,12 +15,24 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/certification')]
 class CertificationController extends AbstractController
 {
-    #[Route('/', name: 'app_certification_index', methods: ['GET'])]
-    public function index(CertificationRepository $certificationRepository): Response
-    {
-        return $this->render('certification/index.html.twig', [
-            'certifications' => $certificationRepository->findAll(),
-        ]);
+    #[Route('/api/bulletin/{studentId}', name: 'app_certification_get_bulletins', methods: ['GET'])]
+    public function getBulletins(
+        int $studentId,
+        BulletinRepository $bulletinRepository
+    ): JsonResponse {
+
+        $bulletins = $bulletinRepository->findByStudentId($studentId);
+
+        $data = [];
+
+        foreach ($bulletins as $bulletin) {
+            $data[] = [
+                'id' => $bulletin->getId(),
+                'label' => $bulletin->getAcademicYear() . ' - ' . $bulletin->getSemester(),
+            ];
+        }
+
+        return new JsonResponse($data);
     }
 
     #[Route('/new', name: 'app_certification_new', methods: ['GET', 'POST'])]

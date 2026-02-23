@@ -41,7 +41,7 @@ class ExamSubmission
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $candidateIdentifier = null;
 
-    #[ORM\ManyToOne(inversedBy: 'submissions')]
+    #[ORM\ManyToOne(targetEntity: Exam::class, inversedBy: 'submissions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Exam $exam = null;
 

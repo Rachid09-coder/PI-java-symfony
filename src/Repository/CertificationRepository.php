@@ -16,28 +16,49 @@ class CertificationRepository extends ServiceEntityRepository
         parent::__construct($registry, Certification::class);
     }
 
-    //    /**
-    //     * @return Certification[] Returns an array of Certification objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Recherche et tri des certifications
+     */
+    public function searchAndSort(?string $search = null, string $sortBy = 'issuedAt', string $sortOrder = 'DESC'): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.student', 's')
+            ->addSelect('s');
 
-    //    public function findOneBySomeField($value): ?Certification
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        // Recherche par nom, prénom ou email de l'étudiant, ou par numéro unique
+        if ($search) {
+            $qb->andWhere('s.name LIKE :search OR s.prenom LIKE :search OR s.email LIKE :search OR c.uniqueNumber LIKE :search OR c.typeLabel LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Tri dynamique
+        $validSortFields = ['issuedAt', 'typeLabel', 'status', 'uniqueNumber', 'studentName'];
+        if (!in_array($sortBy, $validSortFields)) {
+            $sortBy = 'issuedAt';
+        }
+
+        $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+
+        if ($sortBy === 'studentName') {
+            $qb->orderBy('s.name', $sortOrder)
+               ->addOrderBy('s.prenom', $sortOrder);
+        } else {
+            $qb->orderBy('c.' . $sortBy, $sortOrder);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Récupère les certifications d'un étudiant
+     */
+    public function findByStudentId(int $studentId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.student = :studentId')
+            ->setParameter('studentId', $studentId)
+            ->orderBy('c.issuedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

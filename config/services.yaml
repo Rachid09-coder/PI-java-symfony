@@ -5,6 +5,23 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
+    app.hmac_secret: '%env(default:app_hmac_default:HMAC_SECRET)%'
+    app_hmac_default: 'edusmart-secret-change-me-in-production'
+    app.base_url: '%env(default:app_base_url_default:APP_BASE_URL)%'
+    app_base_url_default: 'http://127.0.0.1:8000'
+    app.gemini_api_key: '%env(default:gemini_default:GEMINI_API_KEY)%'
+    gemini_default: ''
+    # OpenAI
+    app.openai_api_key: '%env(default:openai_default:OPENAI_API_KEY)%'
+    openai_default: ''
+    # Groq (gratuit)
+    app.groq_api_key: '%env(default:groq_default:GROQ_API_KEY)%'
+    groq_default: ''
+    # Twilio SMS
+    app.twilio_account_sid: '%env(default:twilio_default:TWILIO_ACCOUNT_SID)%'
+    app.twilio_auth_token: '%env(default:twilio_default:TWILIO_AUTH_TOKEN)%'
+    app.twilio_from_number: '%env(default:twilio_default:TWILIO_FROM_NUMBER)%'
+    twilio_default: ''
 
 services:
     # default configuration for services in *this* file
@@ -34,3 +51,29 @@ services:
     App\Service\ExamSimilarityService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Service\HmacService:
+        arguments:
+            $hmacSecret: '%app.hmac_secret%'
+
+    App\Service\PdfGeneratorService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\EmailService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\GeminiAiService:
+        arguments:
+            $geminiApiKey: '%app.gemini_api_key%'
+
+    App\Service\AiService:
+        arguments:
+            $groqApiKey: '%app.groq_api_key%'
+
+    App\Service\SmsService:
+        arguments:
+            $twilioAccountSid: '%app.twilio_account_sid%'
+            $twilioAuthToken: '%app.twilio_auth_token%'
+            $twilioFromNumber: '%app.twilio_from_number%'

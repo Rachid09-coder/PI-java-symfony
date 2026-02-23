@@ -64,15 +64,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        $roles = [];
+        $roles = ['ROLE_USER'];
         if ($this->role === 'professeur') {
             $roles[] = 'ROLE_PROFESSEUR';
         } elseif ($this->role === 'admin') {
             $roles[] = 'ROLE_ADMIN';
+        } elseif ($this->role === 'chef_dept') {
+            $roles[] = 'ROLE_CHEF_DEPT';
         } else {
             $roles[] = 'ROLE_ETUDIANT';
         }
-        $roles[] = 'ROLE_USER'; 
         return array_unique($roles);
     }
 
@@ -111,4 +112,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getResetTokenExpiresAt(): ?\DateTimeImmutable { return $this->resetTokenExpiresAt; }
     public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): static { $this->resetTokenExpiresAt = $resetTokenExpiresAt; return $this; }
+
+    // Alias for SMS service compatibility
+    public function getPhone(): ?string { return $this->numtel; }
 }

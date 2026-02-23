@@ -39,6 +39,8 @@ class Course
     /** Contenu du cours généré par l’IA (affiché à l’étudiant). */
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $generatedContent = null;
+    #[ORM\Column(nullable: true)]
+    private ?float $coefficient = null;
 
     /**
      * @var Collection<int, Module>
@@ -53,12 +55,19 @@ class Course
     #[ORM\OneToMany(targetEntity: ForumThread::class, mappedBy: 'course', cascade: ['remove'], orphanRemoval: true)]
     private Collection $forumThreads;
 
+    /**
+     * @var Collection<int, Exam>
+     */
+    #[ORM\OneToMany(mappedBy: 'course', targetEntity: Exam::class)]
+    private Collection $exams;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->status = 'DRAFT';
         $this->modules = new ArrayCollection();
         $this->forumThreads = new ArrayCollection();
+        $this->exams = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -198,6 +207,44 @@ class Course
         if ($this->forumThreads->removeElement($forumThread)) {
             if ($forumThread->getCourse() === $this) {
                 $forumThread->setCourse(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getCoefficient(): ?float
+    {
+        return $this->coefficient;
+    }
+
+    public function setCoefficient(?float $coefficient): self
+    {
+        $this->coefficient = $coefficient;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Exam>
+     */
+    public function getExams(): Collection
+    {
+        return $this->exams;
+    }
+
+    public function addExam(Exam $exam): self
+    {
+        if (!$this->exams->contains($exam)) {
+            $this->exams->add($exam);
+            $exam->setCourse($this);
+        }
+        return $this;
+    }
+
+    public function removeExam(Exam $exam): self
+    {
+        if ($this->exams->removeElement($exam)) {
+            if ($exam->getCourse() === $this) {
+                $exam->setCourse(null);
             }
         }
         return $this;
