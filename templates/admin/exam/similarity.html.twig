@@ -1,0 +1,104 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Détection de similarité — {{ exam.title }} — EduSmart{% endblock %}
+
+{% block body %}
+<div class="similarity-page">
+    <header class="similarity-header">
+        <a href="{{ path('admin_exam_dashboard', {id: exam.id}) }}" class="similarity-back">
+            <i class="fas fa-arrow-left"></i> Tableau de bord
+        </a>
+        <h1 class="similarity-title"><i class="fas fa-search"></i> Détection de similarité (anti-triche)</h1>
+        <p class="similarity-subtitle">{{ exam.title }} · Comparaison des rendus PDF entre candidats</p>
+    </header>
+
+    {% if error %}
+    <div class="similarity-error">
+        <i class="fas fa-info-circle"></i> {{ error }}
+    </div>
+    <p class="similarity-hint">Déposez au moins 2 copies PDF pour lancer l’analyse. L’extraction de texte utilise la librairie <strong>smalot/pdfparser</strong>.</p>
+    {% else %}
+    <div class="similarity-legend">
+        <span class="legend-item high"><i class="fas fa-exclamation-triangle"></i> Très suspect (≥ {{ high_threshold }} %)</span>
+        <span class="legend-item suspicious"><i class="fas fa-flag"></i> Suspect (≥ {{ suspicious_threshold }} %)</span>
+        <span class="legend-item ok"><i class="fas fa-check"></i> Normal (&lt; {{ suspicious_threshold }} %)</span>
+    </div>
+
+    <div class="similarity-table-card">
+        <table class="similarity-table">
+            <thead>
+                <tr>
+                    <th>Candidat A</th>
+                    <th>Candidat B</th>
+                    <th>Similarité</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pair in pairs %}
+                <tr class="{{ pair.suspicious ? (pair.percent >= high_threshold ? 'row-high' : 'row-suspicious') : 'row-ok' }}">
+                    <td>
+                        <strong>{{ pair.a.student ? (pair.a.student.name ?? pair.a.student.email) : (pair.a.candidateIdentifier ?? 'Anonyme') }}</strong>
+                        {% if pair.a.student %}<br><span class="similarity-email">{{ pair.a.student.email }}</span>{% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ pair.b.student ? (pair.b.student.name ?? pair.b.student.email) : (pair.b.candidateIdentifier ?? 'Anonyme') }}</strong>
+                        {% if pair.b.student %}<br><span class="similarity-email">{{ pair.b.student.email }}</span>{% endif %}
+                    </td>
+                    <td>
+                        <span class="similarity-percent">{{ pair.percent }} %</span>
+                    </td>
+                    <td>
+                        {% if pair.percent >= high_threshold %}
+                        <span class="similarity-badge high"><i class="fas fa-exclamation-triangle"></i> Très suspect</span>
+                        {% elseif pair.suspicious %}
+                        <span class="similarity-badge suspicious"><i class="fas fa-flag"></i> Suspect</span>
+                        {% else %}
+                        <span class="similarity-badge ok"><i class="fas fa-check"></i> Normal</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="similarity-empty">Aucune paire à afficher (il faut au moins 2 rendus PDF avec du texte extrait).</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p class="similarity-footer">L’extraction du texte des PDF et la comparaison sont effectuées à la volée. Les paires sont triées par similarité décroissante.</p>
+    {% endif %}
+</div>
+
+<style>
+.similarity-page { max-width: 1000px; margin: 0 auto; padding: 28px 24px; }
+.similarity-header { margin-bottom: 28px; }
+.similarity-back { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-weight: 600; margin-bottom: 14px; }
+.similarity-back:hover { color: #6366f1; }
+.similarity-title { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin: 0 0 8px 0; display: flex; align-items: center; gap: 12px; }
+.similarity-subtitle { font-size: 0.95rem; color: var(--text-secondary); margin: 0; }
+.similarity-error { padding: 18px 22px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 14px; color: #92400e; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.similarity-hint { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+.similarity-legend { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; font-size: 0.88rem; font-weight: 600; }
+.legend-item { display: inline-flex; align-items: center; gap: 8px; }
+.legend-item.high { color: #b91c1c; }
+.legend-item.suspicious { color: #b45309; }
+.legend-item.ok { color: #047857; }
+.similarity-table-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; overflow: hidden; }
+.similarity-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.similarity-table th { text-align: left; padding: 16px 20px; background: #f8fafc; color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; border-bottom: 2px solid var(--border-color); }
+.similarity-table td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); vertical-align: middle; }
+.similarity-table tbody tr.row-high { background: rgba(185,28,28,0.06); }
+.similarity-table tbody tr.row-suspicious { background: rgba(245,158,11,0.08); }
+.similarity-table tbody tr.row-ok { }
+.similarity-email { font-size: 0.82rem; color: var(--text-secondary); }
+.similarity-percent { font-weight: 800; font-variant-numeric: tabular-nums; }
+.similarity-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+.similarity-badge.high { background: #fecaca; color: #b91c1c; }
+.similarity-badge.suspicious { background: #fed7aa; color: #b45309; }
+.similarity-badge.ok { background: #d1fae5; color: #047857; }
+.similarity-empty { text-align: center; color: var(--text-secondary); padding: 40px 20px !important; }
+.similarity-footer { font-size: 0.85rem; color: var(--text-secondary); margin-top: 24px; }
+</style>
+{% endblock %}

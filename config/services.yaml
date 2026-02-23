@@ -26,3 +26,11 @@ services:
     App\Service\FileUploader:
         arguments:
             $targetDirectory: '%uploads_directory%'
+
+    App\Service\AiCourseGeneratorService:
+        arguments:
+            $openaiApiKey: '%env(default::OPENAI_API_KEY)%'
+
+    App\Service\ExamSimilarityService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

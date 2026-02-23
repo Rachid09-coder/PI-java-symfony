@@ -2,77 +2,400 @@
 
 {% block title %}{{ module.title }} - EduSmart{% endblock %}
 
+{% block stylesheets %}
+<style>
+    .module-detail-page { padding: 0 20px; }
+
+    .back-navigation {
+        margin-bottom: 30px;
+    }
+    .back-navigation a {
+        color: #64748B;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding: 10px 20px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #E2E8F0;
+    }
+    .back-navigation a:hover {
+        color: #667eea;
+        border-color: #667eea;
+        transform: translateX(-4px);
+        box-shadow: 0 4px 12px rgba(102,126,234,0.1);
+    }
+
+    .module-hero-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 28px;
+        padding: 50px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+    .module-hero-banner::before {
+        content: '';
+        position: absolute;
+        top: -80%;
+        right: -20%;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: glow 8s ease-in-out infinite;
+    }
+    .module-hero-banner::after {
+        content: '';
+        position: absolute;
+        bottom: -60%;
+        left: -10%;
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: glow 10s ease-in-out infinite reverse;
+    }
+    @keyframes glow {
+        0%, 100% { transform: scale(1) translateY(0); }
+        50% { transform: scale(1.1) translateY(-20px); }
+    }
+    .module-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    .module-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    .module-hero-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 15px;
+        letter-spacing: -1px;
+        line-height: 1.2;
+    }
+    .module-hero-desc {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        max-width: 750px;
+        opacity: 0.9;
+    }
+    .module-hero-stats {
+        display: flex;
+        gap: 20px;
+        margin-top: 30px;
+    }
+    .module-hero-stat {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 14px;
+        padding: 14px 22px;
+        border: 1px solid rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .module-hero-stat i {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    .module-hero-stat-text {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .courses-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .courses-section-header h3 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1E293B;
+    }
+    .courses-search {
+        position: relative;
+        width: 320px;
+    }
+    .courses-search i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94A3B8;
+        font-size: 0.85rem;
+        transition: color 0.3s;
+    }
+    .courses-search input {
+        width: 100%;
+        padding: 12px 12px 12px 42px;
+        border: 2px solid #E2E8F0;
+        border-radius: 14px;
+        outline: none;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    .courses-search input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+    }
+    .courses-search:focus-within i { color: #667eea; }
+
+    .courses-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .course-item {
+        background: white;
+        border-radius: 20px;
+        padding: 0;
+        overflow: hidden;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .course-item:hover {
+        transform: translateY(-4px) translateX(4px);
+        box-shadow: 0 15px 35px rgba(102,126,234,0.12);
+        border-color: rgba(102,126,234,0.3);
+    }
+    .course-item-inner {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        padding: 24px;
+    }
+    .course-item-thumb {
+        width: 100px;
+        height: 75px;
+        border-radius: 14px;
+        overflow: hidden;
+        flex-shrink: 0;
+        position: relative;
+    }
+    .course-item-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s;
+    }
+    .course-item:hover .course-item-thumb img { transform: scale(1.1); }
+    .course-item-thumb-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: rgba(255,255,255,0.8);
+    }
+    .course-item-info { flex-grow: 1; }
+    .course-item-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 8px;
+        transition: color 0.3s;
+    }
+    .course-item:hover .course-item-title { color: #667eea; }
+    .course-item-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 0.82rem;
+        color: #64748B;
+    }
+    .course-item-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .course-item-meta i { color: #667eea; font-size: 0.75rem; }
+
+    .course-item-action {
+        flex-shrink: 0;
+    }
+    .btn-access-course {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+        white-space: nowrap;
+    }
+    .btn-access-course:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102,126,234,0.35);
+        color: white;
+    }
+
+    .empty-courses {
+        background: white;
+        border-radius: 20px;
+        padding: 60px 40px;
+        text-align: center;
+        border: 2px dashed #E2E8F0;
+    }
+    .empty-courses i {
+        font-size: 3rem;
+        color: #CBD5E1;
+        margin-bottom: 20px;
+    }
+    .empty-courses h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 8px;
+    }
+    .empty-courses p { color: #64748B; }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .course-item {
+        animation: slideUp 0.5s ease forwards;
+        opacity: 0;
+    }
+    .course-item:nth-child(1) { animation-delay: 0.1s; }
+    .course-item:nth-child(2) { animation-delay: 0.2s; }
+    .course-item:nth-child(3) { animation-delay: 0.3s; }
+    .course-item:nth-child(4) { animation-delay: 0.4s; }
+    .course-item:nth-child(5) { animation-delay: 0.5s; }
+</style>
+{% endblock %}
+
 {% block body %}
-    <div style="padding: 0 var(--sp-4);">
-        <div style="margin-bottom: 30px;">
-            <a href="{{ path('student_courses') }}" style="color: #64748B; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 500;">
-                <i class="fas fa-arrow-left"></i> Retour aux modules
-            </a>
-        </div>
+<div class="module-detail-page">
+    <div class="back-navigation">
+        <a href="{{ path('student_courses') }}">
+            <i class="fas fa-arrow-left"></i> Retour aux modules
+        </a>
+    </div>
 
-        <div class="card" style="margin-bottom: 30px; padding: 40px; border-left: 5px solid #3B49A2;">
-            <h1 style="font-size: 2rem; font-weight: 800; color: #1E293B; margin-bottom: 15px;">{{ module.title }}</h1>
-            <p style="font-size: 1rem; color: #475569; line-height: 1.6; max-width: 800px;">
-                {{ module.description }}
+    <div class="module-hero-banner">
+        <div class="module-hero-content">
+            <div class="module-hero-badge">
+                <i class="fas fa-layer-group"></i> Module
+            </div>
+            <h1 class="module-hero-title">{{ module.title }}</h1>
+            <p class="module-hero-desc">
+                {{ module.description|default('Explorez les cours de ce module pour enrichir vos connaissances.') }}
             </p>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-             <h3 style="font-size: 1.5rem; font-weight: 700; color: #1E293B; margin: 0;">Cours disponibles</h3>
-             <div style="position: relative; width: 300px;">
-                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 0.8rem;"></i>
-                <input type="text" id="courseSearch" placeholder="Rechercher un cours..." style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #E2E8F0; border-radius: 8px; outline: none; transition: border-color 0.2s; font-size: 0.9rem;">
-             </div>
-        </div>
-
-        {% if module.courses is empty %}
-            <div class="card" style="padding: 30px; text-align: center; color: #64748B;">
-                <p>Aucun cours disponible dans ce module pour le moment.</p>
+            <div class="module-hero-stats">
+                <div class="module-hero-stat">
+                    <i class="fas fa-book-open"></i>
+                    <span class="module-hero-stat-text">{{ module.courses|length }} cours disponible(s)</span>
+                </div>
+                {% if module.createdAt %}
+                <div class="module-hero-stat">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="module-hero-stat-text">Depuis le {{ module.createdAt|date('d/m/Y') }}</span>
+                </div>
+                {% endif %}
             </div>
-        {% else %}
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                {% for course in module.courses %}
-                    <a href="{{ path('student_course_details', {id: course.id}) }}" style="text-decoration: none; color: inherit; display: block;" class="fade-in stagger-{{ loop.index0 % 3 + 1 }} course-link" data-title="{{ course.title|lower }}">
-                        <div class="card course-item" style="padding: 25px; transition: all 0.2s ease; border: 1px solid transparent; border-bottom: 1px solid #F1F5F9;">
-                            <div style="display: flex; gap: 20px; align-items: center;">
-                                <div style="width: 80px; height: 60px; background: #F8FAFC; border-radius: 8px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                                    {% if course.thumbnailPath %}
-                                        <img src="{{ asset('uploads/' ~ course.thumbnailPath) }}" alt="{{ course.title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                    {% else %}
-                                        <i class="fas fa-video" style="color: #CBD5E1;"></i>
-                                    {% endif %}
-                                </div>
-                                <div style="flex-grow: 1;">
-                                    <h4 style="font-size: 1.1rem; font-weight: 700; color: #1E293B; margin-bottom: 5px;">{{ course.title }}</h4>
-                                    <div style="display: flex; gap: 15px; font-size: 0.85rem; color: #64748B;">
-                                        <span><i class="fas fa-tag" style="margin-right: 5px;"></i> {{ course.price > 0 ? course.price ~ ' €' : 'Gratuit' }}</span>
-                                        <span><i class="fas fa-calendar-alt" style="margin-right: 5px;"></i> {{ course.createdAt|date('d/m/Y') }}</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <span class="btn btn-primary" style="background: #3B49A2; font-size: 0.9rem; padding: 8px 15px;">Accéder au cours</span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
+        </div>
+    </div>
+
+    <div class="courses-section-header">
+        <h3>Cours disponibles</h3>
+        {% if module.courses|length > 0 %}
+        <div class="courses-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="courseSearch" placeholder="Rechercher un cours...">
+        </div>
         {% endif %}
     </div>
 
-    <script>
-        document.getElementById('courseSearch').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const courses = document.querySelectorAll('.course-link');
-            
-            courses.forEach(course => {
-                const title = course.getAttribute('data-title');
-                if (title.includes(searchTerm)) {
-                    course.style.display = 'block';
-                } else {
-                    course.style.display = 'none';
-                }
-            });
-        });
-    </script>
+    {% if module.courses is empty %}
+        <div class="empty-courses">
+            <i class="fas fa-book-open"></i>
+            <h4>Aucun cours disponible</h4>
+            <p>Les cours de ce module seront bientôt disponibles.</p>
+        </div>
+    {% else %}
+        <div class="courses-list">
+            {% set gradients = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+            ] %}
+            {% for course in module.courses %}
+                <a href="{{ path('student_course_details', {id: course.id}) }}" class="course-item" data-title="{{ course.title|lower }}">
+                    <div class="course-item-inner">
+                        <div class="course-item-thumb" style="background: {{ gradients[loop.index0 % 5] }};">
+                            {% if course.thumbnailPath %}
+                                <img src="{{ asset('uploads/' ~ course.thumbnailPath) }}" alt="{{ course.title }}">
+                            {% else %}
+                                <div class="course-item-thumb-placeholder">
+                                    <i class="fas fa-{{ ['play-circle', 'video', 'film', 'chalkboard-teacher', 'laptop-code'][loop.index0 % 5] }}"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="course-item-info">
+                            <h4 class="course-item-title">{{ course.title }}</h4>
+                            <div class="course-item-meta">
+                                <span>
+                                    <i class="fas fa-tag"></i>
+                                    {{ course.price > 0 ? course.price|number_format(2, ',', ' ') ~ ' €' : 'Gratuit' }}
+                                </span>
+                                <span>
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ course.createdAt|date('d/m/Y') }}
+                                </span>
+                                {% if course.pdfPath %}
+                                <span>
+                                    <i class="fas fa-file-pdf"></i>
+                                    PDF inclus
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="course-item-action">
+                            <span class="btn-access-course">
+                                <i class="fas fa-arrow-right"></i> Accéder
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.getElementById('courseSearch')?.addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    document.querySelectorAll('.course-item').forEach(item => {
+        const title = item.dataset.title;
+        item.style.display = title.includes(searchTerm) ? '' : 'none';
+    });
+});
+</script>
 {% endblock %}

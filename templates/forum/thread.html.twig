@@ -1,0 +1,90 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}{{ thread.title }} — Forum — EduSmart{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .forum-page { padding: 0 20px; }
+    .forum-breadcrumb { margin-bottom: 24px; }
+    .forum-breadcrumb a { color: #64748B; text-decoration: none; font-weight: 600; }
+    .forum-breadcrumb a:hover { color: #667eea; }
+    .forum-breadcrumb span { color: #94a3b8; margin: 0 8px; }
+    .thread-header { margin-bottom: 28px; }
+    .thread-title { font-size: 1.6rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; }
+    .thread-meta { font-size: 0.9rem; color: #64748b; }
+    .thread-meta .author { font-weight: 600; color: #475569; }
+    .post-list { display: flex; flex-direction: column; gap: 0; }
+    .post-card {
+        background: white; border-radius: 16px; border: 1px solid #e2e8f0;
+        padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+    }
+    .post-card:first-of-type { border-left: 4px solid #667eea; }
+    .post-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+    .post-avatar { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; }
+    .post-author { font-weight: 700; color: #1e293b; }
+    .post-role { font-size: 0.75rem; padding: 2px 8px; border-radius: 8px; font-weight: 600; }
+    .post-role.professeur { background: #dbeafe; color: #1d4ed8; }
+    .post-role.etudiant { background: #f1f5f9; color: #475569; }
+    .post-date { font-size: 0.85rem; color: #94a3b8; margin-left: auto; }
+    .post-content { color: #334155; line-height: 1.65; white-space: pre-wrap; }
+    .reply-form-card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 28px; margin-top: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+    .reply-form-card h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin: 0 0 18px 0; }
+    .reply-form-card textarea { width: 100%; padding: 14px 18px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; font-family: inherit; min-height: 100px; resize: vertical; }
+    .reply-form-card textarea:focus { outline: none; border-color: #667eea; }
+    .reply-form-card .form-errors { color: #dc2626; font-size: 0.9rem; margin-top: 6px; }
+    .btn-reply { margin-top: 16px; padding: 12px 22px; border-radius: 12px; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; cursor: pointer; transition: all 0.3s; }
+    .btn-reply:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(102,126,234,0.35); }
+    .btn-back { display: inline-flex; align-items: center; gap: 8px; color: #64748b; text-decoration: none; font-weight: 600; margin-bottom: 20px; }
+    .btn-back:hover { color: #667eea; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="forum-page">
+    <a href="{{ path('forum_index', {id: course.id}) }}" class="btn-back"><i class="fas fa-arrow-left"></i> Retour au forum</a>
+
+    <div class="forum-breadcrumb">
+        <a href="{{ path('student_courses') }}">Cours</a>
+        <span>/</span>
+        <a href="{{ path('student_course_details', {id: course.id}) }}">{{ course.title }}</a>
+        <span>/</span>
+        <a href="{{ path('forum_index', {id: course.id}) }}">Forum</a>
+        <span>/</span>
+        <span>{{ thread.title }}</span>
+    </div>
+
+    <div class="thread-header">
+        <h1 class="thread-title">{{ thread.title }}</h1>
+        <div class="thread-meta">
+            Par <span class="author">{{ thread.author.prenom }} {{ thread.author.name }}</span>
+            · {{ thread.createdAt|date('d/m/Y à H:i') }}
+            · {{ thread.posts|length }} message{{ thread.posts|length > 1 ? 's' : '' }}
+        </div>
+    </div>
+
+    <div class="post-list">
+        {% for post in thread.posts %}
+            <div class="post-card">
+                <div class="post-header">
+                    <div class="post-avatar">{{ post.author.prenom|slice(0,1)|upper }}{{ post.author.name|slice(0,1)|upper }}</div>
+                    <div>
+                        <span class="post-author">{{ post.author.prenom }} {{ post.author.name }}</span>
+                        <span class="post-role {{ post.author.role }}">{{ post.author.role == 'professeur' ? 'Professeur' : 'Étudiant' }}</span>
+                    </div>
+                    <span class="post-date">{{ post.createdAt|date('d/m/Y H:i') }}</span>
+                </div>
+                <div class="post-content">{{ post.content }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="reply-form-card">
+        <h3><i class="fas fa-reply" style="margin-right: 8px; color: #667eea;"></i> Répondre</h3>
+        {{ form_start(form) }}
+        {{ form_widget(form.content, {'attr': {'placeholder': 'Écrivez votre message...'}}) }}
+        {{ form_errors(form.content) }}
+        <button type="submit" class="btn-reply"><i class="fas fa-paper-plane" style="margin-right: 8px;"></i> Publier la réponse</button>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
