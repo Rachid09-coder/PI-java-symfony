@@ -38,22 +38,25 @@ The following has been added to your Symfony application to support Google OAuth
 4. Click **Create Credentials** → **OAuth client ID**
 5. Choose **Web application** and add:
    - **Authorized JavaScript origins**: 
-     - `http://localhost:8000` (for development)
+     - `http://127.0.0.1:8000` and/or `http://localhost:8000` (for development)
      - Your production domain
-   - **Authorized redirect URIs**:
-     - `http://localhost:8000/auth/google/callback`
+   - **Authorized redirect URIs** (must match exactly what your app sends):
+     - `http://127.0.0.1:8000/auth/google/callback`
+     - `http://localhost:8000/auth/google/callback` (add both if you use both)
      - Your production URL for callback
 6. Copy the **Client ID** and **Client Secret**
 
 ### Step 2: Configure Environment Variables
 
-Create or update `.env.local` file in your project root:
+Create or update `.env` or `.env.local` in your project root:
 
 ```env
-OAUTH_GOOGLE_CLIENT_ID=your_client_id_here
+OAUTH_GOOGLE_CLIENT_ID=your_client_id_here.apps.googleusercontent.com
 OAUTH_GOOGLE_CLIENT_SECRET=your_client_secret_here
-OAUTH_GOOGLE_CALLBACK_URL=http://localhost:8000/auth/google/callback
+OAUTH_GOOGLE_CALLBACK_URL=http://127.0.0.1:8000/auth/google/callback
 ```
+
+**Important:** Use the same host in `OAUTH_GOOGLE_CALLBACK_URL` as in your browser (e.g. if you open `http://127.0.0.1:8000`, set the callback to `http://127.0.0.1:8000/auth/google/callback`; if you use `http://localhost:8000`, use that in the callback). The URL must match exactly what you added in Google Cloud Console under "Authorized redirect URIs".
 
 ### Step 3: Run Database Migration
 
@@ -125,9 +128,13 @@ return $this->redirectToRoute('app_redirect_user'); // Change target route
 
 ## Troubleshooting
 
-### "Invalid state" error
-- Clear browser cookies/cache
-- Ensure `OAUTH_GOOGLE_CALLBACK_URL` matches exactly in both Google Console and `.env.local`
+### "Se connecter avec Google" ne fait rien / renvoie à la page de connexion
+- **Connexion Google non configurée** : ajoutez `OAUTH_GOOGLE_CLIENT_ID` et `OAUTH_GOOGLE_CLIENT_SECRET` dans `.env` ou `.env.local`. Après la modification, les messages flash s’affichent sur la page de connexion.
+- **Redirect URI** : dans Google Cloud Console → Credentials → votre client OAuth, l’URL dans "Authorized redirect URIs" doit être **exactement** celle utilisée par l’app (ex. `http://127.0.0.1:8000/auth/google/callback`). Utilisez la même (127.0.0.1 ou localhost) que dans la barre d’adresse.
+
+### "Invalid state" / "Session expirée ou lien invalide"
+- Videz les cookies du site puis réessayez.
+- Assurez-vous que `OAUTH_GOOGLE_CALLBACK_URL` est identique dans Google Console et dans `.env` / `.env.local`.
 
 ### "Client authentication failed" error
 - Verify `OAUTH_GOOGLE_CLIENT_ID` and `OAUTH_GOOGLE_CLIENT_SECRET` are correct

@@ -25,11 +25,15 @@ class FormAuthenticator extends AbstractLoginFormAuthenticator
     private HttpClientInterface $httpClient;
     private string $recaptchaSecret;
 
+    /** Clé secrète Google de test (toujours valide, pour dev uniquement). */
+    private const RECAPTCHA_TEST_SECRET = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+
     public function __construct(UrlGeneratorInterface $urlGenerator, HttpClientInterface $httpClient, string $recaptchaSecret)
     {
         $this->urlGenerator = $urlGenerator;
         $this->httpClient = $httpClient;
-        $this->recaptchaSecret = $recaptchaSecret;
+        // Si pas de clé configurée, utiliser la clé de test Google pour que le widget affiché (test) valide
+        $this->recaptchaSecret = $recaptchaSecret !== '' ? $recaptchaSecret : self::RECAPTCHA_TEST_SECRET;
     }
 
     public function authenticate(Request $request): Passport
@@ -39,27 +43,35 @@ class FormAuthenticator extends AbstractLoginFormAuthenticator
         $csrfToken = $request->request->get('_csrf_token');
         $recaptchaResponse = $request->request->get('g-recaptcha-response');
 
-        if (!$recaptchaResponse) {
-            throw new CustomUserMessageAuthenticationException('Veuillez compléter le reCAPTCHA.');
-        }
+        // Vérification reCAPTCHA uniquement si un secret est configuré (voir RECAPTCHA_SETUP.md)
+        if ($this->recaptchaSecret !== '') {
+            if (!$recaptchaResponse || trim($recaptchaResponse) === '') {
+                throw new CustomUserMessageAuthenticationException('Veuillez compléter le reCAPTCHA.');
+            }
 
-        // Verify reCAPTCHA with Google
-        $resp = $this->httpClient->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
-            'body' => [
+            // Google attend application/x-www-form-urlencoded
+            $body = http_build_query([
                 'secret' => $this->recaptchaSecret,
                 'response' => $recaptchaResponse,
-                'remoteip' => $request->getClientIp(),
-            ],
-        ]);
+                'remoteip' => $request->getClientIp() ?? '',
+            ]);
 
-        try {
-            $data = $resp->toArray();
-        } catch (\Exception $e) {
-            throw new CustomUserMessageAuthenticationException('Impossible de vérifier le reCAPTCHA.');
-        }
+            $resp = $this->httpClient->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ],
+                'body' => $body,
+            ]);
 
-        if (empty($data['success']) || $data['success'] !== true) {
-            throw new CustomUserMessageAuthenticationException('Échec du reCAPTCHA, veuillez réessayer.');
+            try {
+                $data = $resp->toArray();
+            } catch (\Exception $e) {
+                throw new CustomUserMessageAuthenticationException('Impossible de vérifier le reCAPTCHA. Réessayez.');
+            }
+
+            if (empty($data['success']) || $data['success'] !== true) {
+                throw new CustomUserMessageAuthenticationException('reCAPTCHA invalide. Veuillez le refaire et réessayer.');
+            }
         }
 
         $request->getSession()->set(Security::LAST_USERNAME, $email);

@@ -29,5 +29,5 @@ security:
         - { path: ^/auth/(login|register), roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         # Accès restreints selon le rôle
-        - { path: ^/admin, roles: [ROLE_PROFESSEUR, ROLE_ADMIN] }
+        - { path: ^/admin, roles: [ROLE_PROFESSEUR, ROLE_ADMIN, ROLE_CHEF_DEPT] }
         - { path: ^/student, roles: ROLE_ETUDIANT }

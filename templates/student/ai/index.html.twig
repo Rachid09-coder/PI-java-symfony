@@ -712,6 +712,20 @@
 </style>
 
 <script>
+/** Parse une réponse fetch en JSON ; si le serveur renvoie du HTML (erreur, login), affiche un message clair. */
+async function parseJsonResponse(response) {
+    const text = await response.text();
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        const trimmed = text.trim();
+        if (trimmed.startsWith('<') || trimmed.startsWith('<!--')) {
+            throw new Error('Session expirée ou erreur serveur. Veuillez vous reconnecter.');
+        }
+        throw e;
+    }
+}
+
 async function getMyAnalysis() {
     const btn = document.getElementById('btnAnalyze');
     btn.disabled = true;
@@ -721,7 +735,7 @@ async function getMyAnalysis() {
 
     try {
         const response = await fetch('/student/ai/my-analysis');
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displayAnalysis(data);
@@ -745,7 +759,7 @@ async function getMyRecommendations() {
 
     try {
         const response = await fetch('/student/ai/my-recommendations');
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displayRecommendations(data);
@@ -951,7 +965,7 @@ async function sendChat() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message, history: chatHistory })
         });
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         // Remove loading
         document.getElementById(loadingId)?.remove();

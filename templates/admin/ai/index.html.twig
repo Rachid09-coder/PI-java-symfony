@@ -500,6 +500,20 @@
 <script>
 let chatHistory = [];
 
+/** Parse une réponse fetch en JSON ; si le serveur renvoie du HTML (erreur, login), affiche un message clair. */
+async function parseJsonResponse(response) {
+    const text = await response.text();
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        const trimmed = text.trim();
+        if (trimmed.startsWith('<') || trimmed.startsWith('<!--')) {
+            throw new Error('Session expirée ou erreur serveur. Veuillez vous reconnecter.');
+        }
+        throw e;
+    }
+}
+
 async function analyzeStudent() {
     const studentId = document.getElementById('studentSelect').value;
     if (!studentId) {
@@ -511,7 +525,7 @@ async function analyzeStudent() {
 
     try {
         const response = await fetch(`/admin/ai/analyze/${studentId}`);
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displayAnalysis(data);
@@ -534,7 +548,7 @@ async function getRecommendations() {
 
     try {
         const response = await fetch(`/admin/ai/recommendations/${studentId}`);
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displayRecommendations(data);
@@ -559,7 +573,7 @@ async function analyzeClass() {
 
     try {
         const response = await fetch(`/admin/ai/class-analysis?academic_year=${encodeURIComponent(year)}&semester=${semester}`);
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displayClassAnalysis(data);
@@ -595,7 +609,7 @@ async function sendChat() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message, history: chatHistory })
         });
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         // Remove loading
         document.getElementById(loadingId)?.remove();
@@ -771,7 +785,7 @@ async function predictSuccess() {
 
     try {
         const response = await fetch('/admin/ai/predict-success');
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displayPrediction(data);
@@ -788,7 +802,7 @@ async function detectAnomalies() {
 
     try {
         const response = await fetch('/admin/ai/detect-anomalies');
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displayAnomalies(data);
@@ -805,7 +819,7 @@ async function certificationOverview() {
 
     try {
         const response = await fetch('/admin/ai/certification-overview');
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displayCertOverview(data);
@@ -822,7 +836,7 @@ async function suggestCertifications() {
 
     try {
         const response = await fetch('/admin/ai/suggest-certifications');
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (data.success) {
             displaySuggestions(data);

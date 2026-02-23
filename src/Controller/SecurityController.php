@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,15 +30,21 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('app_redirect_user');
         }
 
+        $recaptchaSiteKey = $this->getParameter('recaptcha_site_key');
+        // Clé de test Google si non configurée : le widget s'affiche et valide en dev
+        if ($recaptchaSiteKey === '' || $recaptchaSiteKey === null) {
+            $recaptchaSiteKey = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+        }
+
         return $this->render('security/login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
             'error'         => $authenticationUtils->getLastAuthenticationError(),
-            'recaptcha_site_key' => $this->getParameter('recaptcha_site_key'),
+            'recaptcha_site_key' => $recaptchaSiteKey,
         ]);
     }
 
     /**
-     * Gare de triage : dirige vers le bon dashboard selon le rôle en BDD
+     * Gare de triage : dirige vers le bon espace selon le rôle (admin/prof/chef_dept → admin, sinon → étudiant).
      */
     #[Route('/redirect-user', name: 'app_redirect_user')]
     public function redirectUser(): Response
@@ -48,12 +55,13 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // Vérification de ton champ 'role' (professeur ou etudiant)
-        if ($user->getRole() === 'admin') {
-            return $this->redirectToRoute('admin_shop_index');
+        // Prof, admin ou chef de département → espace admin
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_PROFESSEUR') || $this->isGranted('ROLE_CHEF_DEPT')) {
+            return $this->redirectToRoute('admin_dashboard');
         }
 
-        return $this->redirectToRoute('student_shop_index');
+        // Étudiant → espace étudiant
+        return $this->redirectToRoute('student_courses');
     }
 
     #[Route('/logout', name: 'app_logout')]
@@ -105,8 +113,8 @@ class SecurityController extends AbstractController
             // Envoyer l'email
             $resetUrl = $this->generateUrl('app_reset_password', ['token' => $token], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
             
-            $email = (new Email())
-                ->from('yassine.kaabi@esprit.tn')
+            $emailMessage = (new Email())
+                ->from($_ENV['MAILER_FROM'] ?? 'noreply@edusmart.local')
                 ->to($user->getEmail())
                 ->subject('Réinitialiser votre mot de passe EduSmart')
                 ->html(
@@ -116,9 +124,19 @@ class SecurityController extends AbstractController
                     ])
                 );
 
-            $mailer->send($email);
+            $emailSent = false;
+            try {
+                $mailer->send($emailMessage);
+                $emailSent = true;
+            } catch (TransportExceptionInterface $e) {
+                // rien
+            }
 
             $this->addFlash('success', 'Si cet email existe dans notre système, vous recevrez un lien de réinitialisation.');
+            if (!$emailSent) {
+
+                $this->addFlash('reset_link_url', $resetUrl);
+            }
             return $this->redirectToRoute('app_login');
         }
 

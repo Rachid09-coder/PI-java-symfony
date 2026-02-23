@@ -22,12 +22,17 @@ parameters:
     app.twilio_auth_token: '%env(default:twilio_default:TWILIO_AUTH_TOKEN)%'
     app.twilio_from_number: '%env(default:twilio_default:TWILIO_FROM_NUMBER)%'
     twilio_default: ''
-    # OAuth Google & reCAPTCHA (yassine-user)
-    oauth_google_client_id: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
-    oauth_google_client_secret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
-    oauth_google_callback_url: '%env(OAUTH_GOOGLE_CALLBACK_URL)%'
-    recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
-    recaptcha_secret: '%env(RECAPTCHA_SECRET)%'
+    # OAuth Google & reCAPTCHA (yassine-user) - optionnels en dev si non configurés
+    oauth_google_client_id: '%env(default:oauth_google_client_id_default:OAUTH_GOOGLE_CLIENT_ID)%'
+    oauth_google_client_id_default: ''
+    oauth_google_client_secret: '%env(default:oauth_google_client_secret_default:OAUTH_GOOGLE_CLIENT_SECRET)%'
+    oauth_google_client_secret_default: ''
+    oauth_google_callback_url: '%env(default:oauth_google_callback_url_default:OAUTH_GOOGLE_CALLBACK_URL)%'
+    oauth_google_callback_url_default: ''
+    recaptcha_site_key: '%env(default:recaptcha_site_key_default:RECAPTCHA_SITE_KEY)%'
+    recaptcha_site_key_default: ''
+    recaptcha_secret: '%env(default:recaptcha_secret_default:RECAPTCHA_SECRET)%'
+    recaptcha_secret_default: ''
 
 services:
     # default configuration for services in *this* file

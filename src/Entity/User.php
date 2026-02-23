@@ -71,13 +71,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = ['ROLE_USER'];
-        if ($this->role === 'professeur') {
+        $role = $this->role !== null ? strtolower(trim($this->role)) : '';
+        // Normaliser les valeurs courantes en base (etudiant, Étudiant, ROLE_ETUDIANT, etc.)
+        if (in_array($role, ['professeur', 'professor'], true)) {
             $roles[] = 'ROLE_PROFESSEUR';
-        } elseif ($this->role === 'admin') {
+        } elseif ($role === 'admin') {
             $roles[] = 'ROLE_ADMIN';
-        } elseif ($this->role === 'chef_dept') {
+        } elseif (in_array($role, ['chef_dept', 'chef dept'], true)) {
             $roles[] = 'ROLE_CHEF_DEPT';
         } else {
+            // etudiant, étudiant, ROLE_ETUDIANT, ou toute autre valeur => étudiant
             $roles[] = 'ROLE_ETUDIANT';
         }
         return array_unique($roles);

@@ -97,6 +97,19 @@
     successEl.style.display = 'none';
   }
 
+  async function parseJsonResponse(resp) {
+    const text = await resp.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      var trimmed = text.trim();
+      if (trimmed.indexOf('<') === 0 || trimmed.indexOf('<!--') === 0) {
+        return { success: false, message: 'Session expirée ou erreur serveur. Veuillez vous reconnecter.' };
+      }
+      throw e;
+    }
+  }
+
   async function sendToBackend(action, descriptor, csrfToken){
     const url = action === 'register' ? '/face/register' : '/face/login';
     try{
@@ -105,8 +118,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ descriptor: descriptor, _csrf_token: csrfToken })
       });
-      const data = await resp.json();
-      return { ok: resp.ok, data };
+      const data = await parseJsonResponse(resp);
+      return { ok: resp.ok, data: data || {} };
     } catch(e){
       return { ok: false, data: { success: false, message: e.message } };
     }
