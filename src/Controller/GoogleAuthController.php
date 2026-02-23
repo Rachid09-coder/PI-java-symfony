@@ -9,15 +9,11 @@ use League\OAuth2\Client\Provider\Google;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Authentication\AuthenticationManager;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class GoogleAuthController extends AbstractController
 {
@@ -37,9 +33,7 @@ class GoogleAuthController extends AbstractController
                 return $this->redirectToRoute('app_login');
             }
 
-            if (!$redirectUri) {
-                $redirectUri = $request->getSchemeAndHttpHost() . '/auth/google/callback';
-            }
+            $redirectUri = $this->normalizeCallbackUrl($redirectUri, $params);
 
             $provider = new Google([
                 'clientId' => $clientId,
@@ -69,9 +63,8 @@ class GoogleAuthController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $em,
         ParameterBagInterface $params,
-        EventDispatcherInterface $eventDispatcher,
         UserPasswordHasherInterface $passwordHasher,
-        TokenStorageInterface $tokenStorage
+        Security $security
     ): Response {
         $state = $request->query->get('state');
         // Check for errors from Google
@@ -99,7 +92,7 @@ class GoogleAuthController extends AbstractController
         try {
             $clientId = $params->get('oauth_google_client_id');
             $clientSecret = $params->get('oauth_google_client_secret');
-            $redirectUri = $params->get('oauth_google_callback_url') ?: $request->getSchemeAndHttpHost() . '/auth/google/callback';
+            $redirectUri = $this->normalizeCallbackUrl($params->get('oauth_google_callback_url'), $params);
 
             if (!$clientId || !$clientSecret) {
                 $this->addFlash('danger', 'Connexion Google non configurée.');
@@ -112,7 +105,6 @@ class GoogleAuthController extends AbstractController
                 'redirectUri' => $redirectUri,
             ]);
 
-            $googleUser = $resourceOwner->toArray();
             $accessToken = $provider->getAccessToken('authorization_code', ['code' => $code]);
             $resourceOwner = $provider->getResourceOwner($accessToken);
 
@@ -145,16 +137,9 @@ class GoogleAuthController extends AbstractController
                     $user->setGoogleId($googleId);
                     $em->flush();
                 }
-            // Dispatch interactive login event so listeners (if any) run
             }
 
-            $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-            $tokenStorage->setToken($token);
-            $session->set('_security_main', serialize($token));
-            $session->save();
-
-            $event = new InteractiveLoginEvent($request, $token);
-            $eventDispatcher->dispatch($event);
+            $security->login($user, 'main');
 
             $this->addFlash('success', 'Connexion réussie!');
 
@@ -164,12 +149,26 @@ class GoogleAuthController extends AbstractController
             error_log('Google OAuth Error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
             $msg = $e->getMessage();
             if (str_contains($msg, 'redirect_uri_mismatch') || str_contains($msg, 'redirect_uri')) {
-                $callbackUrl = $params->get('oauth_google_callback_url') ?: $request->getSchemeAndHttpHost() . '/auth/google/callback';
+                $callbackUrl = $this->normalizeCallbackUrl($params->get('oauth_google_callback_url'), $params);
                 $this->addFlash('danger', 'URL de redirection incorrecte. Dans Google Cloud Console → Credentials → votre client OAuth, ajoutez dans "Authorized redirect URIs" exactement : ' . $callbackUrl);
             } else {
                 $this->addFlash('danger', 'Erreur: ' . substr($msg, 0, 120));
             }
             return $this->redirectToRoute('app_login');
         }
+    }
+
+    /**
+     * Build a single, consistent callback URL so it matches Google Console.
+     * Use OAUTH_GOOGLE_CALLBACK_URL if set, else APP_BASE_URL + '/auth/google/callback'.
+     * Set APP_BASE_URL in .env to the exact URL you use in the browser (e.g. http://127.0.0.1:8000).
+     */
+    private function normalizeCallbackUrl(?string $configuredUrl, ParameterBagInterface $params): string
+    {
+        if ($configuredUrl !== null && $configuredUrl !== '') {
+            return rtrim($configuredUrl, '/');
+        }
+        $base = $params->get('app.base_url') ?? 'http://127.0.0.1:8000';
+        return rtrim($base, '/') . '/auth/google/callback';
     }
 }

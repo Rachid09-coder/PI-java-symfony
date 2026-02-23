@@ -51,12 +51,20 @@ The following has been added to your Symfony application to support Google OAuth
 Create or update `.env` or `.env.local` in your project root:
 
 ```env
+# Exact URL you use in the browser (no trailing slash). Used to build the Google callback URL.
+APP_BASE_URL=http://127.0.0.1:8000
+
 OAUTH_GOOGLE_CLIENT_ID=your_client_id_here.apps.googleusercontent.com
 OAUTH_GOOGLE_CLIENT_SECRET=your_client_secret_here
-OAUTH_GOOGLE_CALLBACK_URL=http://127.0.0.1:8000/auth/google/callback
+
+# Optional: if set, this overrides APP_BASE_URL for the callback. Otherwise callback = APP_BASE_URL + /auth/google/callback
+# OAUTH_GOOGLE_CALLBACK_URL=http://127.0.0.1:8000/auth/google/callback
 ```
 
-**Important:** Use the same host in `OAUTH_GOOGLE_CALLBACK_URL` as in your browser (e.g. if you open `http://127.0.0.1:8000`, set the callback to `http://127.0.0.1:8000/auth/google/callback`; if you use `http://localhost:8000`, use that in the callback). The URL must match exactly what you added in Google Cloud Console under "Authorized redirect URIs".
+**Important (éviter "Error 400: redirect_uri_mismatch") :**  
+- L’app envoie à Google l’URL de callback = `APP_BASE_URL` + `/auth/google/callback` (ou `OAUTH_GOOGLE_CALLBACK_URL` si défini).  
+- Dans Google Cloud Console → Credentials → votre client OAuth → **Authorized redirect URIs**, ajoutez **exactement** la même URL (ex. `http://127.0.0.1:8000/auth/google/callback`).  
+- Utilisez la même base que dans votre navigateur : si vous ouvrez `http://127.0.0.1:8000`, mettez `APP_BASE_URL=http://127.0.0.1:8000` ; si vous utilisez `http://localhost:8000`, mettez `APP_BASE_URL=http://localhost:8000`.
 
 ### Step 3: Run Database Migration
 
@@ -127,6 +135,10 @@ return $this->redirectToRoute('app_redirect_user'); // Change target route
 ```
 
 ## Troubleshooting
+
+### "Access blocked" / "Error 400: redirect_uri_mismatch"
+- L'URL de callback est construite avec **APP_BASE_URL** + `/auth/google/callback`. Définissez `APP_BASE_URL` dans `.env` ou `.env.local` (ex. `APP_BASE_URL=http://127.0.0.1:8000`).
+- Dans Google Console → Credentials → votre client OAuth → **Authorized redirect URIs**, ajoutez **exactement** la même URL (ex. `http://127.0.0.1:8000/auth/google/callback`). Pas de slash final après `callback`.
 
 ### "Se connecter avec Google" ne fait rien / renvoie à la page de connexion
 - **Connexion Google non configurée** : ajoutez `OAUTH_GOOGLE_CLIENT_ID` et `OAUTH_GOOGLE_CLIENT_SECRET` dans `.env` ou `.env.local`. Après la modification, les messages flash s’affichent sur la page de connexion.

@@ -4,27 +4,32 @@ namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+/**
+ * Génère des plans de cours et du contenu pédagogique via OpenAI, Groq ou Gemini (selon les clés configurées dans .env).
+ */
 final class AiCourseGeneratorService
 {
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly ?string $openaiApiKey = null,
+        private readonly ?string $groqApiKey = null,
+        private readonly ?string $geminiApiKey = null,
     ) {
     }
 
     /**
      * Generate a structured course plan using AI (or mock if no API key).
+     * Tries in order: OpenAI → Groq → Gemini.
      *
      * @return array{outline: string[], objectives: string[], key_concepts: string[], suggested_exercises: string[], quiz_questions: array<int, array{question: string, options?: string[], correct?: string}>}
      */
     public function generatePlan(string $courseTitle, string $level, string $duration): array
     {
-        if ($this->openaiApiKey === null || $this->openaiApiKey === '') {
-            return $this->getMockPlan($courseTitle, $level, $duration);
-        }
-
         $prompt = $this->buildPrompt($courseTitle, $level, $duration);
-        $response = $this->callOpenAi($prompt);
+
+        $response = $this->callOpenAi($prompt)
+            ?? $this->callGroq($prompt)
+            ?? $this->callGemini($prompt);
 
         if ($response !== null) {
             return $response;
@@ -35,17 +40,17 @@ final class AiCourseGeneratorService
 
     /**
      * Generate full course content (lesson text) from the plan, for student display.
+     * Tries in order: OpenAI → Groq → Gemini.
      */
     public function generateContent(string $courseTitle, string $level, string $duration, array $plan): string
     {
-        if ($this->openaiApiKey === null || $this->openaiApiKey === '') {
-            return $this->getMockContent($courseTitle, $level, $duration, $plan);
-        }
-
         $outlineStr = implode("\n", $plan['outline'] ?? []);
         $objectivesStr = implode("\n", $plan['objectives'] ?? []);
         $prompt = $this->buildContentPrompt($courseTitle, $level, $duration, $outlineStr, $objectivesStr);
-        $content = $this->callOpenAiContent($prompt);
+
+        $content = $this->callOpenAiContent($prompt)
+            ?? $this->callGroqContent($prompt)
+            ?? $this->callGeminiContent($prompt);
 
         return $content !== null ? $content : $this->getMockContent($courseTitle, $level, $duration, $plan);
     }
@@ -72,6 +77,9 @@ PROMPT;
 
     private function callOpenAiContent(string $prompt): ?string
     {
+        if ($this->openaiApiKey === null || $this->openaiApiKey === '') {
+            return null;
+        }
         try {
             $response = $this->httpClient->request('POST', 'https://api.openai.com/v1/chat/completions', [
                 'headers' => [
@@ -80,17 +88,126 @@ PROMPT;
                 ],
                 'json' => [
                     'model' => 'gpt-4o-mini',
-                    'messages' => [
-                        ['role' => 'user', 'content' => $prompt],
-                    ],
+                    'messages' => [['role' => 'user', 'content' => $prompt]],
                     'temperature' => 0.6,
                 ],
                 'timeout' => 90,
             ]);
-
             $data = $response->toArray();
             $content = $data['choices'][0]['message']['content'] ?? '';
+            return trim($content) !== '' ? trim($content) : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
 
+    /** Groq (API compatible OpenAI). */
+    private function callGroq(string $prompt): ?array
+    {
+        if ($this->groqApiKey === null || $this->groqApiKey === '') {
+            return null;
+        }
+        try {
+            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->groqApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'llama-3.3-70b-versatile',
+                    'messages' => [['role' => 'user', 'content' => $prompt]],
+                    'temperature' => 0.7,
+                ],
+                'timeout' => 60,
+            ]);
+            $data = $response->toArray();
+            $content = $data['choices'][0]['message']['content'] ?? '';
+            $content = trim($content);
+            if (preg_match('/```(?:json)?\s*([\s\S]*?)```/', $content, $m)) {
+                $content = trim($m[1]);
+            }
+            $decoded = json_decode($content, true);
+            return \is_array($decoded) ? $this->normalizePlan($decoded) : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function callGroqContent(string $prompt): ?string
+    {
+        if ($this->groqApiKey === null || $this->groqApiKey === '') {
+            return null;
+        }
+        try {
+            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->groqApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'llama-3.3-70b-versatile',
+                    'messages' => [['role' => 'user', 'content' => $prompt]],
+                    'temperature' => 0.6,
+                ],
+                'timeout' => 90,
+            ]);
+            $data = $response->toArray();
+            $content = $data['choices'][0]['message']['content'] ?? '';
+            return trim($content) !== '' ? trim($content) : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /** Google Gemini REST API. */
+    private function callGemini(string $prompt): ?array
+    {
+        if ($this->geminiApiKey === null || $this->geminiApiKey === '') {
+            return null;
+        }
+        try {
+            $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . urlencode($this->geminiApiKey);
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => [
+                    'contents' => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => [
+                        'temperature' => 0.7,
+                        'maxOutputTokens' => 8192,
+                        'responseMimeType' => 'application/json',
+                    ],
+                ],
+                'timeout' => 60,
+            ]);
+            $data = $response->toArray();
+            $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            $decoded = json_decode(trim($text), true);
+            return \is_array($decoded) ? $this->normalizePlan($decoded) : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function callGeminiContent(string $prompt): ?string
+    {
+        if ($this->geminiApiKey === null || $this->geminiApiKey === '') {
+            return null;
+        }
+        try {
+            $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . urlencode($this->geminiApiKey);
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => [
+                    'contents' => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => [
+                        'temperature' => 0.6,
+                        'maxOutputTokens' => 8192,
+                    ],
+                ],
+                'timeout' => 90,
+            ]);
+            $data = $response->toArray();
+            $content = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
             return trim($content) !== '' ? trim($content) : null;
         } catch (\Throwable $e) {
             return null;
@@ -151,6 +268,9 @@ PROMPT;
 
     private function callOpenAi(string $prompt): ?array
     {
+        if ($this->openaiApiKey === null || $this->openaiApiKey === '') {
+            return null;
+        }
         try {
             $response = $this->httpClient->request('POST', 'https://api.openai.com/v1/chat/completions', [
                 'headers' => [

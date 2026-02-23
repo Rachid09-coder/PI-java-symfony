@@ -33,6 +33,9 @@ parameters:
     recaptcha_site_key_default: ''
     recaptcha_secret: '%env(default:recaptcha_secret_default:RECAPTCHA_SECRET)%'
     recaptcha_secret_default: ''
+    # Mailer (forgot password, etc.)
+    mailer_from: '%env(default:mailer_from_default:MAILER_FROM)%'
+    mailer_from_default: 'noreply@edusmart.local'
 
 services:
     # default configuration for services in *this* file
@@ -60,10 +63,15 @@ services:
     App\Service\AiCourseGeneratorService:
         arguments:
             $openaiApiKey: '%env(default::OPENAI_API_KEY)%'
+            $groqApiKey: '%env(default::GROQ_API_KEY)%'
+            $geminiApiKey: '%env(default::GEMINI_API_KEY)%'
 
     App\Service\ExamSimilarityService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+            $geminiApiKey: '%app.gemini_api_key%'
+            $groqApiKey: '%app.groq_api_key%'
+            $openaiApiKey: '%app.openai_api_key%'
 
     App\Service\HmacService:
         arguments:

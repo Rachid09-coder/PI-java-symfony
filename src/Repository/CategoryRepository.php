@@ -16,6 +16,27 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
+    /**
+     * @param array{search?: string} $filters
+     * @param string $sortBy id|name
+     * @param string $direction ASC|DESC
+     * @return Category[]
+     */
+    public function findFilteredAndSorted(array $filters = [], string $sortBy = 'id', string $direction = 'ASC'): array
+    {
+        $qb = $this->createQueryBuilder('c');
+        if (!empty($filters['search'])) {
+            $qb->andWhere('c.name LIKE :search OR c.description LIKE :search')
+                ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+        $allowedSort = ['id', 'name'];
+        if (!in_array($sortBy, $allowedSort, true)) {
+            $sortBy = 'id';
+        }
+        $qb->orderBy('c.' . $sortBy, $direction === 'DESC' ? 'DESC' : 'ASC');
+        return $qb->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return Category[] Returns an array of Category objects
     //     */

@@ -5,18 +5,26 @@ namespace App\Service;
 use App\Entity\Exam;
 use App\Entity\ExamSubmission;
 use Symfony\Component\Process\Process;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Extracts text from submission PDFs and computes pairwise similarity to detect suspicious copies.
+ * Uses AI (Gemini, then Groq, then OpenAI from .env) when an API key is set; otherwise PHP similar_text().
  */
 final class ExamSimilarityService
 {
     private const SIMILARITY_SUSPICIOUS_THRESHOLD = 60.0;
     private const SIMILARITY_HIGH_THRESHOLD = 80.0;
     private const MIN_TEXT_LENGTH = 50;
+    /** Max chars per text sent to AI to stay within token limits */
+    private const MAX_TEXT_FOR_AI = 2500;
 
     public function __construct(
         private readonly string $projectDir,
+        private readonly ?HttpClientInterface $httpClient = null,
+        private readonly ?string $geminiApiKey = null,
+        private readonly ?string $groqApiKey = null,
+        private readonly ?string $openaiApiKey = null,
     ) {
     }
 
@@ -64,7 +72,7 @@ final class ExamSimilarityService
                     continue;
                 }
 
-                $percent = $this->similarityPercent($textA, $textB);
+                $percent = $this->computeSimilarity($textA, $textB);
                 $subA = $this->findSubmissionById($submissionsWithPdf, $idA);
                 $subB = $this->findSubmissionById($submissionsWithPdf, $idB);
                 if ($subA && $subB) {
@@ -131,6 +139,128 @@ final class ExamSimilarityService
     {
         $text = preg_replace('/\s+/u', ' ', $text);
         return trim($text);
+    }
+
+    /**
+     * Compute similarity 0-100. Uses AI (Gemini → Groq → OpenAI) when a key is set, else PHP similar_text().
+     */
+    private function computeSimilarity(string $textA, string $textB): float
+    {
+        $trimA = $this->trimForAi($textA);
+        $trimB = $this->trimForAi($textB);
+
+        if ($this->httpClient !== null) {
+            $aiPercent = $this->callGeminiSimilarity($trimA, $trimB)
+                ?? $this->callGroqSimilarity($trimA, $trimB)
+                ?? $this->callOpenAiSimilarity($trimA, $trimB);
+            if ($aiPercent !== null) {
+                return $aiPercent;
+            }
+        }
+
+        return $this->similarityPercent($textA, $textB);
+    }
+
+    private function trimForAi(string $text): string
+    {
+        $text = preg_replace('/\s+/u', ' ', trim($text));
+        if (mb_strlen($text) > self::MAX_TEXT_FOR_AI) {
+            return mb_substr($text, 0, self::MAX_TEXT_FOR_AI) . '…';
+        }
+        return $text;
+    }
+
+    private function callGeminiSimilarity(string $textA, string $textB): ?float
+    {
+        if ($this->geminiApiKey === null || $this->geminiApiKey === '') {
+            return null;
+        }
+        try {
+            $prompt = <<<PROMPT
+Tu es un expert en détection de similarité entre copies d'examen. Compare les deux textes suivants et estime leur similarité (copie, paraphrase, ou indépendants).
+
+Texte 1:
+{$textA}
+
+Texte 2:
+{$textB}
+
+Réponds UNIQUEMENT par un nombre entre 0 et 100 (0 = totalement différents, 100 = quasi identiques / copie). Aucun autre texte.
+PROMPT;
+            $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . urlencode($this->geminiApiKey);
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => [
+                    'contents' => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => ['temperature' => 0.2, 'maxOutputTokens' => 10],
+                ],
+                'timeout' => 30,
+            ]);
+            $data = $response->toArray();
+            $content = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            $num = (float) preg_replace('/[^0-9.]/', '', trim($content));
+            return ($num >= 0 && $num <= 100) ? $num : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function callGroqSimilarity(string $textA, string $textB): ?float
+    {
+        if ($this->groqApiKey === null || $this->groqApiKey === '') {
+            return null;
+        }
+        try {
+            $prompt = "Compare these two exam answers and reply with ONLY one number from 0 to 100 (similarity: 100=identical).\n\nText 1:\n{$textA}\n\nText 2:\n{$textB}";
+            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->groqApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'llama-3.3-70b-versatile',
+                    'messages' => [['role' => 'user', 'content' => $prompt]],
+                    'temperature' => 0.2,
+                    'max_tokens' => 10,
+                ],
+                'timeout' => 30,
+            ]);
+            $data = $response->toArray();
+            $content = $data['choices'][0]['message']['content'] ?? '';
+            $num = (float) preg_replace('/[^0-9.]/', '', trim($content));
+            return ($num >= 0 && $num <= 100) ? $num : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function callOpenAiSimilarity(string $textA, string $textB): ?float
+    {
+        if ($this->openaiApiKey === null || $this->openaiApiKey === '') {
+            return null;
+        }
+        try {
+            $prompt = "Compare these two exam answers and reply with ONLY one number from 0 to 100 (similarity: 100=identical).\n\nText 1:\n{$textA}\n\nText 2:\n{$textB}";
+            $response = $this->httpClient->request('POST', 'https://api.openai.com/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->openaiApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'gpt-4o-mini',
+                    'messages' => [['role' => 'user', 'content' => $prompt]],
+                    'temperature' => 0.2,
+                    'max_tokens' => 10,
+                ],
+                'timeout' => 30,
+            ]);
+            $data = $response->toArray();
+            $content = $data['choices'][0]['message']['content'] ?? '';
+            $num = (float) preg_replace('/[^0-9.]/', '', trim($content));
+            return ($num >= 0 && $num <= 100) ? $num : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     private function similarityPercent(string $textA, string $textB): float

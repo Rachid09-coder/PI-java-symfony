@@ -71,7 +71,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-<<<<<<< HEAD
         $roles = ['ROLE_USER'];
         $role = $this->role !== null ? strtolower(trim($this->role)) : '';
         // Normaliser les valeurs courantes en base (etudiant, Étudiant, ROLE_ETUDIANT, etc.)

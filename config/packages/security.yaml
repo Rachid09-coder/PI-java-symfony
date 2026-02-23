@@ -24,10 +24,11 @@ security:
     access_control:
         # Forum : professeurs et étudiants (connectés)
         - { path: ^/forum, roles: ROLE_USER }
-        # Allow public access to authentication routes
-        - { path: ^/auth/google, roles: PUBLIC_ACCESS }
-        - { path: ^/auth/(login|register), roles: PUBLIC_ACCESS }
+        # Public: login, register, Google OAuth (start + callback), forgot/reset password
+        - { path: ^/auth/, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         # Accès restreints selon le rôle (main + fedi-work)
         - { path: ^/admin, roles: [ROLE_PROFESSEUR, ROLE_ADMIN, ROLE_CHEF_DEPT] }
         - { path: ^/student, roles: ROLE_ETUDIANT }

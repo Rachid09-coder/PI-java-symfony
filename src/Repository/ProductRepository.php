@@ -16,6 +16,39 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+    /**
+     * @param array{search?: string, category?: int} $filters
+     * @param string $sortBy id|name|category|price|stock
+     * @param string $direction ASC|DESC
+     * @return Product[]
+     */
+    public function findFilteredAndSorted(array $filters = [], string $sortBy = 'id', string $direction = 'ASC'): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.category', 'c');
+
+        if (!empty($filters['search'])) {
+            $qb->andWhere('p.name LIKE :search')
+                ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+        if (!empty($filters['category'])) {
+            $qb->andWhere('p.category = :catId')
+                ->setParameter('catId', (int) $filters['category']);
+        }
+
+        $allowedSort = ['id', 'name', 'price', 'stock', 'category'];
+        if (!in_array($sortBy, $allowedSort, true)) {
+            $sortBy = 'id';
+        }
+        if ($sortBy === 'category') {
+            $qb->orderBy('c.name', $direction === 'DESC' ? 'DESC' : 'ASC');
+        } else {
+            $qb->orderBy('p.' . $sortBy, $direction === 'DESC' ? 'DESC' : 'ASC');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return Product[] Returns an array of Product objects
     //     */

@@ -19,11 +19,27 @@ use Symfony\Component\Routing\Annotation\Route;
 class ShopController extends AbstractController
 {
     #[Route('/', name: 'admin_shop_index')]
-    public function index(ProductRepository $productRepository, CategoryRepository $categoryRepository): Response
+    public function index(Request $request, ProductRepository $productRepository, CategoryRepository $categoryRepository): Response
     {
+        $currentFilters = [
+            'search' => $request->query->get('search', ''),
+            'category' => $request->query->get('category', ''),
+        ];
+        $currentSort = $request->query->get('sortBy', 'id');
+        $currentDirection = $request->query->get('direction', 'ASC');
+
+        $products = $productRepository->findFilteredAndSorted(
+            array_filter($currentFilters),
+            $currentSort,
+            $currentDirection
+        );
+
         return $this->render('admin/shop/index.html.twig', [
-            'products' => $productRepository->findAll(),
+            'products' => $products,
             'categories' => $categoryRepository->findAll(),
+            'currentFilters' => $currentFilters,
+            'currentSort' => $currentSort,
+            'currentDirection' => $currentDirection,
         ]);
     }
 
@@ -41,9 +57,21 @@ class ShopController extends AbstractController
             return $this->redirectToRoute('admin_shop_categories');
         }
 
+        $currentFilters = ['search' => $request->query->get('search', '')];
+        $currentSort = $request->query->get('sortBy', 'id');
+        $currentDirection = $request->query->get('direction', 'ASC');
+        $categories = $categoryRepository->findFilteredAndSorted(
+            array_filter($currentFilters),
+            $currentSort,
+            $currentDirection
+        );
+
         return $this->render('admin/shop/categories.html.twig', [
             'form' => $form->createView(),
-            'categories' => $categoryRepository->findAll(),
+            'categories' => $categories,
+            'currentFilters' => $currentFilters,
+            'currentSort' => $currentSort,
+            'currentDirection' => $currentDirection,
         ]);
     }
 

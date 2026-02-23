@@ -108,8 +108,9 @@ class SecurityController extends AbstractController
 
             $resetUrl = $this->generateUrl('app_reset_password', ['token' => $token], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
 
+            $fromAddress = $this->getParameter('mailer_from');
             $emailMessage = (new Email())
-                ->from($_ENV['MAILER_FROM'] ?? 'noreply@edusmart.local')
+                ->from($fromAddress)
                 ->to($user->getEmail())
                 ->subject('Réinitialiser votre mot de passe EduSmart')
                 ->html(
@@ -127,7 +128,8 @@ class SecurityController extends AbstractController
             }
 
             $this->addFlash('success', 'Si cet email existe dans notre système, vous recevrez un lien de réinitialisation.');
-            if (!$emailSent) {
+            // When mail is not sent (e.g. MAILER_DSN=null) or in dev: show link on login page
+            if (!$emailSent || $this->getParameter('kernel.debug')) {
                 $this->addFlash('reset_link_url', $resetUrl);
             }
             return $this->redirectToRoute('app_login');
@@ -175,8 +177,9 @@ class SecurityController extends AbstractController
             $em->persist($user);
             $em->flush();
 
+            $fromAddress = $this->getParameter('mailer_from');
             $confirmEmail = (new Email())
-                ->from('yassine.kaabi@esprit.tn')
+                ->from($fromAddress)
                 ->to($user->getEmail())
                 ->subject('Votre mot de passe a été réinitialisé')
                 ->html(
@@ -185,7 +188,11 @@ class SecurityController extends AbstractController
                     ])
                 );
 
-            $mailer->send($confirmEmail);
+            try {
+                $mailer->send($confirmEmail);
+            } catch (TransportExceptionInterface $e) {
+                // Password already reset; optional confirmation email failed
+            }
 
             $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.');
             return $this->redirectToRoute('app_login');
