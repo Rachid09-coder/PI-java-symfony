@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des certifications{% endblock %}
+
+{% block header_content %}
+    <div class="page-header">
+        <h1>Gestion des certifications</h1>
+        <p class="text-muted">Délivrez et suivez les certifications basées sur les bulletins validés.</p>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="page-content">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="card-title mb-0">Liste des certifications</h2>
+                    <small class="text-muted">Certifications académiques générées</small>
+                </div>
+                <a href="{{ path('app_certification_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Nouvelle certification
+                </a>
+            </div>
+
+            <div class="card-body">
+                {% if certifications is empty %}
+                    <p class="text-muted mb-0">Aucune certification n’a encore été générée.</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Étudiant</th>
+                                    <th>Bulletin</th>
+                                    <th>Type</th>
+                                    <th>Code</th>
+                                    <th>Statut</th>
+                                    <th>Émise le</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for certification in certifications %}
+                                    <tr>
+                                        <td>#{{ certification.id }}</td>
+                                        <td>{{ certification.student ? certification.student.email : '—' }}</td>
+                                        <td>
+                                            {% if certification.bulletin %}
+                                                Bulletin #{{ certification.bulletin.id }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ certification.type }}</td>
+                                        <td><code>{{ certification.verificationCode }}</code></td>
+                                        <td>
+                                            {% if certification.status == 'ACTIVE' %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ certification.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ certification.issuedAt ? certification.issuedAt|date('d/m/Y H:i') : '' }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ path('app_certification_show', {id: certification.id}) }}"
+                                               class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ path('app_certification_edit', {id: certification.id}) }}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {{ include('certification/_delete_form.html.twig', {certification: certification}) }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

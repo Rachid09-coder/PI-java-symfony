@@ -1,0 +1,83 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Modifier l'Élève - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_dashboard') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: #1E293B;">Modifier l'Élève #{{ user.id }}</h2>
+    </div>
+
+    <div class="card" style="padding: 40px;">
+
+        {{ form_start(form, { action: path('admin_user_edit', {id: user.id}), method: 'POST' }) }}
+
+            <div style="display: flex; flex-direction: column; gap: 25px;">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #475569;">Prénom</label>
+                        {{ form_widget(form.prenom, {
+                            attr: {
+                                style: 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; font-weight: 600;'
+                            }
+                        }) }}
+                        {{ form_errors(form.prenom) }}
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #475569;">Nom</label>
+                        {{ form_widget(form.name, {
+                            attr: {
+                                style: 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; font-weight: 600;'
+                            }
+                        }) }}
+                        {{ form_errors(form.name) }}
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #475569;">Adresse Email</label>
+                    {{ form_widget(form.email, {
+                        attr: {
+                            style: 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; font-weight: 600;'
+                        }
+                    }) }}
+                    {{ form_errors(form.email) }}
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #475569;">Numéro de Téléphone</label>
+                    {{ form_widget(form.numtel, {
+                        attr: {
+                            style: 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; font-weight: 600;'
+                        }
+                    }) }}
+                    {{ form_errors(form.numtel) }}
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #475569;">Rôle / Niveau</label>
+                    {{ form_widget(form.role, {
+                        attr: {
+                            style: 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white; font-weight: 600;'
+                        }
+                    }) }}
+                    {{ form_errors(form.role) }}
+                </div>
+
+            </div>
+
+            <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px;">
+                <a href="{{ path('admin_dashboard') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2; font-weight: 700;">
+                    Enregistrer les Modifications
+                </button>
+            </div>
+
+        {{ form_end(form) }}
+
+    </div>
+</div>
+{% endblock %}

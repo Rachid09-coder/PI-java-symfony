@@ -1,0 +1,354 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Suivi de Colis - EduSmart{% endblock %}
+
+{% block header_content %}
+    <div class="header">
+        <div class="page-title"><i class="fas fa-truck" style="margin-right: 10px; color: var(--primary-color);"></i>Suivi de Colis</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="{{ path('app_profile') }}" title="Mon Compte"
+               style="width: 40px; height: 40px; border-radius: 12px; background: #3B49A2; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: 0.3s;"
+               onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .tracking-form-card {
+        background: var(--card-bg, #fff);
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        padding: 30px 32px;
+        margin-bottom: 28px;
+    }
+    .tracking-form-card h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: var(--text-primary, #1a1a2e);
+    }
+    .form-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+        min-width: 180px;
+    }
+    .form-group label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-secondary, #555);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .form-group input, .form-group select {
+        padding: 11px 14px;
+        border: 1.5px solid #e0e3ef;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s;
+        background: #f8f9fc;
+        width: 100%;
+    }
+    .form-group input:focus, .form-group select:focus {
+        border-color: #3B49A2;
+        background: #fff;
+    }
+    .btn-track {
+        padding: 11px 28px;
+        background: linear-gradient(135deg, #3B49A2, #5669d3);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.25s;
+        white-space: nowrap;
+    }
+    .btn-track:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(59,73,162,0.3); }
+
+    /* Alert / Error */
+    .alert-error {
+        background: #fff0f0;
+        border-left: 4px solid #e53935;
+        color: #b71c1c;
+        padding: 14px 18px;
+        border-radius: 10px;
+        margin-bottom: 22px;
+        font-size: 0.9rem;
+    }
+
+    /* Status card */
+    .status-card {
+        background: var(--card-bg, #fff);
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        padding: 28px 32px;
+        margin-bottom: 28px;
+    }
+    .status-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: capitalize;
+    }
+    .status-badge.delivered   { background: #e8f5e9; color: #2e7d32; }
+    .status-badge.in_transit  { background: #e3f2fd; color: #1565c0; }
+    .status-badge.out_for_delivery { background: #fff8e1; color: #f57f17; }
+    .status-badge.pre_transit { background: #f3e5f5; color: #6a1b9a; }
+    .status-badge.error       { background: #fce4ec; color: #880e4f; }
+    .status-badge.unknown     { background: #eceff1; color: #455a64; }
+
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 14px;
+        margin-bottom: 28px;
+    }
+    .meta-item {
+        background: #f8f9fc;
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+    .meta-item .label {
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+    }
+    .meta-item .value {
+        font-size: 0.97rem;
+        font-weight: 700;
+        color: #1a1a2e;
+    }
+
+    /* Timeline */
+    .timeline-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: #1a1a2e;
+    }
+    .timeline {
+        position: relative;
+        padding-left: 28px;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e0e3ef;
+    }
+    .timeline-event {
+        position: relative;
+        margin-bottom: 20px;
+        animation: fadeInUp 0.35s ease both;
+    }
+    .timeline-event::before {
+        content: '';
+        position: absolute;
+        left: -25px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #3B49A2;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #3B49A2;
+    }
+    .timeline-event:first-child::before { background: #2e7d32; box-shadow: 0 0 0 2px #2e7d32; }
+    .event-message {
+        font-size: 0.93rem;
+        font-weight: 600;
+        color: #1a1a2e;
+    }
+    .event-meta {
+        font-size: 0.8rem;
+        color: #888;
+        margin-top: 2px;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .no-events {
+        text-align: center;
+        color: #aaa;
+        padding: 20px;
+        font-size: 0.9rem;
+    }
+
+    /* Share link */
+    .share-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: #3B49A2;
+        text-decoration: none;
+        margin-top: 10px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1.5px solid #d0d5f0;
+        transition: 0.2s;
+    }
+    .share-link:hover { background: #f0f2ff; }
+</style>
+{% endblock %}
+
+{% block body %}
+{# ── Tracking Form ─────────────────────────────────────────── #}
+<div class="tracking-form-card">
+    <h2><i class="fas fa-search" style="margin-right:8px;"></i>Entrer un numéro de suivi</h2>
+    <form method="post" action="{{ path('student_shipping_track') }}">
+        <div class="form-row">
+            <div class="form-group" style="flex:2;">
+                <label for="tracking_code">Numéro de suivi</label>
+                <input
+                    type="text"
+                    id="tracking_code"
+                    name="tracking_code"
+                    placeholder="Ex : 1Z999AA10123456784 ou EZ1000000001"
+                    value="{{ submitted_code ?? '' }}"
+                    required
+                    autocomplete="off"
+                >
+            </div>
+            <div class="form-group">
+                <label for="carrier">Transporteur</label>
+                <select id="carrier" name="carrier">
+                    <option value="auto" {% if (submitted_carrier ?? 'auto') == 'auto' %}selected{% endif %}>Détection automatique</option>
+                    <option value="UPS"     {% if (submitted_carrier ?? '') == 'UPS' %}selected{% endif %}>UPS</option>
+                    <option value="FedEx"   {% if (submitted_carrier ?? '') == 'FedEx' %}selected{% endif %}>FedEx</option>
+                    <option value="USPS"    {% if (submitted_carrier ?? '') == 'USPS' %}selected{% endif %}>USPS</option>
+                    <option value="DHL"     {% if (submitted_carrier ?? '') == 'DHL' %}selected{% endif %}>DHL</option>
+                    <option value="GLS"     {% if (submitted_carrier ?? '') == 'GLS' %}selected{% endif %}>GLS</option>
+                    <option value="Chronopost" {% if (submitted_carrier ?? '') == 'Chronopost' %}selected{% endif %}>Chronopost</option>
+                    <option value="Colissimo" {% if (submitted_carrier ?? '') == 'Colissimo' %}selected{% endif %}>Colissimo</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-track">
+                <i class="fas fa-search" style="margin-right:6px;"></i>Suivre
+            </button>
+        </div>
+    </form>
+</div>
+
+{# ── Error ──────────────────────────────────────────────────── #}
+{% if error %}
+    <div class="alert-error">
+        <i class="fas fa-exclamation-circle" style="margin-right:8px;"></i>{{ error }}
+    </div>
+{% endif %}
+
+{# ── Tracker Result ─────────────────────────────────────────── #}
+{% if tracker %}
+    {% set statusClass = tracker.status in ['delivered','in_transit','out_for_delivery','pre_transit','error'] ? tracker.status : 'unknown' %}
+    {% set statusIcon  = {
+        'delivered': 'fa-check-circle',
+        'in_transit': 'fa-plane',
+        'out_for_delivery': 'fa-truck',
+        'pre_transit': 'fa-box',
+        'error': 'fa-times-circle',
+        'unknown': 'fa-question-circle'
+    } %}
+
+    <div class="status-card">
+        {# Header #}
+        <div class="status-header">
+            <div>
+                <div style="font-size:0.8rem; color:#888; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;">Colis</div>
+                <div style="font-size:1.3rem; font-weight:800; color:#1a1a2e;">{{ tracker.tracking_code }}</div>
+            </div>
+            <span class="status-badge {{ statusClass }}">
+                <i class="fas {{ statusIcon[statusClass] ?? 'fa-question-circle' }}"></i>
+                {{ tracker.status|replace({'_': ' '})|title }}
+            </span>
+        </div>
+
+        {# Meta grid #}
+        <div class="meta-grid">
+            <div class="meta-item">
+                <div class="label">Transporteur</div>
+                <div class="value"><i class="fas fa-truck" style="margin-right:6px; opacity:0.5;"></i>{{ tracker.carrier }}</div>
+            </div>
+            {% if tracker.est_delivery_date %}
+            <div class="meta-item">
+                <div class="label">Livraison estimée</div>
+                <div class="value"><i class="fas fa-calendar-alt" style="margin-right:6px; opacity:0.5;"></i>{{ tracker.est_delivery_date|date('d/m/Y') }}</div>
+            </div>
+            {% endif %}
+            {% if tracker.signed_by %}
+            <div class="meta-item">
+                <div class="label">Signé par</div>
+                <div class="value"><i class="fas fa-signature" style="margin-right:6px; opacity:0.5;"></i>{{ tracker.signed_by }}</div>
+            </div>
+            {% endif %}
+            <div class="meta-item">
+                <div class="label">Dernière mise à jour</div>
+                <div class="value"><i class="fas fa-clock" style="margin-right:6px; opacity:0.5;"></i>{{ tracker.updated_at ? tracker.updated_at|date('d/m/Y H:i') : 'N/A' }}</div>
+            </div>
+        </div>
+
+        {# Timeline #}
+        <div class="timeline-title"><i class="fas fa-history" style="margin-right:8px;"></i>Historique de suivi</div>
+        {% if tracker.tracking_details is not empty %}
+            <div class="timeline">
+                {% for event in tracker.tracking_details %}
+                    <div class="timeline-event" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
+                        <div class="event-message">{{ event.message }}</div>
+                        <div class="event-meta">
+                            {% if event.datetime %}
+                                <i class="fas fa-calendar-alt" style="margin-right:4px;"></i>{{ event.datetime|date('d/m/Y H:i') }}
+                            {% endif %}
+                            {% if event.source %}
+                                &nbsp;·&nbsp;<i class="fas fa-satellite-dish" style="margin-right:4px;"></i>{{ event.source }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-events">
+                <i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.4;"></i>
+                Aucun événement disponible pour ce colis pour le moment.
+            </div>
+        {% endif %}
+
+        {# Shareable link #}
+        {% if tracker.id %}
+            <a href="{{ path('student_shipping_status', {trackerId: tracker.id}) }}" class="share-link" target="_blank" rel="noopener">
+                <i class="fas fa-link"></i>Lien permanent vers ce suivi
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

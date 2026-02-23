@@ -1,0 +1,61 @@
+{% extends 'admin_layout.html.twig' %}
+
+{% block title %}Questions de l'Examen - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="{{ path('admin_exams_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+            <h2 style="font-size: 1.5rem; font-weight: 800;">Questions : Contrôle Final Algèbre</h2>
+        </div>
+        <button class="btn btn-primary" style="background: #3B49A2; border-radius: 12px; padding: 10px 25px;">+ Ajouter une Question</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Question Item 1 -->
+        <div class="card" style="padding: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div style="display: flex; gap: 15px;">
+                    <div style="width: 35px; height: 35px; background: #EEF2FF; color: #6366F1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800;">1</div>
+                    <div style="flex: 1;">
+                        <p style="font-size: 1.1rem; font-weight: 700; color: #1E293B;">Calculer le déterminant de la matrice A = [[2, 1], [3, 4]].</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px;"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding-left: 50px;">
+                <div style="padding: 12px; border: 2px solid #10B981; background: #F0FDF4; border-radius: 10px; font-weight: 600; color: #10B981;">A) 5 (Correct)</div>
+                <div style="padding: 12px; border: 1px solid #F1F5F9; border-radius: 10px; color: #64748B;">B) 11</div>
+                <div style="padding: 12px; border: 1px solid #F1F5F9; border-radius: 10px; color: #64748B;">C) 2</div>
+                <div style="padding: 12px; border: 1px solid #F1F5F9; border-radius: 10px; color: #64748B;">D) 8</div>
+            </div>
+        </div>
+
+        <!-- Question Item 2 -->
+        <div class="card" style="padding: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div style="display: flex; gap: 15px;">
+                    <div style="width: 35px; height: 35px; background: #EEF2FF; color: #6366F1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800;">2</div>
+                    <div style="flex: 1;">
+                        <p style="font-size: 1.1rem; font-weight: 700; color: #1E293B;">Une matrice carrée est inversible si et seulement si :</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px;"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding-left: 50px;">
+                <div style="padding: 12px; border: 1px solid #F1F5F9; border-radius: 10px; color: #64748B;">A) Son déterminant est nul</div>
+                <div style="padding: 12px; border: 2px solid #10B981; background: #F0FDF4; border-radius: 10px; font-weight: 600; color: #10B981;">B) Son déterminant est non nul</div>
+                <div style="padding: 12px; border: 1px solid #F1F5F9; border-radius: 10px; color: #64748B;">C) Elle est diagonale</div>
+                <div style="padding: 12px; border: 1px solid #F1F5F9; border-radius: 10px; color: #64748B;">D) Elle est symétrique</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
