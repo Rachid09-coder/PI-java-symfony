@@ -1,0 +1,97 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Mes Certifications & Bulletins - EduSmart{% endblock %}
+
+{% block body %}
+<div style="max-width: 1100px; margin: 0 auto; padding: 20px;">
+    <div style="margin-bottom: 40px;">
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: #1E293B; margin-bottom: 8px;">Mes Certifications & Bulletins</h2>
+        <p style="color: #64748B;">Consultez vos résultats académiques et téléchargez vos certifications.</p>
+    </div>
+
+    {# Bulletins Section #}
+    <div style="margin-bottom: 40px;">
+        <h3 style="font-size: 1.3rem; font-weight: 700; color: #1E293B; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-file-alt" style="color: #3B49A2;"></i> Mes Bulletins
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;">
+            {% for bulletin in bulletins %}
+                <div class="card" style="padding: 25px; transition: 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div style="width: 50px; height: 50px; border-radius: 15px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; color: #6366F1;">
+                            <i class="fas fa-clipboard-list" style="font-size: 1.4rem;"></i>
+                        </div>
+                        <span style="background: {% if bulletin.status == 'PUBLISHED' %}#D1FAE5{% elseif bulletin.status == 'VALIDATED' %}#DBEAFE{% else %}#F3F4F6{% endif %}; color: {% if bulletin.status == 'PUBLISHED' %}#10B981{% elseif bulletin.status == 'VALIDATED' %}#3B82F6{% else %}#6B7280{% endif %}; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                            {{ bulletin.status }}
+                        </span>
+                    </div>
+                    
+                    <h4 style="font-size: 1.1rem; font-weight: 800; color: #1E293B; margin-bottom: 10px;">{{ bulletin.academicYear }}</h4>
+                    <p style="font-size: 0.9rem; color: #64748B; margin-bottom: 15px;">{{ bulletin.semester }}</p>
+                    
+                    <div style="background: #F8FAFC; border-radius: 12px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.85rem; font-weight: 700; color: #64748B;">Moyenne Générale</span>
+                            <span style="font-size: 1.5rem; font-weight: 800; color: {{ bulletin.average >= 10 ? '#10B981' : '#EF4444' }};">{{ bulletin.average }}/20</span>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 0.8rem; color: #94A3B8;">
+                        <i class="far fa-calendar"></i> Créé le {{ bulletin.createdAt|date('d/m/Y') }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="card" style="padding: 40px; text-align: center; grid-column: 1 / -1;">
+                    <i class="fas fa-inbox" style="font-size: 3rem; color: #CBD5E1; margin-bottom: 15px;"></i>
+                    <p style="color: #94A3B8; font-weight: 600;">Aucun bulletin disponible pour le moment</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Certifications Section #}
+    <div>
+        <h3 style="font-size: 1.3rem; font-weight: 700; color: #1E293B; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-certificate" style="color: #10B981;"></i> Mes Certifications
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;">
+            {% for cert in certifications %}
+                <div class="card" style="padding: 25px; transition: 0.3s; border-left: 4px solid #10B981;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div style="width: 50px; height: 50px; border-radius: 15px; background: #D1FAE5; display: flex; align-items: center; justify-content: center; color: #10B981;">
+                            <i class="fas fa-award" style="font-size: 1.4rem;"></i>
+                        </div>
+                        <span style="background: {% if cert.status == 'ACTIVE' %}#D1FAE5{% elseif cert.status == 'REVOKED' %}#FEE2E2{% else %}#F3F4F6{% endif %}; color: {% if cert.status == 'ACTIVE' %}#10B981{% elseif cert.status == 'REVOKED' %}#EF4444{% else %}#6B7280{% endif %}; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                            {{ cert.status }}
+                        </span>
+                    </div>
+                    
+                    <h4 style="font-size: 1.1rem; font-weight: 800; color: #1E293B; margin-bottom: 10px;">{{ cert.type }}</h4>
+                    
+                    <div style="background: #F8FAFC; border-radius: 12px; padding: 12px; margin-bottom: 15px;">
+                        <p style="font-size: 0.75rem; color: #64748B; margin-bottom: 5px; text-transform: uppercase; font-weight: 700;">Code de vérification</p>
+                        <p style="font-family: monospace; color: #3B49A2; font-weight: 800; font-size: 1rem;">{{ cert.verificationCode }}</p>
+                    </div>
+                    
+                    <div style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 15px;">
+                        <i class="far fa-calendar"></i> Délivré le {{ cert.issuedAt|date('d/m/Y') }}
+                    </div>
+                    
+                    {% if cert.pdfPath %}
+                        <a href="{{ asset(cert.pdfPath) }}" target="_blank" class="btn btn-primary" style="width: 100%; background: #10B981; padding: 12px; border-radius: 12px; font-weight: 700; text-align: center; display: block; text-decoration: none;">
+                            <i class="fas fa-download"></i> Télécharger le PDF
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="card" style="padding: 40px; text-align: center; grid-column: 1 / -1;">
+                    <i class="fas fa-certificate" style="font-size: 3rem; color: #CBD5E1; margin-bottom: 15px;"></i>
+                    <p style="color: #94A3B8; font-weight: 600;">Aucune certification disponible pour le moment</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
