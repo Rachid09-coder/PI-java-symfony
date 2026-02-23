@@ -36,6 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 200)]
     #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères")]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
@@ -70,6 +71,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
+<<<<<<< HEAD
         $roles = ['ROLE_USER'];
         $role = $this->role !== null ? strtolower(trim($this->role)) : '';
         // Normaliser les valeurs courantes en base (etudiant, Étudiant, ROLE_ETUDIANT, etc.)
@@ -112,7 +114,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getNumtel(): ?string { return $this->numtel; }
     public function setNumtel(string $numtel): static { $this->numtel = $numtel; return $this; }
-
     public function isActive(): bool { return $this->isActive; }
     public function setIsActive(bool $isActive): static { $this->isActive = $isActive; return $this; }
 
@@ -122,7 +123,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getResetTokenExpiresAt(): ?\DateTimeImmutable { return $this->resetTokenExpiresAt; }
     public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): static { $this->resetTokenExpiresAt = $resetTokenExpiresAt; return $this; }
 
-    // Alias for SMS service compatibility
     public function getPhone(): ?string { return $this->numtel; }
 
     public function getGoogleId(): ?string { return $this->googleId; }

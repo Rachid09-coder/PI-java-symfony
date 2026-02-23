@@ -1,0 +1,336 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Suivi de ma commande #{{ order.id }} – EduSmart{% endblock %}
+
+{% block header_content %}
+    <div class="header">
+        <div class="page-title">
+            <i class="fas fa-truck" style="margin-right:10px; color:var(--primary-color);"></i>
+            Suivi – Commande #{{ order.id }}
+        </div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <a href="{{ path('app_profile') }}" title="Mon Compte"
+               style="width:40px;height:40px;border-radius:12px;background:#3B49A2;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;transition:0.3s;"
+               onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── Layout ─────────────────────────────────────────────── */
+    .track-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 24px;
+    }
+    @media(max-width:768px){ .track-grid { grid-template-columns: 1fr; } }
+
+    /* ── Cards ──────────────────────────────────────────────── */
+    .side-card, .main-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+        padding: 24px 26px;
+    }
+    .card-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 16px;
+    }
+
+    /* ── Order meta ─────────────────────────────────────────── */
+    .meta-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.86rem;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+    .meta-row strong { color: #1a1a2e; }
+
+    /* ── Status badge ───────────────────────────────────────── */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: capitalize;
+    }
+    .status-delivered        { background:#e8f5e9; color:#2e7d32; }
+    .status-in_transit       { background:#e3f2fd; color:#1565c0; }
+    .status-out_for_delivery { background:#fff8e1; color:#f57f17; }
+    .status-pre_transit      { background:#f3e5f5; color:#6a1b9a; }
+    .status-error            { background:#fce4ec; color:#880e4f; }
+    .status-unknown          { background:#eceff1; color:#455a64; }
+
+    /* ── Meta grid ──────────────────────────────────────────── */
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+        gap: 12px;
+        margin-bottom: 26px;
+    }
+    .meta-item {
+        background: #f8f9fc;
+        border-radius: 10px;
+        padding: 12px 14px;
+    }
+    .meta-item .label {
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .meta-item .value { font-size: 0.92rem; font-weight: 700; color: #1a1a2e; }
+
+    /* ── Timeline ───────────────────────────────────────────── */
+    .timeline { position: relative; padding-left: 26px; }
+    .timeline::before {
+        content:''; position:absolute; left:6px; top:0; bottom:0;
+        width:2px; background:#e0e3ef;
+    }
+    .tl-event {
+        position: relative;
+        margin-bottom: 18px;
+        animation: fadeUp 0.35s ease both;
+    }
+    .tl-event::before {
+        content:''; position:absolute; left:-22px; top:5px;
+        width:12px; height:12px; border-radius:50%;
+        background:#3B49A2; border:2px solid #fff; box-shadow:0 0 0 2px #3B49A2;
+    }
+    .tl-event:first-child::before { background:#2e7d32; box-shadow:0 0 0 2px #2e7d32; }
+    .tl-msg  { font-size:0.92rem; font-weight:600; color:#1a1a2e; }
+    .tl-meta { font-size:0.78rem; color:#888; margin-top:2px; }
+
+    @keyframes fadeUp {
+        from { opacity:0; transform:translateY(8px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── Error / empty ──────────────────────────────────────── */
+    .alert-error {
+        background:#fff0f0; border-left:4px solid #e53935;
+        color:#b71c1c; padding:14px 18px; border-radius:10px;
+        margin-bottom:20px; font-size:0.9rem;
+    }
+    .no-events {
+        text-align:center; color:#aaa;
+        padding:24px; font-size:0.9rem;
+    }
+
+    /* ── Items ──────────────────────────────────────────────── */
+    .item-row {
+        display:flex; align-items:center; gap:10px;
+        padding:7px 0; border-bottom:1px solid #F8FAFC;
+        font-size:0.86rem;
+    }
+    .item-icon {
+        width:30px; height:30px; border-radius:7px;
+        background:#EEF2FF; display:flex; align-items:center;
+        justify-content:center; color:#3B49A2; flex-shrink:0;
+    }
+    .item-name { flex:1; font-weight:600; color:#1a1a2e; }
+    .item-price { font-weight:700; color:#6366F1; }
+    .order-total {
+        display:flex; justify-content:space-between;
+        font-weight:800; font-size:1rem; color:#1a1a2e;
+        margin-top:12px; padding-top:12px;
+        border-top:1px solid #F1F5F9;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="track-grid">
+
+    {# ── Left: Order summary ─────────────────────────────────── #}
+    <div>
+        <div class="side-card">
+            <div class="card-title"><i class="fas fa-receipt" style="margin-right:6px;"></i>Commande</div>
+
+            <div class="meta-row">
+                <span>Numéro</span>
+                <strong>#{{ order.id }}</strong>
+            </div>
+            <div class="meta-row">
+                <span>Date</span>
+                <strong>{{ order.createdAt ? order.createdAt|date('d/m/Y') : 'N/A' }}</strong>
+            </div>
+            <div class="meta-row" style="margin-bottom:16px;">
+                <span>Statut paiement</span>
+                <strong style="color:#10B981;">{{ order.status|capitalize }}</strong>
+            </div>
+
+            {% for item in order.items %}
+                <div class="item-row">
+                    <div class="item-icon"><i class="fas fa-box"></i></div>
+                    <span class="item-name">{{ item.name }}</span>
+                    <span class="item-price">{{ item.price|number_format(2,',',' ') }} €</span>
+                </div>
+            {% endfor %}
+
+            <div class="order-total">
+                <span>Total</span>
+                <span style="color:#6366F1;">{{ order.totalAmount|number_format(2,',',' ') }} €</span>
+            </div>
+        </div>
+
+        {% if order.trackingNumber %}
+        <div class="side-card" style="margin-top:18px;">
+            <div class="card-title"><i class="fas fa-barcode" style="margin-right:6px;"></i>Expédition</div>
+            <div class="meta-row">
+                <span>N° de suivi</span>
+                <strong>{{ order.trackingNumber }}</strong>
+            </div>
+            <div class="meta-row">
+                <span>Transporteur</span>
+                <strong>{{ order.carrier ?? '–' }}</strong>
+            </div>
+            <div class="meta-row">
+                <span>Dernier statut DB</span>
+                <strong>{{ order.shippingStatus ?? 'N/A' }}</strong>
+            </div>
+            {% if order.shippingUpdatedAt %}
+            <div class="meta-row">
+                <span>Mis à jour</span>
+                <strong>{{ order.shippingUpdatedAt|date('d/m/Y H:i') }}</strong>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── Right: Live EasyPost tracking ──────────────────────── #}
+    <div class="main-card">
+        <div class="card-title"><i class="fas fa-satellite-dish" style="margin-right:6px;"></i>Suivi en temps réel</div>
+
+        {% if error %}
+            <div class="alert-error">
+                <i class="fas fa-exclamation-circle" style="margin-right:7px;"></i>{{ error }}
+                {# Show last known status from DB as fallback #}
+                {% if order.shippingStatus %}
+                    <div style="margin-top:8px; font-weight:600;">
+                        Statut enregistré : <span style="text-transform:capitalize;">{{ order.shippingStatus }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if tracker %}
+            {% set statusClass = tracker.status in ['delivered','in_transit','out_for_delivery','pre_transit','error'] ? tracker.status : 'unknown' %}
+            {% set icons = {
+                'delivered':        'fa-check-circle',
+                'in_transit':       'fa-plane',
+                'out_for_delivery': 'fa-truck',
+                'pre_transit':      'fa-box',
+                'error':            'fa-times-circle',
+                'unknown':          'fa-question-circle'
+            } %}
+
+            {# Current status badge #}
+            <div style="display:flex; align-items:center; gap:14px; margin-bottom:22px; flex-wrap:wrap;">
+                <span class="status-badge status-{{ statusClass }}">
+                    <i class="fas {{ icons[statusClass] ?? 'fa-question-circle' }}"></i>
+                    {{ tracker.status|replace({'_': ' '})|title }}
+                </span>
+                {% if tracker.status_detail %}
+                    <span style="font-size:0.85rem; color:#64748B; background:#F1F5F9; padding:4px 12px; border-radius:50px; font-weight:600;">
+                        {{ tracker.status_detail|title }}
+                    </span>
+                {% endif %}
+                {% if tracker.est_delivery_date %}
+                    <span style="font-size:0.82rem; color:#888;">
+                        <i class="fas fa-calendar-alt" style="margin-right:4px;"></i>
+                        Livraison estimée : <strong style="color:#1a1a2e;">{{ tracker.est_delivery_date|date('d/m/Y') }}</strong>
+                    </span>
+                {% endif %}
+            </div>
+
+            {# Meta grid #}
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="label">Transporteur</div>
+                    <div class="value">{{ tracker.carrier }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="label">N° de suivi</div>
+                    <div class="value" style="font-size:0.8rem;">{{ tracker.tracking_code }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="label">Dernière maj</div>
+                    <div class="value">{{ tracker.updated_at ? tracker.updated_at|date('d/m/Y H:i') : 'N/A' }}</div>
+                </div>
+                {% if tracker.public_url %}
+                    <div class="meta-item" style="background:#EEF2FF;">
+                        <div class="label" style="color:#3B49A2;">EasyPost Tracking</div>
+                        <div class="value">
+                            <a href="{{ tracker.public_url }}" target="_blank" style="color:#3B49A2; text-decoration:none; font-size:0.8rem;">
+                                <i class="fas fa-external-link-alt" style="margin-right:5px;"></i>Suivre sur EasyPost
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Event timeline #}
+            <div style="font-size:0.9rem; font-weight:700; color:#1a1a2e; margin-bottom:14px;">
+                <i class="fas fa-history" style="margin-right:7px;"></i>Historique détaillé
+            </div>
+
+            {% if tracker.tracking_details is not empty %}
+                <div class="timeline">
+                    {% for event in tracker.tracking_details %}
+                        <div class="tl-event" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
+                            <div class="tl-msg">
+                                {{ event.message }}
+                                {% if event.status_detail %}
+                                    <span style="font-size:0.75rem; color:#64748B; font-weight:normal; margin-left:8px;">({{ event.status_detail|title }})</span>
+                                {% endif %}
+                            </div>
+                            <div class="tl-meta">
+                                {% if event.datetime %}
+                                    <i class="fas fa-calendar-alt" style="margin-right:3px;"></i>{{ event.datetime|date('d/m/Y H:i') }}
+                                {% endif %}
+                                {% if event.source %}
+                                    &nbsp;·&nbsp;<i class="fas fa-satellite-dish" style="margin-right:3px;"></i>{{ event.source }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-events">
+                    <i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.4;"></i>
+                    Aucun événement disponible pour l'instant. Revenez plus tard.
+                </div>
+            {% endif %}
+
+        {% elseif not error %}
+            <div class="no-events">
+                <i class="fas fa-truck" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.3;"></i>
+                Expédition pas encore enregistrée.
+            </div>
+        {% endif %}
+
+        {# Refresh button #}
+        <div style="margin-top:24px; text-align:right;">
+            <a href="{{ path('student_shipping_order', {orderId: order.id}) }}"
+               style="font-size:0.82rem; color:#3B49A2; text-decoration:none; font-weight:600;">
+                <i class="fas fa-sync-alt" style="margin-right:5px;"></i>Actualiser le statut
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

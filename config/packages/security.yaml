@@ -28,6 +28,6 @@ security:
         - { path: ^/auth/google, roles: PUBLIC_ACCESS }
         - { path: ^/auth/(login|register), roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
-        # Accès restreints selon le rôle
+        # Accès restreints selon le rôle (main + fedi-work)
         - { path: ^/admin, roles: [ROLE_PROFESSEUR, ROLE_ADMIN, ROLE_CHEF_DEPT] }
         - { path: ^/student, roles: ROLE_ETUDIANT }

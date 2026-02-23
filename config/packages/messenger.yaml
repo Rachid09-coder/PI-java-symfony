@@ -18,7 +18,7 @@ framework:
             messenger.bus.default: []
 
         routing:
-            # Emails envoyés de manière synchrone pour résultat immédiat
+            # Emails envoyés de manière synchrone pour résultat immédiat (main) ; async disponible (fedi-work)
             Symfony\Component\Mailer\Messenger\SendEmailMessage: sync
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async

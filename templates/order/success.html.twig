@@ -1,0 +1,224 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Commande confirmée – EduSmart{% endblock %}
+
+{% block header_content %}
+    <div class="header">
+        <div class="page-title"><i class="fas fa-check-circle" style="color:#10B981; margin-right:10px;"></i>Commande confirmée</div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .success-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 40px 20px;
+    }
+    .success-icon {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg,#10B981,#34D399);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        color: #fff;
+        margin-bottom: 28px;
+        box-shadow: 0 8px 28px rgba(16,185,129,0.35);
+        animation: pop 0.5s cubic-bezier(.36,1.6,.6,1) both;
+    }
+    @keyframes pop {
+        from { transform: scale(0); opacity: 0; }
+        to   { transform: scale(1); opacity: 1; }
+    }
+    .success-title {
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: #1a1a2e;
+        margin-bottom: 10px;
+    }
+    .success-subtitle {
+        color: #64748B;
+        font-size: 1rem;
+        margin-bottom: 36px;
+        max-width: 480px;
+    }
+    .order-summary-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+        padding: 26px 32px;
+        width: 100%;
+        max-width: 520px;
+        margin-bottom: 32px;
+        text-align: left;
+    }
+    .order-summary-card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        padding-bottom: 10px;
+    }
+    .order-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.88rem;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+    .order-row strong { color: #1a1a2e; }
+    .order-total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #1a1a2e;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    /* Items list */
+    .item-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #F8FAFC;
+        font-size: 0.88rem;
+    }
+    .item-icon {
+        width: 34px;
+        height: 34px;
+        background: #EEF2FF;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3B49A2;
+        flex-shrink: 0;
+    }
+    .item-name { flex: 1; font-weight: 600; color: #1a1a2e; }
+    .item-price { font-weight: 700; color: #6366F1; }
+
+    /* CTA buttons */
+    .cta-group {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .btn-track-colis {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 30px;
+        background: linear-gradient(135deg,#3B49A2,#5669d3);
+        color: #fff;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: 0.25s;
+        box-shadow: 0 4px 16px rgba(59,73,162,0.3);
+    }
+    .btn-track-colis:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,73,162,0.4); }
+    .btn-shop-again {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 28px;
+        background: transparent;
+        color: #3B49A2;
+        border: 2px solid #3B49A2;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: 0.25s;
+    }
+    .btn-shop-again:hover { background: #EEF2FF; }
+
+    /* Shipping status pill */
+    .shipping-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 50px;
+        background: #E0E7FF;
+        color: #3730A3;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: capitalize;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="success-wrapper">
+    <div class="success-icon"><i class="fas fa-check"></i></div>
+
+    <div class="success-title">Paiement accepté !</div>
+    <div class="success-subtitle">
+        Votre commande <strong>#{{ order.id }}</strong> a bien été enregistrée.
+        {% if order.trackingNumber %}
+            Un suivi d'expédition a été créé automatiquement.
+        {% endif %}
+    </div>
+
+    {# ── Order summary card ──────────────────────────────────── #}
+    <div class="order-summary-card">
+        <h3><i class="fas fa-receipt" style="margin-right:7px; opacity:0.6;"></i>Récapitulatif de la commande</h3>
+
+        {% for item in order.items %}
+            <div class="item-row">
+                <div class="item-icon"><i class="fas fa-box"></i></div>
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-price">{{ item.price|number_format(2,',',' ') }} €</span>
+            </div>
+        {% endfor %}
+
+        <div class="order-total-row">
+            <span>Total payé</span>
+            <span style="color:#6366F1;">{{ order.totalAmount|number_format(2,',',' ') }} €</span>
+        </div>
+
+        {% if order.trackingNumber %}
+            <div class="order-row" style="margin-top:16px;">
+                <span>Numéro de suivi</span>
+                <strong>{{ order.trackingNumber }}</strong>
+            </div>
+            <div class="order-row">
+                <span>Transporteur</span>
+                <strong>{{ order.carrier ?? 'Détection auto' }}</strong>
+            </div>
+            <div class="order-row">
+                <span>Statut expédition</span>
+                <span class="shipping-pill">
+                    <i class="fas fa-truck"></i>
+                    {{ order.shippingStatus ?? 'en cours' }}
+                </span>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── CTA buttons ─────────────────────────────────────────── #}
+    <div class="cta-group">
+        {% if order.trackerId %}
+            <a href="{{ path('student_shipping_order', {orderId: order.id}) }}" class="btn-track-colis">
+                <i class="fas fa-truck"></i>Suivre mon colis
+            </a>
+        {% endif %}
+        <a href="{{ path('student_shop_index') }}" class="btn-shop-again">
+            <i class="fas fa-shopping-bag"></i>Continuer mes achats
+        </a>
+    </div>
+</div>
+{% endblock %}
