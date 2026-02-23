@@ -16,7 +16,7 @@
       <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 20px;">Nouvelle Catégorie</h3>
 
       {# Début du formulaire Symfony #}
-      {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+      {{ form_start(form) }}
       
         {# Champ Couleur (Caché mais connecté à Symfony) #}
        {{ form_widget(form.color, {
@@ -101,32 +101,7 @@
     </div>
 
     <div class="card" style="padding: 25px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Catégories Existantes</h3>
-        
-        {# Sort Links #}
-        <div style="display: flex; gap: 10px; font-size: 0.8rem; color: #64748B;">
-            <span>Trier par:</span>
-            <a href="{{ path('admin_shop_categories', app.request.query.all|merge({'sortBy': 'name', 'direction': currentSort == 'name' and currentDirection == 'ASC' ? 'DESC' : 'ASC'})) }}" style="color: {{ currentSort == 'name' ? '#3B49A2' : 'inherit' }}; text-decoration: none; font-weight: {{ currentSort == 'name' ? '700' : '400' }};">
-                Nom {% if currentSort == 'name' %}<i class="fas fa-sort-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>{% endif %}
-            </a>
-            <a href="{{ path('admin_shop_categories', app.request.query.all|merge({'sortBy': 'id', 'direction': currentSort == 'id' and currentDirection == 'ASC' ? 'DESC' : 'ASC'})) }}" style="color: {{ currentSort == 'id' ? '#3B49A2' : 'inherit' }}; text-decoration: none; font-weight: {{ currentSort == 'id' ? '700' : '400' }};">
-                Récents {% if currentSort == 'id' %}<i class="fas fa-sort-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>{% endif %}
-            </a>
-        </div>
-      </div>
-
-      {# Search Bar for Categories #}
-      <form method="get" action="{{ path('admin_shop_categories') }}" style="margin-bottom: 20px; display: flex; gap: 8px;">
-          <div style="position: relative; flex-grow: 1;">
-              <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 0.8rem;"></i>
-              <input type="text" name="search" value="{{ currentFilters.search|default('') }}" placeholder="Rechercher..." style="width: 100%; padding: 8px 8px 8px 30px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 0.85rem; outline: none;">
-          </div>
-          <button type="submit" class="btn" style="background: #F1F5F9; border: none; padding: 0 12px; border-radius: 8px; cursor: pointer;"><i class="fas fa-filter"></i></button>
-          {% if currentFilters.search or currentSort != 'id' %}
-              <a href="{{ path('admin_shop_categories') }}" style="display: flex; align-items: center; color: #94A3B8;"><i class="fas fa-times"></i></a>
-          {% endif %}
-      </form>
+      <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 20px;">Catégories Existantes</h3>
 
       <div style="display: flex; flex-direction: column; gap: 12px;">
         
