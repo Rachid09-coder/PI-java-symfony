@@ -1,277 +1,58 @@
-{% extends 'admin_layout.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Bulletin - {{ bulletin.student.name }} - EduSmart{% endblock %}
+{% block title %}Détail du bulletin #{{ bulletin.id }}{% endblock %}
+
+{% block header_content %}
+    <div class="page-header">
+        <h1>Bulletin #{{ bulletin.id }}</h1>
+        <p class="text-muted">Vue détaillée du bulletin.</p>
+    </div>
+{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
-    <div class="mb-4">
-        <a href="{{ path('admin_bulletin_index') }}" class="btn btn-outline-secondary mb-3">
-            <i class="fas fa-arrow-left me-1"></i> Retour à la liste
-        </a>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <h1 class="h3 mb-0 fw-bold text-primary">
-                <i class="fas fa-file-alt me-2"></i>Bulletin #{{ bulletin.id }}
-            </h1>
-            <div class="d-flex flex-wrap gap-2">
-                {% if bulletin.status == 'Brouillon' %}
-                    <form action="{{ path('admin_bulletin_verify_status', {id: bulletin.id}) }}" method="POST" class="d-inline">
-                        <button class="btn btn-info text-white shadow-sm">
-                            <i class="fas fa-check me-1"></i> Vérifier
-                        </button>
-                    </form>
-                {% elseif bulletin.status == 'Vérifié' %}
-                    <form action="{{ path('admin_bulletin_validate', {id: bulletin.id}) }}" method="POST" class="d-inline">
-                        <button class="btn btn-primary shadow-sm">
-                            <i class="fas fa-stamp me-1"></i> Valider
-                        </button>
-                    </form>
-                {% elseif bulletin.status == 'Validé' %}
-                    <form action="{{ path('admin_bulletin_publish', {id: bulletin.id}) }}" method="POST" class="d-inline">
-                        <button class="btn btn-success shadow-sm">
-                            <i class="fas fa-paper-plane me-1"></i> Publier
-                        </button>
-                    </form>
-                {% endif %}
+    <div class="page-content">
+        <div class="card">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Étudiant</dt>
+                    <dd class="col-sm-9">{{ bulletin.student ? bulletin.student.email : '—' }}</dd>
 
-                {% if bulletin.pdfPath %}
-                    <a href="{{ path('admin_bulletin_pdf', {id: bulletin.id}) }}" class="btn btn-danger shadow-sm" target="_blank">
-                        <i class="fas fa-file-pdf me-1"></i> PDF
-                    </a>
-                {% endif %}
+                    <dt class="col-sm-3">Année académique</dt>
+                    <dd class="col-sm-9">{{ bulletin.academicYear }}</dd>
 
-                {% if bulletin.status == 'Publié' and bulletin.student.numtel %}
-                    <form action="{{ path('admin_bulletin_send_sms', {id: bulletin.id}) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-purple shadow-sm">
-                            <i class="fas fa-sms me-1"></i> SMS
-                        </button>
-                    </form>
-                {% endif %}
+                    <dt class="col-sm-3">Semestre</dt>
+                    <dd class="col-sm-9">{{ bulletin.semester }}</dd>
 
-                {% if bulletin.status == 'Publié' and bulletin.student.email %}
-                    <form action="{{ path('admin_bulletin_send_email', {id: bulletin.id}) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-info shadow-sm">
-                            <i class="fas fa-envelope me-1"></i> Email
-                        </button>
-                    </form>
-                {% endif %}
+                    <dt class="col-sm-3">Moyenne</dt>
+                    <dd class="col-sm-9">
+                        {{ bulletin.average is not null ? bulletin.average|number_format(2, ',', ' ') : '—' }}
+                    </dd>
 
-                <a href="{{ path('admin_audit_log_index', {entity_type: 'Bulletin', entity_id: bulletin.id}) }}" class="btn btn-outline-info shadow-sm">
-                    <i class="fas fa-history me-1"></i> Audit
+                    <dt class="col-sm-3">Statut</dt>
+                    <dd class="col-sm-9">{{ bulletin.status }}</dd>
+
+                    <dt class="col-sm-3">Créé le</dt>
+                    <dd class="col-sm-9">
+                        {{ bulletin.createdAt ? bulletin.createdAt|date('d/m/Y H:i') : '' }}
+                    </dd>
+
+                    <dt class="col-sm-3">Mis à jour le</dt>
+                    <dd class="col-sm-9">
+                        {{ bulletin.updatedAt ? bulletin.updatedAt|date('d/m/Y H:i') : '—' }}
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{{ path('app_bulletin_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
                 </a>
-
-                {% if bulletin.published and not bulletin.revoked %}
-                    <button class="btn btn-warning text-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#revokeModal">
-                        <i class="fas fa-ban me-1"></i> Révoquer
-                    </button>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-lg-4">
-            <!-- Carte Étudiant -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-gradient text-white py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <h6 class="m-0 fw-bold"><i class="fas fa-user-graduate me-2"></i>Informations Étudiant</h6>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center text-white mx-auto" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <i class="fas fa-user-graduate fa-2x"></i>
-                        </div>
-                        <h5 class="mt-3 mb-1 fw-bold">{{ bulletin.student.prenom }} {{ bulletin.student.name }}</h5>
-                        <p class="text-muted small mb-0"><i class="fas fa-envelope me-1"></i>{{ bulletin.student.email }}</p>
-                        {% if bulletin.student.numtel %}
-                        <p class="text-muted small mb-0"><i class="fas fa-phone me-1"></i>{{ bulletin.student.numtel }}</p>
-                        {% endif %}
-                    </div>
-                    <hr>
-                    <div class="row text-center">
-                        <div class="col-6 border-end">
-                            <p class="text-muted small mb-1">Année</p>
-                            <p class="fw-bold mb-0">{{ bulletin.academicYear }}</p>
-                        </div>
-                        <div class="col-6">
-                            <p class="text-muted small mb-1">Semestre</p>
-                            <p class="fw-bold mb-0">{{ bulletin.semester }}</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row text-center">
-                        <div class="col-6 border-end">
-                            <p class="text-muted small mb-1">Moyenne</p>
-                            <p class="fs-3 fw-bold mb-0 {% if bulletin.average >= 10 %}text-success{% else %}text-danger{% endif %}">{{ bulletin.average|number_format(2) }}</p>
-                        </div>
-                        <div class="col-6">
-                            <p class="text-muted small mb-1">Rang</p>
-                            <p class="fs-4 fw-bold mb-0">{{ bulletin.classRank ?: '-' }}{% if bulletin.classRank %}<small class="text-muted">/N</small>{% endif %}</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="text-center">
-                        <span class="badge fs-6 px-3 py-2 {% if bulletin.average >= 16 %}bg-success{% elseif bulletin.average >= 14 %}bg-primary{% elseif bulletin.average >= 12 %}bg-info{% elseif bulletin.average >= 10 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
-                            {{ bulletin.mention }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Carte Statut -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-light py-3">
-                    <h6 class="m-0 fw-bold text-dark"><i class="fas fa-info-circle me-2"></i>Statut</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <span class="text-muted">État actuel</span>
-                        <span class="badge fs-6 {% if bulletin.status == 'Publié' %}{% if bulletin.revoked %}bg-danger{% else %}bg-success{% endif %}{% elseif bulletin.status == 'Validé' %}bg-primary{% elseif bulletin.status == 'Vérifié' %}bg-info{% else %}bg-secondary{% endif %}">
-                            {{ bulletin.revoked ? 'RÉVOQUÉ' : bulletin.status }}
-                        </span>
-                    </div>
-                    {% if bulletin.createdAt %}
-                    <hr>
-                    <p class="small text-muted mb-1"><i class="fas fa-calendar-plus me-1"></i> Créé le: {{ bulletin.createdAt|date('d/m/Y H:i') }}</p>
-                    {% endif %}
-                    {% if bulletin.publishedAt %}
-                    <p class="small text-muted mb-0"><i class="fas fa-calendar-check me-1"></i> Publié le: {{ bulletin.publishedAt|date('d/m/Y H:i') }}</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            {% if bulletin.verificationCode %}
-            <!-- Carte Vérification -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-light py-3">
-                    <h6 class="m-0 fw-bold text-dark"><i class="fas fa-shield-alt me-2"></i>Vérification</h6>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted small mb-1">Code de vérification</p>
-                    <div class="bg-light p-2 font-monospace rounded border small mb-3 text-break">
-                        {{ bulletin.verificationCode }}
-                    </div>
-                    <a href="{{ path('public_verify', {code: bulletin.verificationCode}) }}" target="_blank" class="btn btn-outline-primary btn-sm w-100">
-                        <i class="fas fa-external-link-alt me-1"></i> Vérifier en ligne
-                    </a>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <div class="col-lg-8">
-            <!-- Carte Notes -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 fw-bold text-primary"><i class="fas fa-graduation-cap me-2"></i>Détail des Notes</h6>
-                    {% if not bulletin.published or bulletin.revoked %}
-                    <a href="{{ path('admin_bulletin_edit', {id: bulletin.id}) }}" class="btn btn-sm btn-outline-primary">
+                <div>
+                    <a href="{{ path('app_bulletin_edit', {id: bulletin.id}) }}" class="btn btn-primary me-2">
                         <i class="fas fa-edit me-1"></i> Modifier
                     </a>
-                    {% endif %}
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Module</th>
-                                    <th class="text-center" style="width: 70px;">CC</th>
-                                    <th class="text-center" style="width: 70px;">DS</th>
-                                    <th class="text-center" style="width: 70px;">Exam</th>
-                                    <th class="text-center" style="width: 70px;">Note</th>
-                                    <th class="text-center" style="width: 60px;">Coef</th>
-                                    <th class="pe-4">Commentaire</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for line in bulletin.reportCardLines %}
-                                <tr>
-                                    <td class="ps-4 fw-semibold">{{ line.moduleName }}</td>
-                                    <td class="text-center">
-                                        <span class="badge bg-light text-dark">{{ line.noteCC|default('-') }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-light text-dark">{{ line.noteDS|default('-') }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-light text-dark">{{ line.noteExam|default('-') }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge fs-6 {{ line.note >= 10 ? 'bg-success' : 'bg-danger' }}">
-                                            {{ line.note|number_format(2) }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center fw-bold">{{ line.coefficient }}</td>
-                                    <td class="pe-4 small text-muted">{{ line.teacherComment|default('-') }}</td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
-                                        Aucune ligne de note saisie.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                            {% if bulletin.reportCardLines|length > 0 %}
-                            <tfoot class="table-light">
-                                <tr class="fw-bold">
-                                    <td class="ps-4">TOTAL</td>
-                                    <td colspan="3"></td>
-                                    <td class="text-center">
-                                        <span class="badge fs-6 bg-primary">{{ bulletin.average|number_format(2) }}</span>
-                                    </td>
-                                    <td class="text-center">{{ bulletin.reportCardLines|reduce((carry, line) => carry + line.coefficient, 0) }}</td>
-                                    <td></td>
-                                </tr>
-                            </tfoot>
-                            {% endif %}
-                        </table>
-                    </div>
+                    {{ include('bulletin/_delete_form.html.twig', {bulletin: bulletin}) }}
                 </div>
             </div>
-            
-            {% if bulletin.revoked %}
-            <div class="alert alert-danger shadow-sm border-0 mb-4">
-                <h5 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Bulletin Révoqué</h5>
-                <p class="mb-1"><strong>Raison:</strong> {{ bulletin.revocationReason }}</p>
-                <p class="small mb-0 text-muted">Révoqué le {{ bulletin.revokedAt|date('d/m/Y H:i') }}</p>
-            </div>
-            {% endif %}
         </div>
     </div>
-</div>
-
-<!-- Modal Révoquer -->
-<div class="modal fade" id="revokeModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <form action="{{ path('admin_bulletin_revoke', {id: bulletin.id}) }}" method="POST">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="fas fa-ban me-2"></i>Révoquer le Bulletin</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        La révocation rendra ce bulletin invalide sur la plateforme publique et sur le PDF existant.
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Raison de la révocation</label>
-                        <textarea name="reason" class="form-control" rows="3" required placeholder="Ex: Erreur de saisie dans le module X..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-danger"><i class="fas fa-ban me-1"></i> Révoquer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<style>
-    .btn-purple { background: #8B5CF6; color: white; }
-    .btn-purple:hover { background: #7C3AED; color: white; }
-</style>
 {% endblock %}

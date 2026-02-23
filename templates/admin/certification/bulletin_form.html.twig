@@ -10,27 +10,38 @@
     </div>
 
     <div class="card" style="padding: 40px;">
-        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'cert-bulletin-form'}}) }}
+        {{ form_start(form) }}
             <div style="display: flex; flex-direction: column; gap: 25px;">
                 <div>
                     {{ form_label(form.student, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
                     {{ form_widget(form.student, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                    {{ form_errors(form.student) }}
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
                         {{ form_label(form.academicYear, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
                         {{ form_widget(form.academicYear, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px;'}}) }}
+                        {{ form_errors(form.academicYear) }}
                     </div>
                     <div>
                         {{ form_label(form.semester, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
                         {{ form_widget(form.semester, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                        {{ form_errors(form.semester) }}
                     </div>
                 </div>
 
-                <div>
-                    {{ form_label(form.average, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
-                    {{ form_widget(form.average, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px;'}}) }}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        {{ form_label(form.average, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.average, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px;'}}) }}
+                        {{ form_errors(form.average) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.status, null, {'label_attr': {'style': 'display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B;'}}) }}
+                        {{ form_widget(form.status, {'attr': {'style': 'width: 100%; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px; background: white;'}}) }}
+                        {{ form_errors(form.status) }}
+                    </div>
                 </div>
             </div>
 
@@ -41,49 +52,4 @@
         {{ form_end(form) }}
     </div>
 </div>
-
-<style>
-.field-error {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
-    animation: shake 0.4s ease;
-}
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var form = document.getElementById('cert-bulletin-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            form.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
-            var isValid = true;
-            var requiredFields = form.querySelectorAll('[required]');
-            requiredFields.forEach(function(field) {
-                if (!field.value || field.value.trim() === '') {
-                    field.classList.add('field-error');
-                    isValid = false;
-                }
-            });
-            if (!isValid) {
-                e.preventDefault();
-                var firstError = form.querySelector('.field-error');
-                if (firstError) {
-                    firstError.focus();
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        });
-        form.querySelectorAll('input, select, textarea').forEach(function(field) {
-            field.addEventListener('input', function() {
-                this.classList.remove('field-error');
-            });
-        });
-    }
-});
-</script>
 {% endblock %}

@@ -2,412 +2,64 @@
 
 {% block title %}Mes Modules - EduSmart{% endblock %}
 
-{% block stylesheets %}
-<style>
-    .modules-page { padding: 0 20px; }
-
-    .modules-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 35px;
-    }
-    .modules-header-left h2 {
-        font-size: 2.2rem;
-        font-weight: 900;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 6px;
-        letter-spacing: -0.5px;
-    }
-    .modules-header-left p {
-        font-size: 1rem;
-        color: #64748B;
-    }
-    .modules-count-badge {
-        background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
-        color: #4F46E5;
-        padding: 8px 20px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .modules-count-badge i { font-size: 0.75rem; }
-
-    .search-filter-bar {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        margin-bottom: 30px;
-    }
-    .search-box-student {
-        position: relative;
-        flex: 1;
-    }
-    .search-box-student i {
-        position: absolute;
-        left: 18px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94A3B8;
-        transition: color 0.3s;
-        font-size: 0.9rem;
-    }
-    .search-box-student input {
-        width: 100%;
-        padding: 16px 16px 16px 50px;
-        border: 2px solid #E2E8F0;
-        border-radius: 16px;
-        outline: none;
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        background: white;
-    }
-    .search-box-student input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
-    }
-    .search-box-student:focus-within i { color: #667eea; }
-
-    .filter-chip {
-        padding: 14px 22px;
-        border: 2px solid #E2E8F0;
-        border-radius: 16px;
-        background: white;
-        color: #64748B;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-    }
-    .filter-chip:hover, .filter-chip.active {
-        border-color: #667eea;
-        color: #667eea;
-        background: rgba(102,126,234,0.05);
-    }
-
-    .modules-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 28px;
-    }
-
-    .module-card {
-        background: white;
-        border-radius: 24px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid #E2E8F0;
-        text-decoration: none;
-        color: inherit;
-        display: block;
-        position: relative;
-    }
-    .module-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 25px 50px rgba(102,126,234,0.18);
-        border-color: rgba(102,126,234,0.3);
-    }
-
-    .module-card-visual {
-        height: 180px;
-        position: relative;
-        overflow: hidden;
-    }
-    .module-card-visual img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.6s ease;
-    }
-    .module-card:hover .module-card-visual img {
-        transform: scale(1.1);
-    }
-    .module-card-visual .visual-placeholder {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3.5rem;
-        color: rgba(255,255,255,0.8);
-    }
-    .module-card-visual .overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.4) 100%);
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-    .module-card:hover .module-card-visual .overlay { opacity: 1; }
-
-    .module-card-visual .view-label {
-        position: absolute;
-        bottom: 15px;
-        left: 50%;
-        transform: translateX(-50%) translateY(20px);
-        background: white;
-        color: #667eea;
-        padding: 8px 24px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        opacity: 0;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    }
-    .module-card:hover .module-card-visual .view-label {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-
-    .module-course-count {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: rgba(255,255,255,0.95);
-        backdrop-filter: blur(10px);
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #667eea;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .module-card-body {
-        padding: 24px;
-    }
-    .module-card-title {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: #1E293B;
-        margin-bottom: 10px;
-        line-height: 1.3;
-        transition: color 0.3s;
-    }
-    .module-card:hover .module-card-title { color: #667eea; }
-    .module-card-desc {
-        font-size: 0.88rem;
-        color: #64748B;
-        line-height: 1.6;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        margin-bottom: 20px;
-    }
-
-    .module-card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 16px;
-        border-top: 1px solid #F1F5F9;
-    }
-    .module-card-courses {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        color: #667eea;
-    }
-    .module-card-courses i {
-        width: 28px; height: 28px;
-        background: linear-gradient(135deg, #667eea15, #764ba215);
-        border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.7rem;
-    }
-    .module-card-arrow {
-        width: 36px; height: 36px;
-        border-radius: 50%;
-        background: #F8FAFC;
-        display: flex; align-items: center; justify-content: center;
-        color: #94A3B8;
-        transition: all 0.3s;
-        font-size: 0.8rem;
-    }
-    .module-card:hover .module-card-arrow {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        transform: translateX(4px);
-    }
-
-    .empty-modules {
-        text-align: center;
-        padding: 80px 40px;
-        background: white;
-        border-radius: 24px;
-        border: 2px dashed #E2E8F0;
-    }
-    .empty-modules-icon {
-        width: 120px; height: 120px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea10, #764ba210);
-        display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 30px;
-        position: relative;
-    }
-    .empty-modules-icon i {
-        font-size: 3rem;
-        color: #667eea;
-    }
-    .empty-modules-icon::after {
-        content: '';
-        position: absolute;
-        inset: -8px;
-        border-radius: 50%;
-        border: 2px dashed #667eea30;
-        animation: spin 20s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .empty-modules h3 {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #1E293B;
-        margin-bottom: 10px;
-    }
-    .empty-modules p { color: #64748B; font-size: 1rem; }
-
-    @keyframes cardAppear {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .module-card {
-        animation: cardAppear 0.6s ease forwards;
-        opacity: 0;
-    }
-    .module-card:nth-child(1) { animation-delay: 0.1s; }
-    .module-card:nth-child(2) { animation-delay: 0.2s; }
-    .module-card:nth-child(3) { animation-delay: 0.3s; }
-    .module-card:nth-child(4) { animation-delay: 0.4s; }
-    .module-card:nth-child(5) { animation-delay: 0.5s; }
-    .module-card:nth-child(6) { animation-delay: 0.6s; }
-</style>
-{% endblock %}
-
 {% block body %}
-<div class="modules-page">
-    <div class="modules-header">
-        <div class="modules-header-left">
-            <h2>Mes Modules</h2>
-            <p>Explorez les modules et accédez à vos cours</p>
+    <div style="padding: 0 var(--sp-4);">
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: var(--sp-6); color: #1E293B;">Mes Modules</h2>
+        
+        <div style="margin-bottom: var(--sp-6); position: relative;">
+            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
+            <input type="text" id="moduleSearch" placeholder="Rechercher un module..." style="width: 100%; padding: 12px 12px 12px 45px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; transition: border-color 0.2s; font-size: 1rem;">
         </div>
-        {% if modules is not empty %}
-            <div class="modules-count-badge">
-                <i class="fas fa-layer-group"></i>
-                {{ modules|length }} module(s) disponible(s)
+
+        {% if modules is empty %}
+            <div class="card" style="text-align: center; padding: 50px; color: #64748B;">
+                <i class="fas fa-book-open" style="font-size: 3rem; margin-bottom: 20px; color: #CBD5E1;"></i>
+                <p>Aucun module disponible pour le moment.</p>
+            </div>
+        {% else %}
+            <div id="modulesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                {% for module in modules %}
+                    <a href="{{ path('student_module_details', {id: module.id}) }}" style="text-decoration: none; color: inherit;" class="fade-in stagger-{{ loop.index0 % 3 + 1 }} module-link" data-title="{{ module.title|lower }}">
+                        <div class="card module-card hover-scale glow-effect" style="padding: 0; overflow: hidden; height: 100%; transition: all 0.3s ease; border: 1px solid #E2E8F0;">
+                            <div style="height: 160px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                                {% if module.thumbnail %}
+                                    <img src="{{ asset('uploads/' ~ module.thumbnail) }}" alt="{{ module.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-layer-group" style="font-size: 3rem; color: #CBD5E1;"></i>
+                                {% endif %}
+                            </div>
+                            <div style="padding: 20px;">
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: #1E293B;">{{ module.title }}</h3>
+                                <p style="font-size: 0.9rem; color: #64748B; line-height: 1.5; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                    {{ module.description }}
+                                </p>
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 15px;">
+                                    <span style="font-size: 0.8rem; color: #6366F1; font-weight: 600;">
+                                        {{ module.courses|length }} Cour(s)
+                                    </span>
+                                    <span class="btn btn-outline" style="padding: 5px 12px; font-size: 0.8rem;">Voir les cours</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
             </div>
         {% endif %}
     </div>
 
-    {% if modules is not empty %}
-        <div class="search-filter-bar">
-            <div class="search-box-student">
-                <i class="fas fa-search"></i>
-                <input type="text" id="moduleSearch" placeholder="Rechercher un module...">
-            </div>
-            <button class="filter-chip active" onclick="filterModules('all', this)">
-                <i class="fas fa-th-large"></i> Tous
-            </button>
-            <button class="filter-chip" onclick="filterModules('with-courses', this)">
-                <i class="fas fa-link"></i> Avec cours
-            </button>
-        </div>
-    {% endif %}
-
-    {% if modules is empty %}
-        <div class="empty-modules">
-            <div class="empty-modules-icon">
-                <i class="fas fa-book-open"></i>
-            </div>
-            <h3>Aucun module disponible</h3>
-            <p>Les modules apparaîtront ici dès qu'ils seront créés par vos professeurs.</p>
-        </div>
-    {% else %}
-        <div class="modules-grid" id="modulesGrid">
-            {% set gradients = [
-                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)'
-            ] %}
-            {% for module in modules %}
-                <a href="{{ path('student_module_details', {id: module.id}) }}" class="module-card" data-title="{{ module.title|lower }}" data-courses="{{ module.courses|length }}">
-                    <div class="module-card-visual" style="background: {{ gradients[loop.index0 % 6] }};">
-                        {% if module.thumbnail %}
-                            <img src="{{ asset('uploads/' ~ module.thumbnail) }}" alt="{{ module.title }}">
-                        {% else %}
-                            <div class="visual-placeholder">
-                                <i class="fas fa-{{ ['laptop-code', 'brain', 'flask', 'palette', 'database', 'rocket'][loop.index0 % 6] }}"></i>
-                            </div>
-                        {% endif %}
-                        <div class="overlay"></div>
-                        <div class="view-label">
-                            <i class="fas fa-eye" style="margin-right: 6px;"></i> Voir les cours
-                        </div>
-                        <div class="module-course-count">
-                            <i class="fas fa-book-open" style="margin-right: 5px; font-size: 0.65rem;"></i>
-                            {{ module.courses|length }} cours
-                        </div>
-                    </div>
-                    <div class="module-card-body">
-                        <h3 class="module-card-title">{{ module.title }}</h3>
-                        <p class="module-card-desc">
-                            {{ module.description|default('Ce module contient des cours passionnants à découvrir.') }}
-                        </p>
-                        <div class="module-card-footer">
-                            <div class="module-card-courses">
-                                <i class="fas fa-graduation-cap"></i>
-                                {{ module.courses|length }} Cours disponible(s)
-                            </div>
-                            <div class="module-card-arrow">
-                                <i class="fas fa-arrow-right"></i>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
-    {% endif %}
-</div>
-{% endblock %}
-
-{% block javascripts %}
-<script>
-document.getElementById('moduleSearch')?.addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    document.querySelectorAll('.module-card').forEach(card => {
-        const title = card.dataset.title;
-        card.style.display = title.includes(searchTerm) ? '' : 'none';
-    });
-});
-
-function filterModules(type, btn) {
-    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.module-card').forEach(card => {
-        if (type === 'all') {
-            card.style.display = '';
-        } else if (type === 'with-courses') {
-            card.style.display = parseInt(card.dataset.courses) > 0 ? '' : 'none';
-        }
-    });
-}
-</script>
+    <script>
+        document.getElementById('moduleSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const modules = document.querySelectorAll('.module-link');
+            
+            modules.forEach(module => {
+                const title = module.getAttribute('data-title');
+                if (title.includes(searchTerm)) {
+                    module.style.display = 'block';
+                } else {
+                    module.style.display = 'none';
+                }
+            });
+        });
+    </script>
 {% endblock %}

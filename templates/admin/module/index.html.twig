@@ -2,735 +2,127 @@
 
 {% block title %}Gestion des Modules - EduSmart{% endblock %}
 
-{% block stylesheets %}
-<style>
-    .modules-hero {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 24px;
-        padding: 40px;
-        margin-bottom: 30px;
-        position: relative;
-        overflow: hidden;
-        color: white;
-    }
-    .modules-hero::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-        border-radius: 50%;
-        animation: float 6s ease-in-out infinite;
-    }
-    .modules-hero::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -10%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        border-radius: 50%;
-        animation: float 8s ease-in-out infinite reverse;
-    }
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(5deg); }
-    }
-    .hero-content { position: relative; z-index: 2; }
-    .hero-title {
-        font-size: 2rem;
-        font-weight: 900;
-        margin-bottom: 8px;
-        letter-spacing: -0.5px;
-    }
-    .hero-subtitle {
-        font-size: 1rem;
-        opacity: 0.85;
-        font-weight: 400;
-    }
-    .hero-stats {
-        display: flex;
-        gap: 30px;
-        margin-top: 25px;
-    }
-    .hero-stat {
-        background: rgba(255,255,255,0.15);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        padding: 18px 24px;
-        min-width: 140px;
-        border: 1px solid rgba(255,255,255,0.2);
-        transition: transform 0.3s ease;
-    }
-    .hero-stat:hover { transform: translateY(-4px); }
-    .hero-stat-value {
-        font-size: 1.8rem;
-        font-weight: 900;
-        display: block;
-        line-height: 1;
-    }
-    .hero-stat-label {
-        font-size: 0.8rem;
-        opacity: 0.8;
-        margin-top: 6px;
-        display: block;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .hero-actions {
-        position: absolute;
-        right: 40px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 2;
-    }
-    .btn-create-module {
-        background: white;
-        color: #667eea;
-        padding: 14px 32px;
-        border-radius: 14px;
-        font-weight: 700;
-        font-size: 0.95rem;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    .btn-create-module:hover {
-        transform: translateY(-3px) scale(1.03);
-        box-shadow: 0 12px 35px rgba(0,0,0,0.25);
-        color: #764ba2;
-    }
-    .btn-create-module i {
-        width: 28px; height: 28px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.8rem;
-    }
-
-    .toolbar {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        margin-bottom: 25px;
-    }
-    .search-wrapper {
-        position: relative;
-        flex: 1;
-    }
-    .search-wrapper i {
-        position: absolute;
-        left: 18px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94A3B8;
-        font-size: 0.9rem;
-        transition: color 0.3s;
-    }
-    .search-wrapper input {
-        width: 100%;
-        padding: 16px 16px 16px 50px;
-        border: 2px solid var(--border-color);
-        border-radius: 16px;
-        outline: none;
-        background: var(--bg-secondary);
-        color: var(--text-primary);
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    .search-wrapper input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
-    }
-    .search-wrapper input:focus + i,
-    .search-wrapper:focus-within i {
-        color: #667eea;
-    }
-    .sort-btn {
-        padding: 16px 24px;
-        border: 2px solid var(--border-color);
-        border-radius: 16px;
-        background: var(--bg-secondary);
-        color: var(--text-primary);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-    }
-    .sort-btn:hover {
-        border-color: #667eea;
-        color: #667eea;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102,126,234,0.15);
-    }
-    .view-toggle {
-        display: flex;
-        border: 2px solid var(--border-color);
-        border-radius: 16px;
-        overflow: hidden;
-    }
-    .view-toggle button {
-        padding: 16px 18px;
-        border: none;
-        background: var(--bg-secondary);
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
-    }
-    .view-toggle button.active {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-    }
-    .view-toggle button:hover:not(.active) {
-        color: #667eea;
-        background: rgba(102,126,234,0.05);
-    }
-
-    .modules-table-card {
-        background: var(--card-bg);
-        border-radius: 20px;
-        overflow: hidden;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    }
-    .modules-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .modules-table thead tr {
-        background: linear-gradient(90deg, rgba(102,126,234,0.05), rgba(118,75,162,0.05));
-    }
-    .modules-table th {
-        padding: 18px 24px;
-        text-align: left;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        color: var(--text-secondary);
-        font-weight: 700;
-        border-bottom: 2px solid var(--border-color);
-    }
-    .modules-table tbody tr {
-        transition: all 0.3s ease;
-        border-bottom: 1px solid rgba(0,0,0,0.03);
-    }
-    .modules-table tbody tr:hover {
-        background: linear-gradient(90deg, rgba(102,126,234,0.03), rgba(118,75,162,0.03));
-        transform: scale(1.005);
-    }
-    .modules-table td {
-        padding: 20px 24px;
-        vertical-align: middle;
-    }
-    .module-thumb {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
-        object-fit: cover;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease;
-    }
-    .module-thumb:hover { transform: scale(1.15) rotate(2deg); }
-    .module-thumb-placeholder {
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, #667eea20, #764ba220);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #667eea;
-        font-size: 1.2rem;
-    }
-    .module-title {
-        font-weight: 700;
-        color: var(--text-primary);
-        font-size: 0.95rem;
-        transition: color 0.3s;
-    }
-    .module-title:hover { color: #667eea; }
-    .module-desc {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        margin-top: 4px;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    .course-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: linear-gradient(135deg, #EEF2FF, #F0EAFF);
-        color: #667eea;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        margin: 2px 4px 2px 0;
-        border: 1px solid rgba(102,126,234,0.15);
-    }
-    .course-chip:hover {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102,126,234,0.3);
-    }
-    .action-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        border: 1px solid var(--border-color);
-        background: transparent;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    .action-btn-edit {
-        color: #667eea;
-    }
-    .action-btn-edit:hover {
-        background: #667eea;
-        color: white;
-        border-color: #667eea;
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(102,126,234,0.3);
-    }
-    .action-btn-delete {
-        color: #EF4444;
-    }
-    .action-btn-delete:hover {
-        background: #EF4444;
-        color: white;
-        border-color: #EF4444;
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(239,68,68,0.3);
-    }
-    .empty-state {
-        text-align: center;
-        padding: 80px 40px;
-    }
-    .empty-state-icon {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea15, #764ba215);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 25px;
-        font-size: 2.5rem;
-        color: #667eea;
-        animation: pulse-soft 3s ease-in-out infinite;
-    }
-    @keyframes pulse-soft {
-        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102,126,234,0.2); }
-        50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(102,126,234,0); }
-    }
-    .empty-state-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 8px;
-    }
-    .empty-state-text {
-        color: var(--text-secondary);
-        margin-bottom: 25px;
-    }
-    .empty-state-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 28px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border-radius: 14px;
-        text-decoration: none;
-        font-weight: 700;
-        transition: all 0.3s ease;
-    }
-    .empty-state-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(102,126,234,0.4);
-        color: white;
-    }
-
-    .modules-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 24px;
-        display: none;
-    }
-    .modules-grid.active { display: grid; }
-    .modules-table-card.hidden { display: none; }
-
-    .module-grid-card {
-        background: var(--card-bg);
-        border-radius: 20px;
-        overflow: hidden;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-    }
-    .module-grid-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(102,126,234,0.15);
-    }
-    .module-grid-card-img {
-        height: 160px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-    }
-    .module-grid-card-img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-    .module-grid-card:hover .module-grid-card-img img {
-        transform: scale(1.1);
-    }
-    .module-grid-card-img .placeholder-icon {
-        font-size: 3rem;
-        color: rgba(255,255,255,0.7);
-    }
-    .module-grid-card-body {
-        padding: 24px;
-    }
-    .module-grid-card-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: var(--text-primary);
-    }
-    .module-grid-card-desc {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        line-height: 1.5;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        margin-bottom: 16px;
-    }
-    .module-grid-card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 16px;
-        border-top: 1px solid var(--border-color);
-    }
-    .module-grid-card-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .alert-float {
-        padding: 16px 24px;
-        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-        color: #065F46;
-        border-radius: 16px;
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(16,185,129,0.2);
-        animation: slideDown 0.5s ease;
-        border: 1px solid rgba(16,185,129,0.2);
-    }
-    .alert-float i {
-        width: 32px;
-        height: 32px;
-        background: #10B981;
-        color: white;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-    }
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .module-date {
-        font-size: 0.75rem;
-        color: var(--text-secondary);
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-</style>
-{% endblock %}
-
 {% block body %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 style="font-size: 1.5rem; font-weight: 800; color: #1E293B;">Gestion des Modules</h2>
+    <a href="{{ path('admin_module_new') }}" class="btn btn-primary" style="background: #3B49A2; border-radius: 12px; padding: 10px 25px;">+ Nouveau Module</a>
+</div>
 
 {% for message in app.flashes('success') %}
-    <div class="alert-float">
-        <i class="fas fa-check"></i>
-        {{ message }}
-    </div>
+    <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px 20px; background: #D1FAE5; color: #065F46; border-radius: 8px;">{{ message }}</div>
 {% endfor %}
 
-<div class="modules-hero">
-    <div class="hero-content">
-        <h2 class="hero-title">Gestion des Modules</h2>
-        <p class="hero-subtitle">Organisez et structurez votre contenu pédagogique</p>
-        <div class="hero-stats">
-            <div class="hero-stat">
-                <span class="hero-stat-value">{{ modules|length }}</span>
-                <span class="hero-stat-label">Total Modules</span>
-            </div>
-            <div class="hero-stat">
-                {% set linked = 0 %}
-                {% for mod in modules %}
-                    {% if mod.courses|length > 0 %}{% set linked = linked + 1 %}{% endif %}
-                {% endfor %}
-                <span class="hero-stat-value">{{ linked }}</span>
-                <span class="hero-stat-label">Liés à un cours</span>
-            </div>
-            <div class="hero-stat">
-                <span class="hero-stat-value">{{ modules|length - linked }}</span>
-                <span class="hero-stat-label">Non assignés</span>
-            </div>
-        </div>
+{# Search Bar #}
+<div style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center;">
+    <div style="position: relative; flex: 1;">
+        <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
+        <input type="text" id="searchInput" placeholder="Rechercher un module..." style="width: 100%; padding: 14px 14px 14px 45px; border: 1px solid var(--border-color); border-radius: 12px; outline: none; background: var(--bg-secondary); color: var(--text-primary);" onkeyup="filterTable()">
     </div>
-    <div class="hero-actions">
-        <a href="{{ path('admin_module_new') }}" class="btn-create-module">
-            <i class="fas fa-plus"></i>
-            Nouveau Module
-        </a>
-    </div>
-</div>
-
-<div class="toolbar">
-    <div class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="Rechercher un module par titre...">
-        <i class="fas fa-search"></i>
-    </div>
-    <button onclick="sortTable()" id="sortBtn" class="sort-btn">
+    <button onclick="sortTable()" id="sortBtn" style="padding: 14px 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: 0.3s;" onmouseover="this.style.background='var(--bg-primary)'" onmouseout="this.style.background='var(--bg-secondary)'">
         <i class="fas fa-sort-alpha-down" id="sortIcon"></i>
-        <span id="sortLabel">Trier A-Z</span>
+        <span>Trier A-Z</span>
     </button>
-    <div class="view-toggle">
-        <button id="viewTable" class="active" onclick="setView('table')" title="Vue tableau"><i class="fas fa-list"></i></button>
-        <button id="viewGrid" onclick="setView('grid')" title="Vue grille"><i class="fas fa-th-large"></i></button>
-    </div>
 </div>
 
-{# TABLE VIEW #}
-<div class="modules-table-card" id="tableView">
-    <table class="modules-table">
+<div class="card" style="padding: 0; overflow: hidden;">
+    <table style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr>
-                <th style="width: 80px;">Image</th>
-                <th>Module</th>
-                <th>Cours associés</th>
-                <th>Date de création</th>
-                <th style="text-align: right;">Actions</th>
+            <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
+                <th style="padding: 20px;">Image</th>
+                <th style="padding: 20px;">Module</th>
+                <th style="padding: 20px;">Cours Parent</th>
+                <th style="padding: 20px; text-align: right;">Actions</th>
             </tr>
         </thead>
-        <tbody id="tableBody">
+        <tbody>
             {% for mod in modules %}
-                <tr data-title="{{ mod.title|lower }}">
-                    <td>
+                <tr style="border-bottom: 1px solid #F1F5F9;">
+                    <td style="padding: 20px;">
                         {% if mod.thumbnail %}
-                            <img src="{{ asset('uploads/' ~ mod.thumbnail) }}" alt="{{ mod.title }}" class="module-thumb">
+                            <img src="{{ asset('uploads/' ~ mod.thumbnail) }}" alt="{{ mod.title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
                         {% else %}
-                            <div class="module-thumb-placeholder">
-                                <i class="fas fa-cube"></i>
+                            <div style="width: 50px; height: 50px; background: #F1F5F9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94A3B8; font-size: 0.8rem;">
+                                <i class="fas fa-image"></i>
                             </div>
                         {% endif %}
                     </td>
-                    <td>
-                        <div class="module-title">{{ mod.title }}</div>
-                        {% if mod.description %}
-                            <div class="module-desc">{{ mod.description|slice(0, 80) }}{% if mod.description|length > 80 %}...{% endif %}</div>
-                        {% endif %}
-                    </td>
-                    <td>
+                    <td style="padding: 20px; font-weight: 700; color: #1E293B;">{{ mod.title }}</td>
+                    <td style="padding: 20px;">
                         {% if mod.courses|length > 0 %}
                             {% for c in mod.courses %}
-                                <a href="{{ path('admin_course_modules', {id: c.id}) }}" class="course-chip">
-                                    <i class="fas fa-book-open" style="font-size: 0.65rem;"></i> {{ c.title }}
-                                </a>
+                                <a href="{{ path('admin_course_modules', {id: c.id}) }}" style="background: #EEF2FF; color: #6366F1; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-decoration: none; margin-right: 5px;">{{ c.title }}</a>
                             {% endfor %}
                         {% else %}
-                            <span style="color: var(--text-secondary); font-style: italic; font-size: 0.85rem;">Aucun cours lié</span>
+                            <span style="color: #94A3B8;">—</span>
                         {% endif %}
                     </td>
-                    <td>
-                        <div class="module-date">
-                            <i class="fas fa-calendar-alt"></i>
-                            {{ mod.createdAt ? mod.createdAt|date('d/m/Y') : '—' }}
-                        </div>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                            <a href="{{ path('admin_module_edit', {id: mod.id}) }}" class="action-btn action-btn-edit" title="Modifier">
-                                <i class="fas fa-pen"></i>
-                            </a>
-                            <form method="post" action="{{ path('admin_module_delete', {id: mod.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce module ?');">
+                    <td style="padding: 20px; text-align: right;">
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <a href="{{ path('admin_module_edit', {id: mod.id}) }}" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #64748B;"><i class="fas fa-edit"></i></a>
+                            <form method="post" action="{{ path('admin_module_delete', {id: mod.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce module ?');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mod.id) }}">
-                                <button type="submit" class="action-btn action-btn-delete" title="Supprimer">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                                <button type="submit" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; color: #EF4444;"><i class="fas fa-trash"></i></button>
                             </form>
                         </div>
                     </td>
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="5">
-                        <div class="empty-state">
-                            <div class="empty-state-icon"><i class="fas fa-cubes"></i></div>
-                            <div class="empty-state-title">Aucun module créé</div>
-                            <div class="empty-state-text">Commencez par créer votre premier module pédagogique</div>
-                            <a href="{{ path('admin_module_new') }}" class="empty-state-btn">
-                                <i class="fas fa-plus"></i> Créer un module
-                            </a>
-                        </div>
-                    </td>
+                    <td colspan="4" style="padding: 40px; text-align: center; color: #64748B;">Aucun module. <a href="{{ path('admin_module_new') }}">Créer un module</a></td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-{# GRID VIEW #}
-<div class="modules-grid" id="gridView">
-    {% for mod in modules %}
-        <div class="module-grid-card" data-title="{{ mod.title|lower }}">
-            <div class="module-grid-card-img">
-                {% if mod.thumbnail %}
-                    <img src="{{ asset('uploads/' ~ mod.thumbnail) }}" alt="{{ mod.title }}">
-                {% else %}
-                    <i class="fas fa-cube placeholder-icon"></i>
-                {% endif %}
-            </div>
-            <div class="module-grid-card-body">
-                <div class="module-grid-card-title">{{ mod.title }}</div>
-                <div class="module-grid-card-desc">{{ mod.description|default('Aucune description') }}</div>
-                {% if mod.courses|length > 0 %}
-                    <div style="margin-bottom: 12px;">
-                        {% for c in mod.courses %}
-                            <a href="{{ path('admin_course_modules', {id: c.id}) }}" class="course-chip" style="font-size: 0.7rem; padding: 4px 10px;">
-                                {{ c.title }}
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                <div class="module-grid-card-footer">
-                    <div class="module-date">
-                        <i class="fas fa-calendar-alt"></i>
-                        {{ mod.createdAt ? mod.createdAt|date('d/m/Y') : '—' }}
-                    </div>
-                    <div class="module-grid-card-actions">
-                        <a href="{{ path('admin_module_edit', {id: mod.id}) }}" class="action-btn action-btn-edit" title="Modifier" style="width: 36px; height: 36px; font-size: 0.8rem;">
-                            <i class="fas fa-pen"></i>
-                        </a>
-                        <form method="post" action="{{ path('admin_module_delete', {id: mod.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce module ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mod.id) }}">
-                            <button type="submit" class="action-btn action-btn-delete" title="Supprimer" style="width: 36px; height: 36px; font-size: 0.8rem;">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endfor %}
-</div>
-
-{% endblock %}
-
-{% block javascripts %}
 <script>
 function filterTable() {
-    const filter = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('#tableBody tr[data-title]').forEach(row => {
-        row.style.display = row.dataset.title.includes(filter) ? '' : 'none';
-    });
-    document.querySelectorAll('#gridView .module-grid-card').forEach(card => {
-        card.style.display = card.dataset.title.includes(filter) ? '' : 'none';
-    });
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase();
+    const table = document.querySelector('table tbody');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const titleCell = rows[i].getElementsByTagName('td')[1];
+        if (titleCell) {
+            const titleText = titleCell.textContent || titleCell.innerText;
+            if (titleText.toLowerCase().indexOf(filter) > -1) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
 }
-document.getElementById('searchInput').addEventListener('input', filterTable);
 
 let sortAscending = true;
 function sortTable() {
-    const tbody = document.querySelector('#tableBody');
-    const rows = Array.from(tbody.querySelectorAll('tr[data-title]'));
+    const table = document.querySelector('table tbody');
+    const rows = Array.from(table.getElementsByTagName('tr'));
+    const sortBtn = document.getElementById('sortBtn');
+    const sortIcon = document.getElementById('sortIcon');
+    
     rows.sort((a, b) => {
-        const aText = a.dataset.title;
-        const bText = b.dataset.title;
-        return sortAscending ? aText.localeCompare(bText, 'fr') : bText.localeCompare(aText, 'fr');
+        const aText = a.getElementsByTagName('td')[1]?.textContent.trim() || '';
+        const bText = b.getElementsByTagName('td')[1]?.textContent.trim() || '';
+        
+        if (sortAscending) {
+            return aText.localeCompare(bText, 'fr', { sensitivity: 'base' });
+        } else {
+            return bText.localeCompare(aText, 'fr', { sensitivity: 'base' });
+        }
     });
-    rows.forEach(row => tbody.appendChild(row));
-
-    const grid = document.getElementById('gridView');
-    const cards = Array.from(grid.querySelectorAll('.module-grid-card'));
-    cards.sort((a, b) => {
-        const aText = a.dataset.title;
-        const bText = b.dataset.title;
-        return sortAscending ? aText.localeCompare(bText, 'fr') : bText.localeCompare(aText, 'fr');
-    });
-    cards.forEach(card => grid.appendChild(card));
-
+    
+    rows.forEach(row => table.appendChild(row));
+    
     sortAscending = !sortAscending;
-    document.getElementById('sortIcon').className = sortAscending ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up';
-    document.getElementById('sortLabel').textContent = sortAscending ? 'Trier A-Z' : 'Trier Z-A';
-}
-
-function setView(view) {
-    const tableView = document.getElementById('tableView');
-    const gridView = document.getElementById('gridView');
-    const btnTable = document.getElementById('viewTable');
-    const btnGrid = document.getElementById('viewGrid');
-    if (view === 'grid') {
-        tableView.classList.add('hidden');
-        gridView.classList.add('active');
-        btnGrid.classList.add('active');
-        btnTable.classList.remove('active');
+    if (sortAscending) {
+        sortIcon.className = 'fas fa-sort-alpha-down';
+        sortBtn.querySelector('span').textContent = 'Trier A-Z';
     } else {
-        tableView.classList.remove('hidden');
-        gridView.classList.remove('active');
-        btnGrid.classList.remove('active');
-        btnTable.classList.add('active');
+        sortIcon.className = 'fas fa-sort-alpha-up';
+        sortBtn.querySelector('span').textContent = 'Trier Z-A';
     }
-    localStorage.setItem('moduleView', view);
 }
-
-const savedView = localStorage.getItem('moduleView');
-if (savedView) setView(savedView);
 </script>
 {% endblock %}

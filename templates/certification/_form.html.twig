@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card-body">
-        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'certification-form'}}) }}
+        {{ form_start(form) }}
 
         <div class="row g-3">
             <div class="col-md-4">
@@ -18,6 +18,9 @@
             </div>
             <div class="col-md-4">
                 {{ form_row(form.verificationCode) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_row(form.status) }}
             </div>
 
             <div class="col-md-12">
@@ -37,88 +40,3 @@
         {{ form_end(form) }}
     </div>
 </div>
-
-<script>
-console.log('Script loaded');
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoaded');
-    var studentSelect = document.getElementById('student_select');
-    var bulletinSelect = document.getElementById('bulletin_select');
-    console.log('studentSelect:', studentSelect);
-    console.log('bulletinSelect:', bulletinSelect);
-    if (studentSelect && bulletinSelect) {
-        studentSelect.addEventListener('change', function() {
-            var studentId = this.value;
-            console.log('Student changed:', studentId);
-            if (studentId) {
-                fetch('/certification/api/bulletin/' + studentId)
-                    .then(response => {
-                        console.log('Response:', response);
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Data:', data);
-                        bulletinSelect.innerHTML = '<option value="">Sélectionner un bulletin</option>';
-                        data.forEach(function(bulletin) {
-                            var option = document.createElement('option');
-                            option.value = bulletin.id;
-                            option.text = bulletin.label;
-                            bulletinSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.error('Error:', error));
-            } else {
-                bulletinSelect.innerHTML = '<option value="">Sélectionner un bulletin</option>';
-            }
-        });
-    } else {
-        console.error('Elements not found');
-    }
-    
-    // Validation JS personnalisée
-    var form = document.getElementById('certification-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            form.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
-            
-            var isValid = true;
-            var requiredFields = form.querySelectorAll('[required]');
-            
-            requiredFields.forEach(function(field) {
-                if (!field.value || field.value.trim() === '') {
-                    field.classList.add('field-error');
-                    isValid = false;
-                }
-            });
-            
-            if (!isValid) {
-                e.preventDefault();
-                var firstError = form.querySelector('.field-error');
-                if (firstError) {
-                    firstError.focus();
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        });
-        
-        form.querySelectorAll('input, select, textarea').forEach(function(field) {
-            field.addEventListener('input', function() {
-                this.classList.remove('field-error');
-            });
-        });
-    }
-});
-</script>
-
-<style>
-.field-error {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
-    animation: shake 0.4s ease;
-}
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-</style>

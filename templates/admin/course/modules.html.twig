@@ -2,395 +2,51 @@
 
 {% block title %}Modules - {{ course.title }}{% endblock %}
 
-{% block stylesheets %}
-<style>
-    .course-modules-page { max-width: 1000px; margin: 0 auto; }
-
-    .breadcrumb-bar {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 30px;
-    }
-    .breadcrumb-bar a.back-btn {
-        width: 42px; height: 42px;
-        border-radius: 14px;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        display: flex; align-items: center; justify-content: center;
-        color: var(--text-secondary);
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-    .breadcrumb-bar a.back-btn:hover {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border-color: transparent;
-        transform: translateX(-3px);
-    }
-    .breadcrumb-bar h2 { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
-
-    .course-banner {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 24px;
-        padding: 36px 40px;
-        margin-bottom: 30px;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-    .course-banner::before {
-        content: '';
-        position: absolute;
-        top: -40%;
-        right: -15%;
-        width: 350px; height: 350px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .course-banner-content {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .course-banner-info h3 {
-        font-size: 1.4rem;
-        font-weight: 800;
-        margin-bottom: 8px;
-    }
-    .course-banner-meta {
-        display: flex;
-        gap: 20px;
-        font-size: 0.85rem;
-        opacity: 0.9;
-    }
-    .course-banner-meta span {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .btn-add-module {
-        background: white;
-        color: #667eea;
-        padding: 13px 28px;
-        border-radius: 14px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    }
-    .btn-add-module:hover {
-        transform: translateY(-3px) scale(1.03);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-        color: #764ba2;
-    }
-    .btn-add-module i {
-        width: 26px; height: 26px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.75rem;
-    }
-
-    .alert-float {
-        padding: 16px 24px;
-        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-        color: #065F46;
-        border-radius: 16px;
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(16,185,129,0.2);
-        animation: slideDown 0.5s ease;
-        border: 1px solid rgba(16,185,129,0.2);
-    }
-    .alert-float i {
-        width: 32px; height: 32px;
-        background: #10B981;
-        color: white;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-    }
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .modules-timeline {
-        position: relative;
-        padding-left: 30px;
-    }
-    .modules-timeline::before {
-        content: '';
-        position: absolute;
-        left: 14px;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: linear-gradient(180deg, #667eea, #764ba2, #667eea50);
-        border-radius: 3px;
-    }
-    .module-timeline-item {
-        position: relative;
-        margin-bottom: 20px;
-        animation: fadeIn 0.5s ease forwards;
-        opacity: 0;
-    }
-    .module-timeline-item:nth-child(1) { animation-delay: 0.1s; }
-    .module-timeline-item:nth-child(2) { animation-delay: 0.2s; }
-    .module-timeline-item:nth-child(3) { animation-delay: 0.3s; }
-    .module-timeline-item:nth-child(4) { animation-delay: 0.4s; }
-    .module-timeline-item:nth-child(5) { animation-delay: 0.5s; }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateX(-20px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-    .timeline-dot {
-        position: absolute;
-        left: -24px;
-        top: 28px;
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border: 3px solid var(--bg-primary);
-        z-index: 2;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .timeline-dot span {
-        font-size: 0.55rem;
-        font-weight: 800;
-        color: white;
-    }
-
-    .module-card-timeline {
-        background: var(--card-bg);
-        border-radius: 20px;
-        padding: 28px 32px;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-        transition: all 0.3s ease;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .module-card-timeline:hover {
-        border-color: #667eea40;
-        box-shadow: 0 8px 30px rgba(102,126,234,0.12);
-        transform: translateX(8px);
-    }
-    .module-card-left {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-    .module-card-thumb {
-        width: 70px; height: 70px;
-        border-radius: 16px;
-        object-fit: cover;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        transition: transform 0.3s;
-    }
-    .module-card-thumb:hover { transform: scale(1.08) rotate(2deg); }
-    .module-card-thumb-placeholder {
-        width: 70px; height: 70px;
-        background: linear-gradient(135deg, #667eea15, #764ba215);
-        border-radius: 16px;
-        display: flex; align-items: center; justify-content: center;
-        color: #667eea;
-        font-size: 1.5rem;
-    }
-    .module-card-info .module-number {
-        font-size: 0.7rem;
-        font-weight: 800;
-        color: #667eea;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 4px;
-    }
-    .module-card-info h4 {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 4px;
-    }
-    .module-card-info .module-desc {
-        font-size: 0.83rem;
-        color: var(--text-secondary);
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        max-width: 400px;
-    }
-    .module-card-actions {
-        display: flex;
-        gap: 10px;
-    }
-    .action-btn {
-        padding: 10px 18px;
-        border-radius: 12px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        border: 1px solid var(--border-color);
-        background: transparent;
-        cursor: pointer;
-    }
-    .action-btn-edit { color: #667eea; }
-    .action-btn-edit:hover {
-        background: #667eea;
-        color: white;
-        border-color: #667eea;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102,126,234,0.3);
-    }
-    .action-btn-delete { color: #EF4444; }
-    .action-btn-delete:hover {
-        background: #EF4444;
-        color: white;
-        border-color: #EF4444;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239,68,68,0.3);
-    }
-
-    .empty-state {
-        background: var(--card-bg);
-        border-radius: 20px;
-        padding: 60px 40px;
-        text-align: center;
-        border: 2px dashed var(--border-color);
-    }
-    .empty-state-icon {
-        width: 90px; height: 90px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea12, #764ba212);
-        display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 20px;
-        font-size: 2.2rem;
-        color: #667eea;
-    }
-    .empty-state-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-    .empty-state-text { color: var(--text-secondary); margin-bottom: 20px; }
-    .empty-state-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border-radius: 14px;
-        text-decoration: none;
-        font-weight: 700;
-        transition: all 0.3s ease;
-    }
-    .empty-state-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(102,126,234,0.4);
-        color: white;
-    }
-</style>
-{% endblock %}
-
 {% block body %}
-<div class="course-modules-page">
-    <div class="breadcrumb-bar">
-        <a href="{{ path('admin_courses_manage') }}" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-        </a>
-        <h2>Modules du cours</h2>
+<div style="max-width: 1000px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="{{ path('admin_courses_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+            <h2 style="font-size: 1.5rem; font-weight: 800;">Modules du cours : {{ course.title }}</h2>
+        </div>
+        <a href="{{ path('admin_module_new', {course_id: course.id}) }}" class="btn btn-primary" style="background: #3B49A2; border-radius: 12px; padding: 10px 25px;">+ Nouveau Module</a>
     </div>
 
     {% for message in app.flashes('success') %}
-        <div class="alert-float">
-            <i class="fas fa-check"></i>
-            {{ message }}
-        </div>
+        <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px 20px; background: #D1FAE5; color: #065F46; border-radius: 8px;">{{ message }}</div>
     {% endfor %}
 
-    <div class="course-banner">
-        <div class="course-banner-content">
-            <div class="course-banner-info">
-                <h3>{{ course.title }}</h3>
-                <div class="course-banner-meta">
-                    <span><i class="fas fa-cubes"></i> {{ modules|length }} module(s)</span>
-                    <span><i class="fas fa-tag"></i> {{ course.price|number_format(2, ',', ' ') }} €</span>
-                    <span><i class="fas fa-circle" style="font-size: 0.5rem; color: {{ course.status == 'PUBLISHED' ? '#10B981' : '#F59E0B' }};"></i> {{ course.status == 'PUBLISHED' ? 'Publié' : 'Brouillon' }}</span>
-                </div>
-            </div>
-            <a href="{{ path('admin_module_new', {course_id: course.id}) }}" class="btn-add-module">
-                <i class="fas fa-plus"></i>
-                Ajouter un Module
-            </a>
-        </div>
-    </div>
-
-    {% if modules|length > 0 %}
-        <div class="modules-timeline">
-            {% for module in modules %}
-                <div class="module-timeline-item">
-                    <div class="timeline-dot"><span>{{ loop.index }}</span></div>
-                    <div class="module-card-timeline">
-                        <div class="module-card-left">
-                            {% if module.thumbnail %}
-                                <img src="{{ asset('uploads/' ~ module.thumbnail) }}" alt="{{ module.title }}" class="module-card-thumb">
-                            {% else %}
-                                <div class="module-card-thumb-placeholder">
-                                    <i class="fas fa-cube"></i>
-                                </div>
-                            {% endif %}
-                            <div class="module-card-info">
-                                <div class="module-number">Module {{ loop.index }}</div>
-                                <h4>{{ module.title }}</h4>
-                                {% if module.description %}
-                                    <p class="module-desc">{{ module.description }}</p>
-                                {% endif %}
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+        {% for module in modules %}
+        <div class="card" style="padding: 25px; border-left: 5px solid #6366F1;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        {% if module.thumbnail %}
+                            <img src="{{ asset('uploads/' ~ module.thumbnail) }}" alt="{{ module.title }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;">
+                        {% else %}
+                            <div style="width: 60px; height: 60px; background: #F1F5F9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94A3B8; font-size: 1rem;">
+                                <i class="fas fa-image"></i>
                             </div>
-                        </div>
-                        <div class="module-card-actions">
-                            <a href="{{ path('admin_module_edit', {id: module.id}) }}" class="action-btn action-btn-edit">
-                                <i class="fas fa-pen"></i> Modifier
-                            </a>
-                            <form method="post" action="{{ path('admin_module_delete', {id: module.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce module ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ module.id) }}">
-                                <button type="submit" class="action-btn action-btn-delete">
-                                    <i class="fas fa-trash-alt"></i> Supprimer
-                                </button>
-                            </form>
+                        {% endif %}
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #6366F1; text-transform: uppercase;">Module {{ loop.index }}</span>
+                            <h4 style="font-size: 1.1rem; font-weight: 700; margin-top: 5px;">{{ module.title }}</h4>
                         </div>
                     </div>
+                <div style="display: flex; gap: 10px;">
+                    <a href="{{ path('admin_module_edit', {id: module.id}) }}" class="btn btn-outline" style="padding: 8px 15px; font-size: 0.8rem;">Modifier</a>
+                    <form method="post" action="{{ path('admin_module_delete', {id: module.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce module ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ module.id) }}">
+                        <button type="submit" class="btn btn-outline" style="padding: 8px 15px; font-size: 0.8rem; color: #EF4444;">Supprimer</button>
+                    </form>
                 </div>
-            {% endfor %}
+            </div>
         </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon"><i class="fas fa-puzzle-piece"></i></div>
-            <div class="empty-state-title">Aucun module pour ce cours</div>
-            <div class="empty-state-text">Ajoutez des modules pour structurer le contenu de votre cours</div>
-            <a href="{{ path('admin_module_new', {course_id: course.id}) }}" class="empty-state-btn">
-                <i class="fas fa-plus"></i> Créer le premier module
-            </a>
+        {% else %}
+        <div class="card" style="padding: 40px; text-align: center; color: #64748B;">
+            Aucun module pour ce cours. <a href="{{ path('admin_module_new', {course_id: course.id}) }}">Créer un module</a>
         </div>
-    {% endif %}
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

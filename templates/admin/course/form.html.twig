@@ -2,283 +2,30 @@
 
 {% block title %}{{ course.id ? 'Modifier' : 'Ajouter' }} un Cours - EduSmart{% endblock %}
 
-{% block stylesheets %}
-<style>
-    .form-page { max-width: 960px; margin: 0 auto; }
-
-    .form-breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 30px;
-    }
-    .form-breadcrumb a {
-        width: 42px; height: 42px;
-        border-radius: 14px;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        display: flex; align-items: center; justify-content: center;
-        color: var(--text-secondary);
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-    .form-breadcrumb a:hover {
-        background: linear-gradient(135deg, #4facfe, #00f2fe);
-        color: white;
-        border-color: transparent;
-        transform: translateX(-3px);
-    }
-    .form-breadcrumb h2 { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); }
-    .form-badge {
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .form-badge-new { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); color: #065F46; }
-    .form-badge-edit { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); color: #1E40AF; }
-
-    .form-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-    }
-    .form-card {
-        background: var(--card-bg);
-        border-radius: 24px;
-        border: 1px solid var(--border-color);
-        overflow: hidden;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.04);
-    }
-    .form-card-full { grid-column: 1 / -1; }
-    .form-card-header {
-        background: linear-gradient(135deg, rgba(79,172,254,0.06), rgba(0,242,254,0.04));
-        padding: 24px 32px;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
-    .form-card-header-icon {
-        width: 46px; height: 46px;
-        border-radius: 14px;
-        display: flex; align-items: center; justify-content: center;
-        color: white;
-        font-size: 1rem;
-    }
-    .icon-info { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-    .icon-media { background: linear-gradient(135deg, #f093fb, #f5576c); }
-    .icon-settings { background: linear-gradient(135deg, #43e97b, #38f9d7); }
-    .icon-modules { background: linear-gradient(135deg, #667eea, #764ba2); }
-
-    .form-card-header-text h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
-    .form-card-header-text p { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
-    .form-card-body { padding: 32px; }
-    .form-group { margin-bottom: 24px; }
-    .form-group:last-child { margin-bottom: 0; }
-    .form-card-body label {
-        display: block;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 10px;
-        font-size: 0.88rem;
-    }
-    .form-card-body input[type="text"],
-    .form-card-body input[type="number"],
-    .form-card-body textarea,
-    .form-card-body select {
-        width: 100%;
-        padding: 13px 18px;
-        border: 2px solid var(--border-color);
-        border-radius: 14px;
-        outline: none;
-        background: var(--bg-secondary);
-        color: var(--text-primary);
-        font-size: 0.95rem;
-        font-family: inherit;
-        transition: all 0.3s ease;
-    }
-    .form-card-body input:focus,
-    .form-card-body textarea:focus,
-    .form-card-body select:focus {
-        border-color: #4facfe;
-        box-shadow: 0 0 0 4px rgba(79,172,254,0.1);
-    }
-    .form-card-body textarea { resize: vertical; min-height: 130px; }
-
-    .form-actions {
-        grid-column: 1 / -1;
-        display: flex;
-        justify-content: flex-end;
-        gap: 15px;
-        padding: 24px 0 0;
-    }
-    .btn-cancel {
-        padding: 14px 32px;
-        border-radius: 14px;
-        border: 2px solid var(--border-color);
-        background: transparent;
-        color: var(--text-secondary);
-        font-weight: 600;
-        font-size: 0.95rem;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-    }
-    .btn-cancel:hover {
-        border-color: var(--text-secondary);
-        color: var(--text-primary);
-        transform: translateY(-2px);
-    }
-    .btn-save {
-        padding: 14px 40px;
-        border-radius: 14px;
-        border: none;
-        background: linear-gradient(135deg, #4facfe, #00f2fe);
-        color: white;
-        font-weight: 700;
-        font-size: 0.95rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(79,172,254,0.3);
-    }
-    .btn-save:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(79,172,254,0.4);
-    }
-
-    .preview-current {
-        margin-top: 12px;
-        padding: 12px 16px;
-        background: var(--bg-primary);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .preview-current img {
-        width: 60px; height: 40px;
-        object-fit: cover;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .preview-current span {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-    }
-
-    .step-indicators {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        gap: 0;
-        margin-bottom: 10px;
-        justify-content: center;
-    }
-    .step-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .step-dot {
-        width: 36px; height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        font-weight: 700;
-        transition: all 0.3s;
-    }
-    .step-dot.active {
-        background: linear-gradient(135deg, #4facfe, #00f2fe);
-        color: white;
-        box-shadow: 0 4px 12px rgba(79,172,254,0.3);
-    }
-    .step-dot.done {
-        background: #10B981;
-        color: white;
-    }
-    .step-dot.pending {
-        background: var(--border-color);
-        color: var(--text-secondary);
-    }
-    .step-label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-    }
-    .step-line {
-        width: 50px;
-        height: 2px;
-        background: var(--border-color);
-        margin: 0 10px;
-    }
-</style>
-{% endblock %}
-
 {% block body %}
-<div class="form-page">
-    <div class="form-breadcrumb">
-        <a href="{{ path('admin_courses_manage') }}">
-            <i class="fas fa-arrow-left"></i>
-        </a>
-        <h2>{{ course.id ? 'Modifier le Cours' : 'Nouveau Cours' }}</h2>
-        <span class="form-badge {{ course.id ? 'form-badge-edit' : 'form-badge-new' }}">
-            {{ course.id ? 'Modification' : 'Création' }}
-        </span>
+<div style="max-width: 900px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+        <a href="{{ path('admin_courses_manage') }}" style="color: #64748B;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.5rem; font-weight: 800;">{{ course.id ? 'Modifier le Cours' : 'Créer un Nouveau Cours' }}</h2>
     </div>
 
-    {{ form_start(form) }}
-    <div class="form-layout">
-        <div class="step-indicators">
-            <div class="step-item">
-                <div class="step-dot active">1</div>
-                <span class="step-label">Informations</span>
-            </div>
-            <div class="step-line"></div>
-            <div class="step-item">
-                <div class="step-dot active">2</div>
-                <span class="step-label">Médias</span>
-            </div>
-            <div class="step-line"></div>
-            <div class="step-item">
-                <div class="step-dot active">3</div>
-                <span class="step-label">Configuration</span>
-            </div>
-        </div>
-
-        <div class="form-card">
-            <div class="form-card-header">
-                <div class="form-card-header-icon icon-info"><i class="fas fa-info-circle"></i></div>
-                <div class="form-card-header-text">
-                    <h3>Informations générales</h3>
-                    <p>Titre et description du cours</p>
+    <div class="card" style="padding: 40px;">
+        {{ form_start(form) }}
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px;">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    {{ form_row(form.title) }}
+                </div>
+                <div>
+                    {{ form_row(form.description) }}
                 </div>
             </div>
-            <div class="form-card-body">
-                <div class="form-group">
-                    {{ form_label(form.title) }}
-                    {{ form_widget(form.title, {'attr': {'placeholder': 'Ex: Développement Web avec PHP & Symfony'}}) }}
-                    {{ form_errors(form.title) }}
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    {{ form_row(form.price) }}
                 </div>
-                <div class="form-group">
-                    {{ form_label(form.description) }}
-                    {{ form_widget(form.description, {'attr': {'placeholder': 'Décrivez le contenu et les objectifs du cours...', 'rows': 5}}) }}
-                    {{ form_errors(form.description) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.generatedContent) }}
-                    {{ form_widget(form.generatedContent) }}
-                    {{ form_errors(form.generatedContent) }}
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px;">Ce contenu est affiché aux étudiants sur la page du cours. Vous pouvez le générer avec l’<strong>Assistant IA</strong> (Gestion des cours).</p>
+                <div>
+                    {{ form_row(form.thumbnail) }}
                 </div>
                 <div>
                     {{ form_row(form.pdf) }}
@@ -287,98 +34,16 @@
                     {{ form_row(form.status) }}
                 </div>
                 <div>
-                    {{ form_row(form.coefficient) }}
-                </div>
-                <div>
                     {{ form_row(form.modules) }}
                 </div>
             </div>
         </div>
 
-        <div class="form-card">
-            <div class="form-card-header">
-                <div class="form-card-header-icon icon-media"><i class="fas fa-photo-video"></i></div>
-                <div class="form-card-header-text">
-                    <h3>Médias</h3>
-                    <p>Image et fichier PDF du cours</p>
-                </div>
-            </div>
-            <div class="form-card-body">
-                <div class="form-group">
-                    <label><i class="fas fa-image" style="margin-right: 6px; color: #f093fb;"></i> Image de couverture</label>
-                    {{ form_widget(form.thumbnail) }}
-                    {{ form_errors(form.thumbnail) }}
-                    {% if course.thumbnailPath %}
-                        <div class="preview-current">
-                            <img src="{{ asset('uploads/' ~ course.thumbnailPath) }}" alt="Aperçu">
-                            <span>Image actuelle</span>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-file-pdf" style="margin-right: 6px; color: #EF4444;"></i> Fichier PDF</label>
-                    {{ form_widget(form.pdf) }}
-                    {{ form_errors(form.pdf) }}
-                    {% if course.pdfPath %}
-                        <div class="preview-current">
-                            <div style="width: 40px; height: 40px; background: #FEE2E2; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #EF4444;">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                            <span>PDF actuel uploadé</span>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+        <div style="border-top: 1px solid #F1F5F9; padding-top: 30px; display: flex; justify-content: flex-end; gap: 15px;">
+            <a href="{{ path('admin_courses_manage') }}" class="btn btn-outline" style="padding: 12px 30px;">Annuler</a>
+            <button type="submit" class="btn btn-primary" style="padding: 12px 40px; background: #3B49A2;">Enregistrer</button>
         </div>
-
-        <div class="form-card">
-            <div class="form-card-header">
-                <div class="form-card-header-icon icon-settings"><i class="fas fa-cog"></i></div>
-                <div class="form-card-header-text">
-                    <h3>Configuration</h3>
-                    <p>Prix et statut de publication</p>
-                </div>
-            </div>
-            <div class="form-card-body">
-                <div class="form-group">
-                    {{ form_label(form.price) }}
-                    {{ form_widget(form.price, {'attr': {'placeholder': '0.00'}}) }}
-                    {{ form_errors(form.price) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.status) }}
-                    {{ form_widget(form.status) }}
-                    {{ form_errors(form.status) }}
-                </div>
-            </div>
-        </div>
-
-        <div class="form-card">
-            <div class="form-card-header">
-                <div class="form-card-header-icon icon-modules"><i class="fas fa-cubes"></i></div>
-                <div class="form-card-header-text">
-                    <h3>Modules associés</h3>
-                    <p>Liez des modules existants à ce cours</p>
-                </div>
-            </div>
-            <div class="form-card-body">
-                <div class="form-group">
-                    {{ form_widget(form.modules) }}
-                    {{ form_errors(form.modules) }}
-                </div>
-            </div>
-        </div>
-
-        <div class="form-actions">
-            <a href="{{ path('admin_courses_manage') }}" class="btn-cancel">
-                <i class="fas fa-times"></i> Annuler
-            </a>
-            <button type="submit" class="btn-save">
-                <i class="fas fa-{{ course.id ? 'save' : 'plus-circle' }}"></i>
-                {{ course.id ? 'Mettre à jour' : 'Créer le cours' }}
-            </button>
-        </div>
+        {{ form_end(form) }}
     </div>
-    {{ form_end(form) }}
 </div>
 {% endblock %}

@@ -2,469 +2,74 @@
 
 {% block title %}{{ course.title }} - EduSmart{% endblock %}
 
-{% block stylesheets %}
-<style>
-    .course-detail-page { padding: 0 20px; }
-
-    .back-btn-wrapper { margin-bottom: 28px; }
-    .back-btn-wrapper a {
-        color: #64748B;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        padding: 10px 20px;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        background: white;
-        border: 1px solid #E2E8F0;
-    }
-    .back-btn-wrapper a:hover {
-        color: #667eea;
-        border-color: #667eea;
-        transform: translateX(-4px);
-        box-shadow: 0 4px 12px rgba(102,126,234,0.1);
-    }
-
-    .course-detail-layout {
-        display: grid;
-        grid-template-columns: 1fr 360px;
-        gap: 30px;
-        align-items: start;
-    }
-
-    .course-main-card {
-        background: white;
-        border-radius: 28px;
-        overflow: hidden;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    }
-    .course-cover {
-        height: 340px;
-        position: relative;
-        overflow: hidden;
-    }
-    .course-cover img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .course-cover .cover-placeholder {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
-    .course-cover .cover-placeholder::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -30%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .course-cover .cover-placeholder i {
-        font-size: 5rem;
-        color: rgba(255,255,255,0.4);
-        position: relative;
-        z-index: 2;
-    }
-    .cover-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 50%;
-        background: linear-gradient(180deg, transparent, rgba(0,0,0,0.6));
-    }
-    .cover-title-overlay {
-        position: absolute;
-        bottom: 30px;
-        left: 40px;
-        right: 40px;
-        z-index: 2;
-        color: white;
-    }
-    .cover-title-overlay h1 {
-        font-size: 2rem;
-        font-weight: 900;
-        margin-bottom: 0;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        letter-spacing: -0.5px;
-    }
-
-    .course-main-body { padding: 40px; }
-    .course-description-section h3 {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #1E293B;
-        margin-bottom: 18px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .course-description-section h3 i {
-        width: 34px; height: 34px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #667eea15, #764ba215);
-        display: flex; align-items: center; justify-content: center;
-        color: #667eea;
-        font-size: 0.85rem;
-    }
-    .course-description-section p {
-        color: #475569;
-        line-height: 1.8;
-        font-size: 1rem;
-    }
-
-    .course-generated-content-section {
-        margin-top: 36px;
-        padding-top: 28px;
-        border-top: 1px solid #E2E8F0;
-    }
-    .course-generated-content-section h3 {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #1E293B;
-        margin-bottom: 18px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .course-generated-content-section h3 i {
-        width: 34px; height: 34px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #10b98115, #05966915);
-        display: flex; align-items: center; justify-content: center;
-        color: #10B981;
-        font-size: 0.85rem;
-    }
-    .course-generated-content-body {
-        color: #475569;
-        line-height: 1.8;
-        font-size: 1rem;
-    }
-
-    .pdf-section {
-        margin-top: 40px;
-    }
-    .pdf-section h3 {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #1E293B;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .pdf-section h3 i {
-        width: 34px; height: 34px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #EF444415, #DC262615);
-        display: flex; align-items: center; justify-content: center;
-        color: #EF4444;
-        font-size: 0.85rem;
-    }
-    .pdf-viewer-container {
-        border: 2px solid #E2E8F0;
-        border-radius: 20px;
-        overflow: hidden;
-        height: 750px;
-        background: #F8FAFC;
-        position: relative;
-    }
-    .pdf-viewer-container iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
-
-    .course-sidebar {
-        position: sticky;
-        top: 100px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .sidebar-price-card {
-        background: white;
-        border-radius: 24px;
-        overflow: hidden;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    }
-    .sidebar-price-header {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        padding: 30px;
-        text-align: center;
-        color: white;
-        position: relative;
-        overflow: hidden;
-    }
-    .sidebar-price-header::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -30%;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .sidebar-price-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        position: relative;
-        z-index: 2;
-    }
-    .sidebar-price-label {
-        font-size: 0.85rem;
-        opacity: 0.85;
-        margin-top: 5px;
-        position: relative;
-        z-index: 2;
-    }
-    .sidebar-price-body { padding: 28px; }
-
-    .btn-download-pdf {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        width: 100%;
-        padding: 16px;
-        border-radius: 16px;
-        font-weight: 700;
-        font-size: 0.92rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        margin-bottom: 20px;
-        border: none;
-        cursor: pointer;
-        background: linear-gradient(135deg, #EF4444, #DC2626);
-        color: white;
-        box-shadow: 0 4px 15px rgba(239,68,68,0.25);
-    }
-    .btn-download-pdf:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(239,68,68,0.35);
-        color: white;
-    }
-
-    .course-features {
-        border-top: 1px solid #F1F5F9;
-        padding-top: 20px;
-    }
-    .course-features-title {
-        font-weight: 700;
-        font-size: 0.92rem;
-        color: #1E293B;
-        margin-bottom: 16px;
-    }
-    .feature-item {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 12px 0;
-        border-bottom: 1px solid #F8FAFC;
-        font-size: 0.88rem;
-        color: #475569;
-    }
-    .feature-item:last-child { border-bottom: none; }
-    .feature-item i {
-        width: 32px; height: 32px;
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.75rem;
-        flex-shrink: 0;
-    }
-
-    .sidebar-info-card {
-        background: white;
-        border-radius: 24px;
-        padding: 28px;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    }
-    .sidebar-info-card h4 {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #1E293B;
-        margin-bottom: 18px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .sidebar-info-card h4 i {
-        color: #667eea;
-    }
-    .info-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #F8FAFC;
-        font-size: 0.88rem;
-    }
-    .info-item:last-child { border-bottom: none; }
-    .info-item-label { color: #64748B; }
-    .info-item-value { font-weight: 700; color: #1E293B; }
-
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .course-main-card { animation: fadeInUp 0.6s ease; }
-    .course-sidebar > * {
-        animation: fadeInUp 0.6s ease forwards;
-        opacity: 0;
-    }
-    .course-sidebar > *:nth-child(1) { animation-delay: 0.2s; }
-    .course-sidebar > *:nth-child(2) { animation-delay: 0.35s; }
-</style>
-{% endblock %}
-
 {% block body %}
-<div class="course-detail-page">
-    <div class="back-btn-wrapper">
-        <a href="javascript:history.back()">
-            <i class="fas fa-arrow-left"></i> Retour
-        </a>
-    </div>
-
-    <div class="course-detail-layout">
-        <div>
-            <div class="course-main-card">
-                <div class="course-cover">
-                    {% if course.thumbnailPath %}
-                        <img src="{{ asset('uploads/' ~ course.thumbnailPath) }}" alt="{{ course.title }}">
-                    {% else %}
-                        <div class="cover-placeholder">
-                            <i class="fas fa-play-circle"></i>
-                        </div>
-                    {% endif %}
-                    <div class="cover-overlay"></div>
-                    <div class="cover-title-overlay">
-                        <h1>{{ course.title }}</h1>
-                    </div>
-                </div>
-
-                <div class="course-main-body">
-                    <div class="course-description-section">
-                        <h3>
-                            <i class="fas fa-align-left"></i>
-                            Description du cours
-                        </h3>
-                        <p>{{ course.description|default('Ce cours vous permettra de développer vos compétences et d\'approfondir vos connaissances dans le domaine.') }}</p>
-                    </div>
-
-                    {% if course.generatedContent %}
-                    <div class="course-generated-content-section">
-                        <h3>
-                            <i class="fas fa-book-reader"></i>
-                            Contenu du cours
-                        </h3>
-                        <div class="course-generated-content-body">
-                            {{ course.generatedContent|nl2br }}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if course.pdfPath %}
-                        <div class="pdf-section">
-                            <h3>
-                                <i class="fas fa-file-pdf"></i>
-                                Contenu du cours
-                            </h3>
-                            <div class="pdf-viewer-container">
-                                <iframe src="{{ asset('uploads/' ~ course.pdfPath) }}">
-                                    <p>Votre navigateur ne supporte pas l'affichage de PDF.
-                                        <a href="{{ asset('uploads/' ~ course.pdfPath) }}">Cliquez ici pour télécharger</a>.
-                                    </p>
-                                </iframe>
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+    <div style="padding: 0 var(--sp-4);">
+        <!-- Breadcrumb / Back Navigation -->
+        <div style="margin-bottom: 30px;">
+           <button onclick="history.back()" style="background: none; border: none; cursor: pointer; color: #64748B; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-family: inherit;">
+                <i class="fas fa-arrow-left"></i> Retour
+            </button>
         </div>
 
-        <div class="course-sidebar">
-            <div class="sidebar-price-card">
-                <div class="sidebar-price-header">
-                    <div class="sidebar-price-value">{{ course.price > 0 ? course.price|number_format(2, ',', ' ') ~ ' €' : 'Gratuit' }}</div>
-                    <div class="sidebar-price-label">Accès complet au cours</div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;" class="fade-in">
+            <!-- Main Content -->
+            <div>
+                <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 30px;">
+                    <div style="height: 300px; background: #0F172A; display: flex; align-items: center; justify-content: center; position: relative;">
+                         {% if course.thumbnailPath %}
+                            <img src="{{ asset('uploads/' ~ course.thumbnailPath) }}" alt="{{ course.title }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;">
+                        {% else %}
+                            <i class="fas fa-play-circle" style="font-size: 5rem; color: white; opacity: 0.8;"></i>
+                        {% endif %}
+                    </div>
+                    <div style="padding: 40px;">
+                        <h1 style="font-size: 2rem; font-weight: 800; color: #1E293B; margin-bottom: 15px;">{{ course.title }}</h1>
+                        
+                        <div style="margin-top: 30px;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 15px;">Description du cours</h3>
+                            <p style="color: #475569; line-height: 1.7;">
+                                {{ course.description }}
+                            </p>
+                        </div>
+
+                        {% if course.pdfPath %}
+                            <div style="margin-top: 40px;">
+                                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; color: #1E293B;">Contenu du cours</h3>
+                                <div style="border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; height: 800px; background: #F8FAFC; display: flex; align-items: center; justify-content: center;">
+                                    <iframe src="{{ asset('uploads/' ~ course.pdfPath) }}" width="100%" height="100%" style="border: none;">
+                                        <p>Votre navigateur ne supporte pas l'affichage direct de PDF. <a href="{{ asset('uploads/' ~ course.pdfPath) }}">Cliquez ici pour le télécharger</a>.</p>
+                                    </iframe>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="sidebar-price-body">
-                    <a href="{{ path('forum_index', {id: course.id}) }}" class="btn-download-pdf" style="background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 4px 15px rgba(16,185,129,0.25); margin-bottom: 12px;">
-                        <i class="fas fa-comments"></i> Forum &amp; discussions
-                    </a>
-                    <a href="{{ path('student_course_export_pdf', {id: course.id}) }}" class="btn-download-pdf" style="margin-bottom: 12px;">
-                        <i class="fas fa-file-pdf"></i> Exporter mon résumé (PDF)
-                    </a>
+            </div>
+
+            <!-- Sidebar -->
+            <div>
+                <div class="card hover-scale" style="padding: 30px; position: sticky; top: 100px; border: 1px solid #E2E8F0;">
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: #1E293B; margin-bottom: 10px;">{{ course.price > 0 ? course.price ~ ' €' : 'Gratuit' }}</h3>
+                    <div style="margin-bottom: 20px; color: #64748B; font-size: 0.9rem;">
+                        Accès complet au contenu du cours
+                    </div>
+
                     {% if course.pdfPath %}
-                        <a href="{{ asset('uploads/' ~ course.pdfPath) }}" target="_blank" class="btn-download-pdf" style="background: linear-gradient(135deg, #64748B, #475569); box-shadow: 0 4px 15px rgba(71,85,105,0.25);">
-                            <i class="fas fa-download"></i> Télécharger le support du cours
+                        <a href="{{ asset('uploads/' ~ course.pdfPath) }}" target="_blank" class="btn btn-primary" style="display: block; width: 100%; text-align: center; margin-bottom: 15px; background: #EF4444; border: none;">
+                            <i class="fas fa-file-pdf" style="margin-right: 8px;"></i> Télécharger le PDF
                         </a>
                     {% endif %}
 
-                    <div class="course-features">
-                        <div class="course-features-title">Ce cours inclut :</div>
-                        <div class="feature-item">
-                            <i class="fas fa-file-alt" style="background: #EEF2FF; color: #667eea;"></i>
-                            <span>{{ course.pdfPath ? 'Support PDF inclus' : 'Aucun document PDF' }}</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-cubes" style="background: #FEF3C7; color: #F59E0B;"></i>
-                            <span>{{ course.modules|length }} module(s) associé(s)</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-infinity" style="background: #D1FAE5; color: #10B981;"></i>
-                            <span>Accès illimité</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-mobile-alt" style="background: #FCE7F3; color: #EC4899;"></i>
-                            <span>Compatible mobile</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-certificate" style="background: #DBEAFE; color: #3B82F6;"></i>
-                            <span>Certificat à la fin</span>
-                        </div>
+                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #F1F5F9;">
+                        <div style="font-weight: 600; margin-bottom: 10px; color: #1E293B;">Ce cours inclut :</div>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: #64748B; font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px;">
+                            <li><i class="fas fa-file-alt" style="width: 20px; color: #94A3B8;"></i> {{ course.pdfPath ? 'Support PDF inclus' : 'Aucun document' }}</li>
+                            <li><i class="fas fa-infinity" style="width: 20px; color: #94A3B8;"></i> Accès illimité</li>
+                            <li><i class="fas fa-mobile-alt" style="width: 20px; color: #94A3B8;"></i> Accès sur mobiles</li>
+                        </ul>
                     </div>
-                </div>
-            </div>
-
-            <div class="sidebar-info-card">
-                <h4><i class="fas fa-info-circle"></i> Informations</h4>
-                <div class="info-item">
-                    <span class="info-item-label">Date de création</span>
-                    <span class="info-item-value">{{ course.createdAt|date('d/m/Y') }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-item-label">Modules</span>
-                    <span class="info-item-value">{{ course.modules|length }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-item-label">Prix</span>
-                    <span class="info-item-value" style="color: {{ course.price > 0 ? '#667eea' : '#10B981' }};">
-                        {{ course.price > 0 ? course.price|number_format(2, ',', ' ') ~ ' €' : 'Gratuit' }}
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-item-label">Format</span>
-                    <span class="info-item-value">{{ course.pdfPath ? 'PDF' : 'En ligne' }}</span>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
