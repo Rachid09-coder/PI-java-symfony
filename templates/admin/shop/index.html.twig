@@ -7,15 +7,31 @@
 {% block title %}Gestion Boutique - EduSmart{% endblock %}
 
 {% block body %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <h2 style="font-size: 1.5rem; font-weight: 800; color: #1E293B;">Gestion de la Boutique</h2>
-    <div style="display: flex; gap: 15px;">
-        <button id="aiAnalyseBtn" class="btn" style="background: linear-gradient(135deg, #6366F1 0%, #A855F7 100%); color: white; border-radius: 12px; padding: 10px 25px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 700; transition: transform 0.2s, box-shadow 0.2s;">
-            <i class="fas fa-robot"></i>
-            <span>Analyser avec IA</span>
-        </button>
-        <a href="{{ path('admin_shop_categories') }}" class="btn btn-outline" style="border-radius: 12px; padding: 10px 20px; text-decoration: none; border: 1px solid #E2E8F0; color: #64748B;">Gérer Catégories</a>
-        <a href="{{ path('admin_shop_product_new') }}" class="btn btn-primary" style="background: #3B49A2; color: white; border-radius: 12px; padding: 10px 25px; text-decoration: none;">+ Nouveau Produit</a>
+{# Hero header avec gradient et formes flottantes #}
+<div class="shop-admin-hero">
+    <div class="shop-admin-hero-bg">
+        <div class="shop-admin-blob shop-admin-blob-1"></div>
+        <div class="shop-admin-blob shop-admin-blob-2"></div>
+        <div class="shop-admin-blob shop-admin-blob-3"></div>
+    </div>
+    <div class="shop-admin-hero-content">
+        <h2 class="shop-admin-hero-title">
+            <i class="fas fa-store"></i>
+            Gestion de la Boutique
+        </h2>
+        <p class="shop-admin-hero-sub">Produits, stock et analyse IA en un clin d'œil.</p>
+        <div class="shop-admin-hero-actions">
+            <button id="aiAnalyseBtn" type="button" class="shop-btn-ai">
+                <span class="shop-btn-ai-icon"><i class="fas fa-robot"></i></span>
+                <span>Analyser avec IA</span>
+            </button>
+            <a href="{{ path('admin_shop_categories') }}" class="shop-btn-outline">
+                <i class="fas fa-tags"></i> Gérer Catégories
+            </a>
+            <a href="{{ path('admin_shop_product_new') }}" class="shop-btn-primary">
+                <i class="fas fa-plus"></i> Nouveau Produit
+            </a>
+        </div>
     </div>
 </div>
 
@@ -95,9 +111,155 @@
 </div>
 
 <style>
+/* ── Hero & blobs ── */
+.shop-admin-hero {
+    position: relative;
+    border-radius: 24px;
+    padding: 36px 40px;
+    margin-bottom: 32px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #6366F1 100%);
+    box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.35);
+}
+.shop-admin-hero-bg { position: absolute; inset: 0; pointer-events: none; }
+.shop-admin-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+    animation: shop-blob-float 8s ease-in-out infinite;
+}
+.shop-admin-blob-1 { width: 280px; height: 280px; background: #A78BFA; top: -80px; right: -60px; animation-delay: 0s; }
+.shop-admin-blob-2 { width: 200px; height: 200px; background: #60A5FA; bottom: -50px; left: 10%; animation-delay: -2s; }
+.shop-admin-blob-3 { width: 160px; height: 160px; background: #C4B5FD; top: 50%; left: 50%; animation-delay: -4s; }
+@keyframes shop-blob-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(15px, -20px) scale(1.05); }
+    66% { transform: translate(-10px, 10px) scale(0.95); }
+}
+.shop-admin-hero-content { position: relative; z-index: 2; }
+.shop-admin-hero-title {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: white;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.shop-admin-hero-title i { opacity: 0.95; }
+.shop-admin-hero-sub { color: rgba(255,255,255,0.88); font-size: 0.95rem; margin: 0 0 24px 0; }
+.shop-admin-hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+.shop-btn-ai {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: white;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.shop-btn-ai:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+    background: rgba(255,255,255,0.28);
+}
+.shop-btn-ai:active { transform: translateY(-1px); }
+.shop-btn-ai-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: shop-pulse-glow 2s ease-in-out infinite;
+}
+@keyframes shop-pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+}
+.shop-btn-outline, .shop-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.shop-btn-outline {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.4);
+}
+.shop-btn-outline:hover {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.25);
+    color: white;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.shop-btn-primary {
+    background: white;
+    color: #4F46E5;
+}
+.shop-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    color: #4F46E5;
+}
+
+/* ── Table card & rows ── */
+.shop-table-card {
+    padding: 0;
+    overflow: hidden;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #F1F5F9;
+    transition: box-shadow 0.3s ease;
+}
+.shop-table-card:hover { box-shadow: 0 20px 40px -15px rgba(79, 70, 229, 0.12); }
+.shop-table-row {
+    border-bottom: 1px solid #F1F5F9;
+    transition: background 0.2s ease, transform 0.2s ease;
+    animation: shop-row-in 0.5s ease backwards;
+}
+.shop-table-row:hover { background: linear-gradient(90deg, rgba(79, 70, 229, 0.04), transparent) !important; }
+.shop-table-row:nth-child(1) { animation-delay: 0.05s; }
+.shop-table-row:nth-child(2) { animation-delay: 0.1s; }
+.shop-table-row:nth-child(3) { animation-delay: 0.15s; }
+.shop-table-row:nth-child(4) { animation-delay: 0.2s; }
+.shop-table-row:nth-child(5) { animation-delay: 0.25s; }
+.shop-table-row:nth-child(6) { animation-delay: 0.3s; }
+.shop-table-row:nth-child(7) { animation-delay: 0.35s; }
+.shop-table-row:nth-child(8) { animation-delay: 0.4s; }
+.shop-table-row:nth-child(9) { animation-delay: 0.45s; }
+.shop-table-row:nth-child(10) { animation-delay: 0.5s; }
+@keyframes shop-row-in {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+.shop-filter-bar input:focus, .shop-filter-bar select:focus {
+    outline: none;
+    border-color: #6366F1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
 @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-#aiAnalyseBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+.shop-action-btn:hover { transform: scale(1.08); }
+.shop-action-edit:hover { background: #EEF2FF !important; color: #4F46E5 !important; border-color: #C7D2FE !important; }
+.shop-action-delete:hover { background: #FEF2F2 !important; color: #DC2626 !important; border-color: #FECACA !important; }
 </style>
 
 {% for message in app.flashes('success') %}
@@ -107,14 +269,14 @@
 {% endfor %}
 
 {# Filter Bar #}
-<div style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+<div class="shop-filter-bar" style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
     <form method="get" action="{{ path('admin_shop_index') }}" style="display: flex; gap: 10px; flex-grow: 1;">
         <div style="position: relative; flex-grow: 1;">
-            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
-            <input type="text" name="search" value="{{ currentFilters.search|default('') }}" placeholder="Rechercher par nom..." style="width: 100%; padding: 12px 12px 12px 45px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none;">
+            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8; transition: color 0.2s;"></i>
+            <input type="text" name="search" value="{{ currentFilters.search|default('') }}" placeholder="Rechercher par nom..." style="width: 100%; padding: 12px 12px 12px 45px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;">
         </div>
         
-        <select name="category" style="padding: 12px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; background: white; min-width: 150px;">
+        <select name="category" style="padding: 12px; border: 1px solid #E2E8F0; border-radius: 12px; outline: none; background: white; min-width: 150px; transition: border-color 0.2s, box-shadow 0.2s;">
             <option value="">Toutes les catégories</option>
             {% for cat in categories %}
                 <option value="{{ cat.id }}" {{ currentFilters.category == cat.id ? 'selected' : '' }}>{{ cat.name }}</option>
@@ -133,10 +295,10 @@
     </form>
 </div>
 
-<div class="card" style="padding: 0; overflow: hidden; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+<div class="card shop-table-card">
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="text-align: left; background: #F8FAFC; border-bottom: 2px solid #F1F5F9; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
+            <tr style="text-align: left; background: linear-gradient(90deg, #F8FAFC, #F1F5F9); border-bottom: 2px solid #E2E8F0; color: #64748B; font-size: 0.8rem; text-transform: uppercase;">
                 <th style="padding: 20px;">
                     <a href="{{ path('admin_shop_index', app.request.query.all|merge({'sortBy': 'name', 'direction': currentSort == 'name' and currentDirection == 'ASC' ? 'DESC' : 'ASC'})) }}" style="text-decoration: none; color: inherit;">
                         Produit {% if currentSort == 'name' %}<i class="fas fa-sort-{{ currentDirection == 'ASC' ? 'up' : 'down' }}"></i>{% endif %}
@@ -162,7 +324,7 @@
         </thead>
         <tbody>
             {% for product in products %}
-                <tr style="border-bottom: 1px solid #F1F5F9; transition: 0.2s;" onmouseover="this.style.background='#FBFDFF'" onmouseout="this.style.background='transparent'">
+                <tr class="shop-table-row" style="border-bottom: 1px solid #F1F5F9;">
                     <td style="padding: 20px; font-weight: 700; color: #1E293B;">
                         {{ product.name }}
                         <span id="score-badge-{{ product.id }}" class="performance-badge" style="display:none; margin-left:8px; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700; text-transform:uppercase;"></span>
@@ -181,13 +343,13 @@
                     </td>
                     <td style="padding: 20px; text-align: right;">
                         <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
-                            <a href="{{ path('admin_shop_product_edit', {id: product.id}) }}" style="padding: 8px 12px; border-radius: 8px; color: #64748B; border: 1px solid #E2E8F0; text-decoration: none;">
+                            <a href="{{ path('admin_shop_product_edit', {id: product.id}) }}" class="shop-action-btn shop-action-edit" style="padding: 8px 12px; border-radius: 10px; color: #64748B; border: 1px solid #E2E8F0; text-decoration: none; transition: all 0.2s;">
                                 <i class="fas fa-edit"></i>
                             </a>
                             
                             <form method="post" action="{{ path('admin_shop_product_delete', {id: product.id}) }}" onsubmit="return confirm('Supprimer ce produit ?');" style="display: inline;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
-                                <button style="padding: 8px 12px; border-radius: 8px; color: #EF4444; border: 1px solid #E2E8F0; background: white; cursor: pointer;"> 
+                                <button type="submit" class="shop-action-btn shop-action-delete" style="padding: 8px 12px; border-radius: 10px; color: #EF4444; border: 1px solid #E2E8F0; background: white; cursor: pointer; transition: all 0.2s;"> 
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

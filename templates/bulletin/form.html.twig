@@ -92,11 +92,8 @@
                         </button>
                     </div>
                     <div class="card-body p-4">
-                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                            <button type="button" id="btn-load-grades" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-download me-1"></i> Charger notes depuis les examens
-                            </button>
-                            <small class="text-muted">Note = CC×10% + DS×20% + Exam×70%</small>
+                        <div class="mb-3">
+                            <small class="text-muted">Moyenne = somme des notes / nombre de matières. Les notes sont chargées automatiquement à la sélection de l'étudiant, de l'année et du semestre.</small>
                         </div>
                         <div id="report-card-lines-list" 
                              data-prototype="{{ form_widget(form.reportCardLines.vars.prototype)|e('html_attr') }}"
@@ -567,21 +564,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function calculateAverage() {
         const rows = container.querySelectorAll('.collection-item');
-        let totalWeighted = 0;
-        let totalCoef = 0;
+        let sumNotes = 0;
+        let countNotes = 0;
 
         rows.forEach(row => {
             const noteInput = row.querySelector('.note-finale, [name*="[note]"]:not([name*="noteCC"]):not([name*="noteDS"]):not([name*="noteExam"])');
-            const coefInput = row.querySelector('.coef-input');
-            if(noteInput && coefInput) {
-                const note = parseFloat(noteInput.value) || 0;
-                const coef = parseFloat(coefInput.value) || 0;
-                totalWeighted += note * coef;
-                totalCoef += coef;
+            if (noteInput) {
+                const note = parseFloat(noteInput.value);
+                if (!isNaN(note)) {
+                    sumNotes += note;
+                    countNotes += 1;
+                }
             }
         });
 
-        const avg = totalCoef > 0 ? (totalWeighted / totalCoef).toFixed(2) : '0.00';
+        const avg = countNotes > 0 ? (sumNotes / countNotes).toFixed(2) : '0.00';
         avgInput.value = avg;
         
         // Update mention based on average
@@ -607,47 +604,33 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => avgInput.parentElement.style.transform = 'scale(1)', 200);
     }
 
-    // Load grades button
-    const loadGradesBtn = document.getElementById('btn-load-grades');
-    loadGradesBtn.addEventListener('click', async function() {
-        const studentSelect = form.querySelector('[name*="[student]"]');
-        const yearInput = form.querySelector('[name*="[academicYear]"]');
-        const semesterSelect = form.querySelector('[name*="[semester]"]');
-        
-        if (!studentSelect?.value || !yearInput?.value || !semesterSelect?.value) {
-            alert('Veuillez d\'abord sélectionner un étudiant, une année académique et un semestre.');
-            return;
-        }
-        
-        loadGradesBtn.disabled = true;
-        loadGradesBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Chargement...';
-        
+    const studentSelect = form.querySelector('[name*="[student]"]');
+    const yearInput = form.querySelector('[name*="[academicYear]"]');
+    const semesterSelect = form.querySelector('[name*="[semester]"]');
+    let loadInProgress = false;
+
+    async function doLoadGrades() {
+        if (!studentSelect?.value || !yearInput?.value || !semesterSelect?.value) return;
+        if (loadInProgress) return;
+        loadInProgress = true;
         try {
             const url = `/api/grades/student/${studentSelect.value}?academicYear=${encodeURIComponent(yearInput.value)}&semester=${encodeURIComponent(semesterSelect.value)}`;
             const response = await fetch(url);
             const data = await response.json();
-            
             if (data.success && data.data.grades.length > 0) {
-                // Clear existing rows
                 container.innerHTML = '';
                 list.dataset.widgetCounter = 0;
-                
-                // Add rows for each grade
-                data.data.grades.forEach((grade, index) => {
+                data.data.grades.forEach(function(grade) {
                     const counter = list.dataset.widgetCounter;
                     const prototype = list.dataset.prototype;
-                    let newForm = prototype.replace(/__name__/g, counter);
+                    const newForm = prototype.replace(/__name__/g, counter);
                     list.dataset.widgetCounter = parseInt(counter) + 1;
-                    
                     const tr = document.createElement('tr');
                     tr.className = 'collection-item animate-row-in';
-                    
                     const temp = document.createElement('div');
                     temp.innerHTML = newForm;
-                    
-                    // Fill in the values
                     const inputs = temp.querySelectorAll('input, textarea');
-                    inputs.forEach(input => {
+                    inputs.forEach(function(input) {
                         if (input.name.includes('[moduleName]')) input.value = grade.moduleName;
                         if (input.name.includes('[noteCC]')) input.value = grade.noteCC || '';
                         if (input.name.includes('[noteDS]')) input.value = grade.noteDS || '';
@@ -666,54 +649,74 @@ document.addEventListener('DOMContentLoaded', function() {
                             input.classList.add('text-center', 'note-finale');
                         }
                     });
-                    
                     let html = '';
-                    const fields = temp.querySelectorAll('.mb-3, .form-group');
-                    fields.forEach(field => {
+                    temp.querySelectorAll('.mb-3, .form-group').forEach(function(field) {
                         const input = field.querySelector('input, textarea');
-                        if (input) html += `<td>${input.outerHTML}</td>`;
+                        if (input) html += '<td>' + input.outerHTML + '</td>';
                     });
-                    html += `<td class="text-end pe-3"><button type="button" class="btn-remove-premium remove-item"><i class="fas fa-trash-alt"></i></button></td>`;
-                    
+                    html += '<td class="text-end pe-3"><button type="button" class="btn-remove-premium remove-item"><i class="fas fa-trash-alt"></i></button></td>';
                     tr.innerHTML = html;
                     container.appendChild(tr);
                     attachRemoveEvent(tr.querySelector('.remove-item'));
                     attachCalcEvents(tr);
                 });
-                
-                // Update average and mention
-                avgInput.value = data.data.average;
-                const mentionSelect = form.querySelector('[name*="[mention]"]');
-                if (mentionSelect) {
-                    for (let opt of mentionSelect.options) {
-                        if (opt.value === data.data.mention || opt.text === data.data.mention) {
-                            mentionSelect.value = opt.value;
-                            break;
-                        }
-                    }
-                }
-                
-                // Update rank
+                const simpleAvg = data.data.simpleAverage != null ? data.data.simpleAverage : data.data.average;
+                avgInput.value = simpleAvg;
+                updateMentionFromAverage();
                 const rankInput = form.querySelector('[name*="[classRank]"]');
-                if (rankInput && data.data.rank) {
-                    rankInput.value = data.data.rank;
-                }
-                
-                alert(`${data.data.grades.length} module(s) chargé(s) avec une moyenne de ${data.data.average} - Mention: ${data.data.mention}`);
+                if (rankInput && data.data.rank) rankInput.value = data.data.rank;
             } else {
-                alert('Aucune note trouvée pour cet étudiant/période. Vérifiez que les notes ont été saisies dans le module Gestion des Notes.');
+                avgInput.value = '';
+                const mentionSelect = form.querySelector('[name*="[mention]"]');
+                if (mentionSelect) mentionSelect.value = mentionSelect.options[0] ? mentionSelect.options[0].value : '';
             }
-        } catch (error) {
-            console.error(error);
-            alert('Erreur lors du chargement des notes: ' + error.message);
+        } catch (err) {
+            console.error(err);
         } finally {
-            loadGradesBtn.disabled = false;
-            loadGradesBtn.innerHTML = '<i class="fas fa-download me-1"></i> Charger notes depuis les examens';
+            loadInProgress = false;
         }
-    });
+    }
+
+    function updateMentionFromAverage() {
+        const mentionSelect = form.querySelector('[name*="[mention]"]');
+        if (!mentionSelect || !avgInput) return;
+        const avgNum = parseFloat(avgInput.value);
+        if (isNaN(avgNum)) return;
+        let mention = 'Insuffisant';
+        if (avgNum >= 16) mention = 'Très Bien';
+        else if (avgNum >= 14) mention = 'Bien';
+        else if (avgNum >= 12) mention = 'Assez Bien';
+        else if (avgNum >= 10) mention = 'Passable';
+        for (let i = 0; i < mentionSelect.options.length; i++) {
+            const opt = mentionSelect.options[i];
+            if (opt.value === mention || opt.text === mention) {
+                mentionSelect.value = opt.value;
+                break;
+            }
+        }
+    }
+
+    if (avgInput) avgInput.addEventListener('input', updateMentionFromAverage);
+
+    if (semesterSelect) {
+        semesterSelect.addEventListener('change', function() {
+            if (studentSelect?.value && yearInput?.value) doLoadGrades();
+        });
+    }
+    if (studentSelect) studentSelect.addEventListener('change', function() { if (yearInput?.value && semesterSelect?.value) doLoadGrades(); });
+    if (yearInput) yearInput.addEventListener('change', function() { if (studentSelect?.value && semesterSelect?.value) doLoadGrades(); });
 
     document.querySelectorAll('.remove-item').forEach(attachRemoveEvent);
     document.querySelectorAll('.collection-item').forEach(attachCalcEvents);
+
+    // Chargement automatique dès que les 3 champs sont renseignés (au chargement ou après sélection)
+    function tryLoadGradesOnLoad() {
+        if (studentSelect?.value && yearInput?.value && semesterSelect?.value) {
+            doLoadGrades();
+        }
+    }
+    setTimeout(tryLoadGradesOnLoad, 400);
+    setTimeout(tryLoadGradesOnLoad, 1200);
 });
 </script>
 {% endblock %}

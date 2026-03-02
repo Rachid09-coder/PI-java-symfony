@@ -58,10 +58,12 @@
         "twilio/sdk": "^8.11"
     },
     "config": {
+        "process-timeout": 900,
         "allow-plugins": {
             "php-http/discovery": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "phpstan/extension-installer": true
         },
         "sort-packages": true
     },
@@ -85,6 +87,12 @@
         "symfony/polyfill-php81": "*"
     },
     "scripts": {
+        "test": "phpunit -c phpunit.dist.xml --testdox",
+        "test:unit": "phpunit tests/Unit -c phpunit.dist.xml --testdox",
+        "test:unit:quiet": "phpunit tests/Unit -c phpunit.dist.xml",
+        "report:quality": "php scripts/quality-report.php",
+        "report:flaws": "php scripts/phpstan-flaws.php",
+        "report:tests": "phpunit tests/Unit -c phpunit.dist.xml --testdox",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
@@ -108,6 +116,9 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^4.3",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-symfony": "^2.0",
         "phpunit/phpunit": "^11.5",
         "symfony/browser-kit": "6.4.*",
         "symfony/css-selector": "6.4.*",

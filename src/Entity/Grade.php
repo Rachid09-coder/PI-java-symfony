@@ -32,12 +32,12 @@ class Grade
     #[ORM\Column(type: 'float')]
     #[Assert\NotNull(message: "Le coefficient est obligatoire.")]
     #[Assert\Positive(message: "Le coefficient doit être positif.")]
-    private ?float $coefficient = 1.0;
+    private float $coefficient = 1.0;
 
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['Normale', 'Rattrapage'], message: "Session invalide.")]
-    private ?string $session = 'Normale';
+    private string $session = 'Normale';
 
     #[ORM\Column(length: 9)]
     #[Assert\NotBlank]
@@ -66,10 +66,10 @@ class Grade
     public function getNote(): ?float { return $this->note; }
     public function setNote(float $note): self { $this->note = $note; return $this; }
 
-    public function getCoefficient(): ?float { return $this->coefficient; }
+    public function getCoefficient(): float { return $this->coefficient; }
     public function setCoefficient(float $coefficient): self { $this->coefficient = $coefficient; return $this; }
 
-    public function getSession(): ?string { return $this->session; }
+    public function getSession(): string { return $this->session; }
     public function setSession(string $session): self { $this->session = $session; return $this; }
 
     public function getAcademicYear(): ?string { return $this->academicYear; }

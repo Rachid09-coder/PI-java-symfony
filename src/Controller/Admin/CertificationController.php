@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Certification;
+use App\Entity\User;
 use App\Form\CertificationType;
 use App\Repository\BulletinRepository;
 use App\Repository\CertificationRepository;
@@ -34,6 +35,12 @@ class CertificationController extends AbstractController
         private EmailService $emailService,
         private SmsService $smsService,
     ) {
+    }
+
+    private function getAuditUser(): ?User
+    {
+        $user = $this->getUser();
+        return $user instanceof User ? $user : null;
     }
 
     /**
@@ -168,7 +175,7 @@ class CertificationController extends AbstractController
             $em->persist($certification);
             $em->flush();
 
-            $this->auditService->log('Certification', $certification->getId(), 'CREATED', $this->getUser(), [
+            $this->auditService->log('Certification', $certification->getId(), 'CREATED', $this->getAuditUser(), [
                 'type' => $certification->getType(),
                 'unique_number' => $certification->getUniqueNumber(),
             ]);
@@ -249,7 +256,7 @@ class CertificationController extends AbstractController
 
             $em->flush();
 
-            $this->auditService->log('Certification', $certification->getId(), 'UPDATED', $this->getUser());
+            $this->auditService->log('Certification', $certification->getId(), 'UPDATED', $this->getAuditUser());
 
             $this->addFlash('success', 'Certification modifiée avec succès.');
             return $this->redirectToRoute('admin_certification_index');
@@ -269,7 +276,7 @@ class CertificationController extends AbstractController
         $certification->setPdfPath($pdfPath);
         $em->flush();
 
-        $this->auditService->log('Certification', $certification->getId(), 'PDF_GENERATED', $this->getUser());
+        $this->auditService->log('Certification', $certification->getId(), 'PDF_GENERATED', $this->getAuditUser());
         
         // Envoyer automatiquement par email à l'étudiant
         try {
@@ -316,7 +323,7 @@ class CertificationController extends AbstractController
         $certification->setRevocationReason($reason);
         $em->flush();
 
-        $this->auditService->log('Certification', $certification->getId(), 'REVOKED', $this->getUser(), [
+        $this->auditService->log('Certification', $certification->getId(), 'REVOKED', $this->getAuditUser(), [
             'reason' => $reason,
         ]);
 
@@ -403,7 +410,7 @@ class CertificationController extends AbstractController
     public function delete(Certification $certification, Request $request, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete' . $certification->getId(), $request->request->get('_token'))) {
-            $this->auditService->log('Certification', $certification->getId(), 'DELETED', $this->getUser(), [
+            $this->auditService->log('Certification', $certification->getId(), 'DELETED', $this->getAuditUser(), [
                 'type' => $certification->getType(),
                 'unique_number' => $certification->getUniqueNumber(),
                 'student' => $certification->getStudent()->getPrenom() . ' ' . $certification->getStudent()->getName(),

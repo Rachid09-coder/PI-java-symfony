@@ -488,7 +488,10 @@
                         <li><a href="{{ path('student_bulletins_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_bulletins' ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> <span>Bulletins</span></a></li>
                         <li><a href="{{ path('student_certifications_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_certifications' ? 'active' : '' }}"><i class="fas fa-certificate"></i> <span>Certifications</span></a></li>
                         <li><a href="{{ path('student_ai_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_ai' ? 'active' : '' }}"><i class="fas fa-brain"></i> <span>Mon Analyse AI</span></a></li>
-                        <li><a href="{{ path('student_shop_index') }}" class="nav-item {{ app.request.get('_route') starts with 'student_shop' ? 'active' : '' }}"><i class="fas fa-shopping-bag"></i> <span>Boutique</span></a></li>
+                        <li><a href="{{ path('student_shop_index') }}" class="nav-item {{ app.request.get('_route') == 'student_shop_index' ? 'active' : '' }}"><i class="fas fa-shopping-bag"></i> <span>Boutique</span></a></li>
+                        {% if is_granted('ROLE_USER') %}
+                        <li><a href="{{ path('student_shop_wishlist') }}" class="nav-item {{ app.request.get('_route') == 'student_shop_wishlist' ? 'active' : '' }}"><i class="fas fa-heart"></i> <span>Liste de souhaits</span></a></li>
+                        {% endif %}
                         <li><a href="{{ path('student_shop_cart') }}" class="nav-item {{ app.request.get('_route') == 'student_shop_cart' ? 'active' : '' }}"><i class="fas fa-shopping-cart"></i> <span>Mon Panier</span></a></li>
                         <li><a href="{{ path('student_shipping_track') }}" class="nav-item {{ app.request.get('_route') starts with 'student_shipping' ? 'active' : '' }}"><i class="fas fa-truck"></i> <span>Suivi colis</span></a></li>
                         <li><a href="{{ path('student_calendar') }}" class="nav-item {{ app.request.get('_route') starts with 'student_calendar' ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> <span>Calendrier</span></a></li>

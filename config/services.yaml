@@ -21,7 +21,9 @@ parameters:
     app.twilio_account_sid: '%env(default:twilio_default:TWILIO_ACCOUNT_SID)%'
     app.twilio_auth_token: '%env(default:twilio_default:TWILIO_AUTH_TOKEN)%'
     app.twilio_from_number: '%env(default:twilio_default:TWILIO_FROM_NUMBER)%'
+    app.twilio_default_country_code: '%env(default:twilio_cc_default:TWILIO_DEFAULT_COUNTRY_CODE)%'
     twilio_default: ''
+    twilio_cc_default: ''
     # OAuth Google & reCAPTCHA (yassine-user) - optionnels en dev si non configurés
     oauth_google_client_id: '%env(default:oauth_google_client_id_default:OAUTH_GOOGLE_CLIENT_ID)%'
     oauth_google_client_id_default: ''
@@ -98,7 +100,12 @@ services:
             $twilioAccountSid: '%app.twilio_account_sid%'
             $twilioAuthToken: '%app.twilio_auth_token%'
             $twilioFromNumber: '%app.twilio_from_number%'
+            $twilioDefaultCountryCode: '%app.twilio_default_country_code%'
 
     App\Security\FormAuthenticator:
         arguments:
             $recaptchaSecret: '%recaptcha_secret%'
+
+    App\Service\ResetPasswordService:
+        arguments:
+            $mailerFrom: '%mailer_from%'

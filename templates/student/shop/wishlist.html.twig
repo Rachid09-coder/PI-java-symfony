@@ -1,0 +1,142 @@
+{% extends 'student_layout.html.twig' %}
+
+{% block title %}Ma liste de souhaits - EduSmart{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.wishlist-hero {
+    margin-bottom: 32px;
+    padding: 24px 28px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 50%, #FBCFE8 100%);
+    border: 1px solid rgba(236, 72, 153, 0.2);
+}
+.wishlist-hero h2 { font-size: 1.75rem; font-weight: 900; color: #1E293B; margin: 0 0 6px 0; display: flex; align-items: center; gap: 10px; }
+.wishlist-hero h2 i { color: #EC4899; }
+.wishlist-hero p { color: #64748B; margin: 0; }
+.wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+}
+.wishlist-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #F1F5F9;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+.wishlist-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(236, 72, 153, 0.12); }
+.wishlist-card-img {
+    height: 180px;
+    background: #F8FAFC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.wishlist-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.wishlist-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+.wishlist-card-title { font-size: 1.05rem; font-weight: 700; color: #1E293B; margin-bottom: 8px; }
+.wishlist-card-price { font-weight: 800; color: #EC4899; font-size: 1.25rem; margin-bottom: 16px; }
+.wishlist-card-actions { display: flex; gap: 10px; margin-top: auto; }
+.wishlist-card-actions .btn { flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; text-align: center; text-decoration: none; border: none; cursor: pointer; transition: 0.2s; }
+.btn-wishlist-add { background: #6366F1; color: white; }
+.btn-wishlist-add:hover { background: #4F46E5; color: white; }
+.btn-wishlist-remove { background: #FEE2E2; color: #DC2626; }
+.btn-wishlist-remove:hover { background: #FECACA; color: #DC2626; }
+.wishlist-empty {
+    text-align: center;
+    padding: 60px 24px;
+    background: white;
+    border-radius: 20px;
+    border: 1px dashed #E2E8F0;
+}
+.wishlist-empty-icon { font-size: 4rem; color: #FBCFE8; margin-bottom: 16px; }
+.wishlist-empty h3 { font-size: 1.25rem; font-weight: 800; color: #1E293B; margin-bottom: 8px; }
+.wishlist-empty p { color: #64748B; margin-bottom: 20px; }
+.wishlist-empty a { display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 14px; background: linear-gradient(135deg, #EC4899, #DB2777); color: white; font-weight: 700; text-decoration: none; }
+.wishlist-empty a:hover { color: white; opacity: 0.95; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="wishlist-hero">
+    <h2><i class="fas fa-heart"></i> Ma liste de souhaits</h2>
+    <p>Retrouvez ici les articles que vous avez mis de côté.</p>
+</div>
+
+{% if wishlistItems|length > 0 %}
+<div class="wishlist-grid">
+    {% for item in wishlistItems %}
+        {% set product = item.product %}
+        <div class="wishlist-card" data-product-id="{{ product.id }}">
+            <div class="wishlist-card-img">
+                {% if product.image %}
+                    <img src="{{ asset('uploads/produit/' ~ product.image) }}" alt="{{ product.name }}">
+                {% else %}
+                    <i class="fas fa-book-reader" style="font-size: 3rem; opacity: 0.2; color: #EC4899;"></i>
+                {% endif %}
+            </div>
+            <div class="wishlist-card-body">
+                <div class="wishlist-card-title">{{ product.name }}</div>
+                <div class="wishlist-card-price">{{ product.price|number_format(2, ',', ' ') }} €</div>
+                <div class="wishlist-card-actions">
+                    <a href="#" class="btn btn-wishlist-add add-to-cart-from-wishlist" data-id="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.price }}">
+                        <i class="fas fa-cart-plus"></i> Au panier
+                    </a>
+                    <button type="button" class="btn btn-wishlist-remove remove-from-wishlist" data-product-id="{{ product.id }}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="wishlist-empty">
+    <div class="wishlist-empty-icon"><i class="fas fa-heart"></i></div>
+    <h3>Votre liste est vide</h3>
+    <p>Ajoutez des articles depuis la boutique en cliquant sur le cœur.</p>
+    <a href="{{ path('student_shop_index') }}"><i class="fas fa-store"></i> Découvrir la boutique</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function() {
+    const toggleUrl = "{{ path('student_shop_wishlist_toggle', { id: '__ID__' }) }}";
+    document.querySelectorAll('.remove-from-wishlist').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.productId;
+            fetch(toggleUrl.replace('__ID__', id), { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' } })
+                .then(function(r) { return r.json(); })
+                .then(function() {
+                    const card = document.querySelector('.wishlist-card[data-product-id="' + id + '"]');
+                    if (card) card.remove();
+                    if (!document.querySelector('.wishlist-card')) window.location.reload();
+                });
+        });
+    });
+    document.querySelectorAll('.add-to-cart-from-wishlist').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const product = { id: this.dataset.id, name: this.dataset.name, price: parseFloat(this.dataset.price) };
+            let cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
+            cart.push(product);
+            localStorage.setItem('edusmart_cart', JSON.stringify(cart));
+            if (typeof updateCartCount === 'function') updateCartCount();
+            this.innerHTML = '<i class="fas fa-check"></i> Ajouté !';
+            this.style.background = '#10B981';
+            var t = this;
+            setTimeout(function() { t.innerHTML = '<i class="fas fa-cart-plus"></i> Au panier'; t.style.background = ''; }, 2000);
+        });
+    });
+})();
+</script>
+{% endblock %}

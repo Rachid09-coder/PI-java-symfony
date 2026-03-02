@@ -13,7 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class GoogleAuthController extends AbstractController
 {
@@ -64,7 +65,7 @@ class GoogleAuthController extends AbstractController
         EntityManagerInterface $em,
         ParameterBagInterface $params,
         UserPasswordHasherInterface $passwordHasher,
-        Security $security
+        TokenStorageInterface $tokenStorage
     ): Response {
         $state = $request->query->get('state');
         // Check for errors from Google
@@ -139,7 +140,11 @@ class GoogleAuthController extends AbstractController
                 }
             }
 
-            $security->login($user, 'main');
+            // Programmatic login: set token for firewall "main" (avoids "authenticator named main" error)
+            $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
+            $tokenStorage->setToken($token);
+            $session->set('_security_main', serialize($token));
+            $session->save();
 
             $this->addFlash('success', 'Connexion réussie!');
 
@@ -151,6 +156,8 @@ class GoogleAuthController extends AbstractController
             if (str_contains($msg, 'redirect_uri_mismatch') || str_contains($msg, 'redirect_uri')) {
                 $callbackUrl = $this->normalizeCallbackUrl($params->get('oauth_google_callback_url'), $params);
                 $this->addFlash('danger', 'URL de redirection incorrecte. Dans Google Cloud Console → Credentials → votre client OAuth, ajoutez dans "Authorized redirect URIs" exactement : ' . $callbackUrl);
+            } elseif (str_contains($msg, 'invalid_client')) {
+                $this->addFlash('danger', 'Client Google invalide. Vérifiez OAUTH_GOOGLE_CLIENT_ID et OAUTH_GOOGLE_CLIENT_SECRET dans .env.local : copiez-les à nouveau depuis Google Cloud Console → Credentials → votre application Web (sans espace, même projet).');
             } else {
                 $this->addFlash('danger', 'Erreur: ' . substr($msg, 0, 120));
             }

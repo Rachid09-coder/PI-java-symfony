@@ -20,20 +20,51 @@ class GradeCalculationService
     ) {}
 
     /**
-     * Récupère les notes d'un étudiant à partir des examens/submissions pour une période
-     * Calcul: CC (moyenne des Quiz/QCM) = 10%, DS = 20%, Exam = 70%
+     * Normalise l'année académique pour comparaison (2025/2026 et 2025-2026 sont équivalents).
+     */
+    private function normalizeAcademicYear(string $year): string
+    {
+        return str_replace('/', '-', trim($year));
+    }
+
+    /**
+     * Vérifie si une année d'examen correspond à l'année demandée (formats / ou -).
+     */
+    private function academicYearMatches(?string $examYear, string $requestedYear): bool
+    {
+        if ($examYear === null || $examYear === '') {
+            return false;
+        }
+        return $this->normalizeAcademicYear($examYear) === $this->normalizeAcademicYear($requestedYear);
+    }
+
+    /**
+     * Récupère les notes d'un étudiant à partir des examens corrigés par le professeur (ExamSubmission.grade).
+     * Calcul: CC×10% + DS×20% + Exam×70% si catégories renseignées ; sinon note = note de l'examen.
      */
     public function getStudentGradesData(int $studentId, string $academicYear, int $semester): array
     {
-        // Récupérer tous les examens de la période avec leurs soumissions
-        $exams = $this->examRepository->createQueryBuilder('e')
-            ->where('e.academicYear = :year')
+        $yearNorm = $this->normalizeAcademicYear($academicYear);
+
+        // 1) Examens de la période (année : 2025/2026 ou 2025-2026)
+        $qb = $this->examRepository->createQueryBuilder('e')
             ->andWhere('e.semester = :semester')
+            ->setParameter('semester', $semester);
+        $qb->andWhere($qb->expr()->orX(
+            $qb->expr()->eq('e.academicYear', ':year1'),
+            $qb->expr()->eq('e.academicYear', ':year2')
+        ))->setParameter('year1', $academicYear)->setParameter('year2', $yearNorm);
+
+        // D'abord avec catégorie CC/DS/Exam
+        $exams = (clone $qb)
             ->andWhere('e.gradeCategory IS NOT NULL')
-            ->setParameter('year', $academicYear)
-            ->setParameter('semester', $semester)
             ->getQuery()
             ->getResult();
+
+        // 2) Si aucun : récupérer les examens corrigés (submissions avec note) pour cet étudiant / période
+        if (empty($exams)) {
+            $exams = $this->findExamsWithGradesForStudent($studentId, $academicYear, $semester);
+        }
 
         // Organiser par module/cours
         $moduleGrades = [];
@@ -44,15 +75,13 @@ class GradeCalculationService
             $category = $exam->getGradeCategory();
 
             if (!$moduleName) {
-                continue;
+                $moduleName = $exam->getTitle() ?: ('Examen #' . $exam->getId());
             }
 
-            // Trouver la soumission de l'étudiant pour cet examen
             $submission = $this->submissionRepository->findOneBy([
                 'exam' => $exam,
                 'student' => $studentId
             ]);
-
             $grade = $submission?->getGrade();
 
             if (!isset($moduleGrades[$moduleName])) {
@@ -65,19 +94,25 @@ class GradeCalculationService
                 ];
             }
 
-            // Affecter la note selon la catégorie
-            switch ($category) {
-                case 'cc':
-                    if ($grade !== null) {
-                        $moduleGrades[$moduleName]['cc_grades'][] = $grade;
-                    }
-                    break;
-                case 'ds':
-                    $moduleGrades[$moduleName]['ds_grade'] = $grade;
-                    break;
-                case 'exam':
+            if ($category !== null) {
+                switch ($category) {
+                    case 'cc':
+                        if ($grade !== null) {
+                            $moduleGrades[$moduleName]['cc_grades'][] = $grade;
+                        }
+                        break;
+                    case 'ds':
+                        $moduleGrades[$moduleName]['ds_grade'] = $grade;
+                        break;
+                    case 'exam':
+                        $moduleGrades[$moduleName]['exam_grade'] = $grade;
+                        break;
+                }
+            } else {
+                // Examen sans catégorie : note unique (corrigée par le prof) → mise en "exam" (70%)
+                if ($grade !== null) {
                     $moduleGrades[$moduleName]['exam_grade'] = $grade;
-                    break;
+                }
             }
         }
 
@@ -87,18 +122,24 @@ class GradeCalculationService
         $totalCoefficients = 0;
 
         foreach ($moduleGrades as $module) {
-            // Calculer la moyenne CC (10%)
-            $ccAverage = !empty($module['cc_grades']) 
-                ? array_sum($module['cc_grades']) / count($module['cc_grades']) 
+            $ccAverage = !empty($module['cc_grades'])
+                ? array_sum($module['cc_grades']) / count($module['cc_grades'])
                 : 0;
-            
             $dsNote = $module['ds_grade'] ?? 0;
             $examNote = $module['exam_grade'] ?? 0;
-            
-            // Note finale: CC*0.10 + DS*0.20 + Exam*0.70
-            $finalNote = ($ccAverage * 0.10) + ($dsNote * 0.20) + ($examNote * 0.70);
-            $finalNote = round($finalNote, 2);
-            
+
+            // Note finale : CC×10% + DS×20% + Exam×70%, sauf si une seule note (examen corrigé sans catégorie) → note = note du prof
+            $hasBreakdown = !empty($module['cc_grades']) || $module['ds_grade'] !== null || $module['exam_grade'] !== null;
+            $singleGrade = ($ccAverage > 0 && $dsNote == 0 && $examNote == 0)
+                || ($dsNote > 0 && empty($module['cc_grades']) && $examNote == 0)
+                || ($examNote > 0 && empty($module['cc_grades']) && $dsNote == 0);
+            if ($singleGrade && ($examNote > 0 || $dsNote > 0 || $ccAverage > 0)) {
+                $finalNote = round($examNote > 0 ? $examNote : ($dsNote > 0 ? $dsNote : $ccAverage), 2);
+            } else {
+                $finalNote = ($ccAverage * 0.10) + ($dsNote * 0.20) + ($examNote * 0.70);
+                $finalNote = round($finalNote, 2);
+            }
+
             $coef = $module['coefficient'];
             
             $gradesData[] = [
@@ -116,15 +157,50 @@ class GradeCalculationService
 
         $average = $totalCoefficients > 0 ? round($totalWeighted / $totalCoefficients, 2) : 0;
 
-        // Calculer le rang provisoire (basé sur les bulletins existants de la même période)
-        $rank = $this->calculateProvisionalRank($studentId, $academicYear, $semester, $average);
+        // Moyenne simple = somme des notes / nombre de matières (pour affichage bulletin)
+        $notesOnly = array_column($gradesData, 'note');
+        $simpleAverage = count($notesOnly) > 0 ? round(array_sum($notesOnly) / count($notesOnly), 2) : 0.0;
+
+        $rank = $this->calculateProvisionalRank($studentId, $academicYear, $semester, $simpleAverage);
 
         return [
             'grades' => $gradesData,
             'average' => $average,
-            'mention' => $this->computeMention($average),
+            'simpleAverage' => $simpleAverage,
+            'mention' => $this->computeMention($simpleAverage),
             'rank' => $rank,
         ];
+    }
+
+    /**
+     * Récupère les examens pour lesquels l'étudiant a une soumission avec une note (examens corrigés par le prof),
+     * et dont l'année/semestre correspondent (année normalisée 2025/2026 = 2025-2026).
+     *
+     * @return Exam[]
+     */
+    private function findExamsWithGradesForStudent(int $studentId, string $academicYear, int $semester): array
+    {
+        $yearNorm = $this->normalizeAcademicYear($academicYear);
+        $submissions = $this->submissionRepository->createQueryBuilder('s')
+            ->innerJoin('s.exam', 'e')
+            ->where('s.student = :studentId')
+            ->andWhere('s.grade IS NOT NULL')
+            ->andWhere('e.semester = :semester')
+            ->andWhere('e.academicYear IN (:years)')
+            ->setParameter('studentId', $studentId)
+            ->setParameter('semester', $semester)
+            ->setParameter('years', [$academicYear, $yearNorm])
+            ->getQuery()
+            ->getResult();
+
+        $exams = [];
+        foreach ($submissions as $submission) {
+            $exam = $submission->getExam();
+            if ($exam && $this->academicYearMatches($exam->getAcademicYear(), $academicYear)) {
+                $exams[$exam->getId()] = $exam;
+            }
+        }
+        return array_values($exams);
     }
 
     /**

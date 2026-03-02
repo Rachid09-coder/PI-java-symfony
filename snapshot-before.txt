@@ -1,0 +1,37 @@
+
+═══════════════════════════════════════════════════════════════
+===============================================================
+
+   CODE QUALITY REPORT — BEFORE OPTIMIZATION
+
+═══════════════════════════════════════════════════════════════
+===============================================================
+
+
+2. Known flaws (addressed by optimization)
+------------------------------------------
+
+ The following issues were identified on the services. Apply the suggested fixes and run again with --snapshot=after.
+
+ ▶ [GradeCalculationService] Mention when bulletin has no lines — When a bulletin has no report card lines, only the average is set to 0. The mention is never updated and keeps its previous value (e.g. "Passable").
+   Fix: Call setMention(computeMention(0)) in the empty-lines branch.
+
+ ▶ [Bulletin (Entity)] Nullable average setter — The property $average is nullable (?float) and computeMention() handles null, but setAverage(float) does not accept null. Inconsistent API.
+   Fix: Change setAverage(?float $average) to allow null.
+
+ ▶ [AuditService] Entity ID required (non-nullable) — log() requires int $entityId. If the entity is not yet persisted (e.g. in tests or edge cases), passing null causes a TypeError.
+   Fix: Accept ?int $entityId and use 0 when null so the audit entry is still recorded.
+
+ ▶ [VerificationCodeService] Year not injectable — generateForCertification() uses date("Y"). The year is not injectable, making unit tests dependent on the current date and timezone.
+   Fix: Add optional ?DateTimeInterface $now = null and use it for the year when provided.
+
+ Run: php bin/console app:report:code-quality --snapshot=after after applying fixes to see the "Resolved" snapshot.
+
+═══════════════════════════════════════════════════════════════
+===============================================================
+
+   End of report — use this output as snapshot for your document
+
+═══════════════════════════════════════════════════════════════
+===============================================================
+

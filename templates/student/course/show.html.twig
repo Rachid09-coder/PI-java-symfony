@@ -319,6 +319,86 @@
     .info-item-label { color: #64748B; }
     .info-item-value { font-weight: 700; color: #1E293B; }
 
+    .course-progress-card {
+        background: white;
+        border-radius: 24px;
+        padding: 24px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+    .course-progress-card h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .course-progress-card h4 i { color: #667eea; }
+    .course-progress-bar-wrap {
+        height: 12px;
+        background: #F1F5F9;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+    .course-progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 999px;
+        transition: width 0.4s ease;
+    }
+    .course-progress-percent {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #64748B;
+        margin-bottom: 14px;
+    }
+    .course-progress-completed {
+        font-size: 0.8rem;
+        color: #10B981;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-mark-done {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-mark-done:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); color: white; }
+    .btn-mark-done:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .btn-mark-section {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid #E2E8F0;
+        background: #F8FAFC;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 10px;
+    }
+    .btn-mark-section:hover { background: #EEF2FF; color: #667eea; border-color: #C7D2FE; }
+    .btn-mark-section.done { background: #D1FAE5; color: #059669; border-color: #A7F3D0; cursor: default; }
+    .btn-mark-section.done i { color: #059669; }
+
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
@@ -330,6 +410,7 @@
     }
     .course-sidebar > *:nth-child(1) { animation-delay: 0.2s; }
     .course-sidebar > *:nth-child(2) { animation-delay: 0.35s; }
+    .course-sidebar > *:nth-child(3) { animation-delay: 0.45s; }
 </style>
 {% endblock %}
 
@@ -365,6 +446,9 @@
                             Description du cours
                         </h3>
                         <p>{{ course.description|default('Ce cours vous permettra de développer vos compétences et d\'approfondir vos connaissances dans le domaine.') }}</p>
+                        {% if progress is defined and progress %}
+                        <button type="button" class="btn-mark-section" id="btn-step-1" data-step="1">{% if progress.progressPercent >= 33 %}<i class="fas fa-check"></i> Description lue{% else %}<i class="fas fa-book-open"></i> Marquer la description comme lue{% endif %}</button>
+                        {% endif %}
                     </div>
 
                     {% if course.generatedContent %}
@@ -376,6 +460,9 @@
                         <div class="course-generated-content-body">
                             {{ course.generatedContent|nl2br }}
                         </div>
+                        {% if progress is defined and progress %}
+                        <button type="button" class="btn-mark-section" id="btn-step-2" data-step="2">{% if progress.progressPercent >= 66 %}<i class="fas fa-check"></i> Contenu lu{% else %}<i class="fas fa-book-open"></i> Marquer le contenu comme lu{% endif %}</button>
+                        {% endif %}
                     </div>
                     {% endif %}
 
@@ -399,6 +486,21 @@
         </div>
 
         <div class="course-sidebar">
+            {% if progress is defined and progress %}
+            <div class="course-progress-card">
+                <h4><i class="fas fa-trophy"></i> Ma progression</h4>
+                <div class="course-progress-bar-wrap">
+                    <div class="course-progress-bar-fill" id="sidebar-progress-fill" style="width: {{ progress.progressPercent }}%;"></div>
+                </div>
+                <div class="course-progress-percent" id="sidebar-progress-text">{{ progress.progressPercent }} %</div>
+                {% if progress.completedAt %}
+                <div class="course-progress-completed"><i class="fas fa-check-circle"></i> Cours terminé le {{ progress.completedAt|date('d/m/Y') }}</div>
+                {% else %}
+                <button type="button" class="btn-mark-done" id="btn-complete-course"> <i class="fas fa-flag-checkered"></i> Marquer le cours comme terminé </button>
+                {% endif %}
+            </div>
+            {% endif %}
+
             <div class="sidebar-price-card">
                 <div class="sidebar-price-header">
                     <div class="sidebar-price-value">{{ course.price > 0 ? course.price|number_format(2, ',', ' ') ~ ' €' : 'Gratuit' }}</div>
@@ -467,4 +569,71 @@
         </div>
     </div>
 </div>
+
+{% if progress is defined and progress %}
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function() {
+    const courseId = {{ course.id }};
+    const progressUrl = "{{ path('student_course_progress', { id: course.id }) }}";
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    function updateUi(percent, completedAt) {
+        const pct = Math.min(100, Math.max(0, percent));
+        document.querySelectorAll('.course-progress-bar-fill').forEach(function(el) { el.style.width = pct + '%'; });
+        document.querySelectorAll('.course-progress-percent').forEach(function(el) { el.textContent = pct + ' %'; });
+        if (pct >= 33) {
+            const b1 = document.getElementById('btn-step-1');
+            if (b1 && !b1.classList.contains('done')) {
+                b1.classList.add('done');
+                b1.innerHTML = '<i class="fas fa-check"></i> Description lue';
+                b1.disabled = true;
+            }
+        }
+        if (pct >= 66) {
+            const b2 = document.getElementById('btn-step-2');
+            if (b2 && !b2.classList.contains('done')) {
+                b2.classList.add('done');
+                b2.innerHTML = '<i class="fas fa-check"></i> Contenu lu';
+                b2.disabled = true;
+            }
+        }
+        if (pct >= 100) {
+            const btnComplete = document.getElementById('btn-complete-course');
+            if (btnComplete) {
+                btnComplete.outerHTML = '<div class="course-progress-completed"><i class="fas fa-check-circle"></i> Cours terminé</div>';
+            }
+        }
+    }
+
+    function sendProgress(step) {
+        fetch(progressUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ step: step })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success) {
+                updateUi(data.progressPercent);
+            }
+        }).catch(function() {});
+    }
+
+    document.getElementById('btn-step-1')?.addEventListener('click', function() {
+        if (this.disabled) return;
+        sendProgress(1);
+    });
+    document.getElementById('btn-step-2')?.addEventListener('click', function() {
+        if (this.disabled) return;
+        sendProgress(2);
+    });
+    document.getElementById('btn-complete-course')?.addEventListener('click', function() {
+        if (this.disabled) return;
+        this.disabled = true;
+        sendProgress(3);
+    });
+})();
+</script>
+{% endblock %}
+{% endif %}
 {% endblock %}

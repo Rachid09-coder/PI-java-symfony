@@ -227,6 +227,40 @@
     }
     .course-item-meta i { color: #667eea; font-size: 0.75rem; }
 
+    .course-item-progress {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .course-item-progress-bar {
+        flex: 1;
+        max-width: 120px;
+        height: 6px;
+        background: #E2E8F0;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .course-item-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 999px;
+        transition: width 0.3s ease;
+    }
+    .course-item-progress-pct {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    .course-item-progress-done {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #10B981;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
     .course-item-action {
         flex-shrink: 0;
     }
@@ -374,6 +408,18 @@
                                 </span>
                                 {% endif %}
                             </div>
+                            {% if courseProgressMap[course.id] is defined and courseProgressMap[course.id] is not null %}
+                            <div class="course-item-progress">
+                                <div class="course-item-progress-bar">
+                                    <div class="course-item-progress-fill" style="width: {{ courseProgressMap[course.id] }}%;"></div>
+                                </div>
+                                {% if courseProgressMap[course.id] >= 100 %}
+                                <span class="course-item-progress-done"><i class="fas fa-check-circle"></i> Terminé</span>
+                                {% else %}
+                                <span class="course-item-progress-pct">{{ courseProgressMap[course.id] }} %</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="course-item-action">
                             <span class="btn-access-course">

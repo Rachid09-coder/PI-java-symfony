@@ -105,6 +105,35 @@ class CourseAdminController extends AbstractController
         return $this->redirectToRoute('admin_courses_manage');
     }
 
+    /**
+     * Advanced: duplicate a course (copy title, description, price, content, modules; new course is DRAFT, no exams/forum).
+     */
+    #[Route('/{id}/duplicate', name: 'admin_course_duplicate', methods: ['POST'])]
+    public function duplicate(Request $request, Course $course, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('duplicate' . $course->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('admin_courses_manage');
+        }
+
+        $copy = new Course();
+        $copy->setTitle($course->getTitle() . ' (copie)');
+        $copy->setDescription($course->getDescription());
+        $copy->setPrice($course->getPrice() ?? '0');
+        $copy->setStatus('DRAFT');
+        $copy->setGeneratedContent($course->getGeneratedContent());
+        $copy->setCoefficient($course->getCoefficient());
+        foreach ($course->getModules() as $module) {
+            $copy->addModule($module);
+        }
+
+        $entityManager->persist($copy);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Cours dupliqué. Vous pouvez le modifier et le publier.');
+        return $this->redirectToRoute('admin_courses_manage');
+    }
+
     #[Route('/{id}/modules', name: 'admin_course_modules', methods: ['GET'])]
     public function manageModules(Course $course): Response
     {

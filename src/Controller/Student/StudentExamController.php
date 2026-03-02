@@ -29,7 +29,7 @@ class StudentExamController extends AbstractController
     private function getCandidateIdentifier(Request $request): ?string
     {
         $user = $this->getUser();
-        if ($user) {
+        if ($user instanceof User) {
             return 'user_' . $user->getId();
         }
         
@@ -240,10 +240,10 @@ class StudentExamController extends AbstractController
             $submission->setIsPassed($totalPoints > 0 && ($score / $totalPoints) >= 0.5);
 
         } elseif (in_array($exam->getType(), ['pdf', 'Devoir', 'Projet'])) {
-            /** @var UploadedFile $file */
+            /** @var UploadedFile|null $file */
             $file = $request->files->get('submissionFile');
             
-            if ($file) {
+            if ($file !== null) {
                  $newFilename = uniqid().'.'.$file->guessExtension();
                  try {
                      $file->move(

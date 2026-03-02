@@ -345,6 +345,14 @@
         cursor: pointer;
         font-size: 0.85rem;
     }
+    .action-btn-duplicate { color: #0EA5E9; }
+    .action-btn-duplicate:hover {
+        background: #0EA5E9;
+        color: white;
+        border-color: #0EA5E9;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(14,165,233,0.3);
+    }
     .action-btn-edit { color: #4facfe; }
     .action-btn-edit:hover {
         background: #4facfe;
@@ -462,7 +470,7 @@
 <div class="courses-hero">
     <div class="hero-content">
         <h2 class="hero-title">Administration des Cours</h2>
-        <p class="hero-subtitle">Gérez, publiez et organisez vos cours en ligne</p>
+        <p class="hero-subtitle">Gérez, publiez et organisez vos cours en ligne · <strong>Fonctionnalité avancée :</strong> dupliquer un cours en un clic (icône <i class="fas fa-copy"></i>)</p>
         <div class="hero-stats">
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ courses|length }}</span>
@@ -566,7 +574,13 @@
                     </span>
                 </td>
                 <td>
-                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+                        <form method="post" action="{{ path('admin_course_duplicate', {id: course.id}) }}" style="display: inline;" title="Dupliquer le cours">
+                            <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ course.id) }}">
+                            <button type="submit" class="action-btn action-btn-duplicate" title="Dupliquer">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </form>
                         <a href="{{ path('forum_index', {id: course.id}) }}" class="action-btn action-btn-forum" title="Forum &amp; discussions">
                             <i class="fas fa-comments"></i>
                         </a>

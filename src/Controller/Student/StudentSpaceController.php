@@ -3,11 +3,14 @@
 namespace App\Controller\Student;
 
 use App\Entity\Course;
+use App\Entity\CourseProgress;
+use App\Repository\CourseProgressRepository;
 use App\Repository\CourseRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
@@ -26,18 +29,88 @@ class StudentSpaceController extends AbstractController
     }
 
     #[Route('/modules/{id}', name: 'student_module_details')]
-    public function moduleDetails(\App\Entity\Module $module): Response
+    public function moduleDetails(\App\Entity\Module $module, CourseProgressRepository $progressRepo): Response
     {
+        $user = $this->getUser();
+        $courseProgressMap = [];
+        if ($user) {
+            foreach ($module->getCourses() as $course) {
+                $progress = $progressRepo->findOneByStudentAndCourse($user, $course);
+                $courseProgressMap[$course->getId()] = $progress ? $progress->getProgressPercent() : 0;
+            }
+        }
+
         return $this->render('student/module/show.html.twig', [
-            'module' => $module
+            'module' => $module,
+            'courseProgressMap' => $courseProgressMap,
         ]);
     }
 
     #[Route('/course/{id}', name: 'student_course_details')]
-    public function courseDetails(Course $course): Response
+    public function courseDetails(Course $course, CourseProgressRepository $progressRepo): Response
     {
+        $user = $this->getUser();
+        $progress = null;
+        if ($user) {
+            $progress = $progressRepo->findOneByStudentAndCourse($user, $course);
+            if (!$progress) {
+                $progress = new CourseProgress();
+                $progress->setStudent($user);
+                $progress->setCourse($course);
+                $progressRepo->save($progress);
+            } else {
+                $progress->setLastAccessedAt(new \DateTimeImmutable());
+                $progressRepo->save($progress);
+            }
+        }
+
         return $this->render('student/course/show.html.twig', [
-            'course' => $course
+            'course' => $course,
+            'progress' => $progress,
+        ]);
+    }
+
+    #[Route('/course/{id}/progress', name: 'student_course_progress', methods: ['POST'])]
+    public function updateCourseProgress(Course $course, Request $request, CourseProgressRepository $progressRepo): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'error' => 'Non authentifié'], 401);
+        }
+
+        $progress = $progressRepo->findOneByStudentAndCourse($user, $course);
+        if (!$progress) {
+            $progress = new CourseProgress();
+            $progress->setStudent($user);
+            $progress->setCourse($course);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+        $step = isset($data['step']) ? (int) $data['step'] : null;
+        $percent = isset($data['percent']) ? (int) $data['percent'] : null;
+
+        if ($step !== null) {
+            $percent = match ($step) {
+                1 => 33,
+                2 => 66,
+                3 => 100,
+                default => $progress->getProgressPercent(),
+            };
+        }
+        if ($percent !== null) {
+            $progress->setProgressPercent($percent);
+        } else {
+            $progress->setProgressPercent(100);
+            $progress->setCompletedAt(new \DateTimeImmutable());
+        }
+
+        $progress->setLastAccessedAt(new \DateTimeImmutable());
+        $progressRepo->save($progress);
+
+        return new JsonResponse([
+            'success' => true,
+            'progressPercent' => $progress->getProgressPercent(),
+            'completedAt' => $progress->getCompletedAt()?->format('c'),
         ]);
     }
 

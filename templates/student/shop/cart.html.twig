@@ -2,24 +2,248 @@
 
 {% block title %}Mon Panier - EduSmart{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* ── Cart page ── */
+.cart-page-hero {
+    margin-bottom: 36px;
+    padding: 28px 32px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 50%, #C7D2FE 100%);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+.cart-page-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: cart-hero-float 6s ease-in-out infinite;
+}
+@keyframes cart-hero-float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-20px, 20px); }
+}
+.cart-page-hero h2 {
+    font-size: 1.85rem;
+    font-weight: 900;
+    color: #1E293B;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+}
+.cart-page-hero h2 i { color: #6366F1; }
+.cart-page-hero p { color: #64748B; margin: 0; position: relative; z-index: 1; }
+
+.cart-items-card {
+    padding: 30px;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border: 1px solid #F1F5F9;
+    transition: box-shadow 0.3s ease;
+}
+.cart-items-card:hover { box-shadow: 0 12px 40px -10px rgba(99, 102, 241, 0.15); }
+
+.cart-item-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid #F8FAFC;
+    animation: cart-item-in 0.4s ease backwards;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.cart-item-row.removing {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.98);
+}
+.cart-item-row:nth-child(1) { animation-delay: 0.05s; }
+.cart-item-row:nth-child(2) { animation-delay: 0.1s; }
+.cart-item-row:nth-child(3) { animation-delay: 0.15s; }
+.cart-item-row:nth-child(4) { animation-delay: 0.2s; }
+.cart-item-row:nth-child(5) { animation-delay: 0.25s; }
+.cart-item-row:nth-child(6) { animation-delay: 0.3s; }
+@keyframes cart-item-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cart-item-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6366F1;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+.cart-item-row:hover .cart-item-icon { transform: scale(1.08) rotate(-3deg); }
+
+.cart-summary-card {
+    height: fit-content;
+    padding: 28px;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border: 1px solid #F1F5F9;
+    position: relative;
+    overflow: hidden;
+}
+.cart-summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #6366F1, #8B5CF6);
+    opacity: 0.9;
+}
+.cart-total-row {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-bottom: 24px;
+}
+#total {
+    font-size: 1.4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: transform 0.2s ease;
+}
+.cart-summary-card:hover #total { transform: scale(1.02); }
+
+.cart-checkout-btn {
+    width: 100%;
+    padding: 18px 24px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.cart-checkout-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+}
+.cart-checkout-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+}
+.cart-checkout-btn:hover::after { left: 100%; }
+.cart-checkout-btn:active { transform: translateY(-1px); }
+.cart-checkout-btn:disabled { opacity: 0.8; cursor: not-allowed; transform: none; }
+
+.cart-empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    animation: cart-empty-in 0.6s ease;
+}
+@keyframes cart-empty-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+.cart-empty-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F1F5F9, #E2E8F0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: #CBD5E1;
+    animation: cart-empty-bounce 2.5s ease-in-out infinite;
+}
+@keyframes cart-empty-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+.cart-empty-btn {
+    margin-top: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4F46E5, #6366F1);
+    color: white;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.cart-empty-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.35);
+    color: white;
+}
+
+.cart-remove-btn {
+    border: none;
+    background: none;
+    color: #EF4444;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 0;
+    margin-top: 6px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+}
+.cart-remove-btn:hover { background: #FEF2F2; color: #DC2626; }
+</style>
+{% endblock %}
+
 {% block body %}
-<div style="margin-bottom: 40px;">
-    <h2 style="font-size: 1.8rem; font-weight: 800; color: #1E293B;">Votre Panier</h2>
+<div class="cart-page-hero">
+    <h2><i class="fas fa-shopping-cart"></i> Votre Panier</h2>
+    <p>Récapitulatif et passage au paiement.</p>
 </div>
 
 <div id="cart-container" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-    <div class="card" style="padding: 30px;">
-        <div id="cart-items" style="display: flex; flex-direction: column; gap: 20px;">
-            <!-- Items will be injected here by JS -->
+    <div class="cart-items-card card">
+        <div id="cart-items" style="display: flex; flex-direction: column; gap: 0;">
+            <!-- Items injected by JS -->
         </div>
-        <div id="empty-cart" style="display: none; text-align: center; padding: 40px;">
-            <i class="fas fa-shopping-basket" style="font-size: 4rem; color: #E2E8F0; margin-bottom: 20px;"></i>
-            <p style="color: #64748B;">Votre panier est vide.</p>
-            <a href="{{ path('student_shop_index') }}" class="btn btn-primary" style="margin-top: 20px; display: inline-block; background: #3B49A2;">Aller à la boutique</a>
+        <div id="empty-cart" class="cart-empty-state" style="display: none;">
+            <div class="cart-empty-icon"><i class="fas fa-shopping-basket"></i></div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: #1E293B; margin-bottom: 8px;">Votre panier est vide</h3>
+            <p style="color: #64748B;">Ajoutez des articles depuis la boutique.</p>
+            <a href="{{ path('student_shop_index') }}" class="cart-empty-btn">
+                <i class="fas fa-store"></i> Aller à la boutique
+            </a>
         </div>
     </div>
 
-    <div class="card" style="height: fit-content; padding: 30px;">
+    <div class="cart-summary-card card">
         <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 25px;">Résumé de la commande</h3>
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
             <span style="color: #64748B;">Sous-total</span>
@@ -30,25 +254,76 @@
             <span style="color: #10B981; font-weight: 700;">Gratuit</span>
         </div>
         <hr style="border: none; border-top: 1px solid #F1F5F9; margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-            <span style="font-size: 1.1rem; font-weight: 800;">Total</span>
-            <span id="total" style="font-size: 1.3rem; font-weight: 800; color: #6366F1;">0.00 €</span>
+        <div class="cart-total-row" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Total</span>
+            <span id="total">0.00 €</span>
         </div>
 
-        {# Error message area #}
-        <div id="checkout-error" style="display:none; background:#fff0f0; border-left:4px solid #e53935; color:#b71c1c; padding:12px 16px; border-radius:10px; font-size:0.88rem; margin-bottom:16px;"></div>
+        <div id="checkout-error" style="display:none; background:#FEF2F2; border-left:4px solid #EF4444; color:#991B1B; padding:12px 16px; border-radius:10px; font-size:0.88rem; margin-bottom:16px;"></div>
 
-        <button id="checkout-btn"
-                onclick="handleCheckout()"
-                class="btn btn-primary"
-                style="width: 100%; padding: 16px; border-radius: 12px; background: #3B49A2; font-weight: 700; cursor:pointer; border:none; font-size:1rem; transition:0.25s;">
+        <button id="checkout-btn" type="button" onclick="handleCheckout()" class="cart-checkout-btn">
             <span id="checkout-label"><i class="fas fa-credit-card" style="margin-right:8px;"></i>Passer au paiement</span>
-            <span id="checkout-spinner" style="display:none;">
-                <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Traitement…
-            </span>
+            <span id="checkout-spinner" style="display:none;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Traitement…</span>
         </button>
     </div>
 </div>
+
+{% if wishlistItems|default([])|length > 0 %}
+<section class="cart-wishlist-section" style="margin-top: 40px; padding: 28px; border-radius: 20px; background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%); border: 1px solid rgba(236, 72, 153, 0.2);">
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: #1E293B; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-heart" style="color: #EC4899;"></i> Ajouter depuis ma liste de souhaits
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+        {% for item in wishlistItems %}
+            {% set product = item.product %}
+            <div style="display: flex; align-items: center; gap: 14px; padding: 14px; background: white; border-radius: 14px; border: 1px solid #F1F5F9;">
+                <div style="width: 56px; height: 56px; border-radius: 12px; background: #F8FAFC; overflow: hidden; flex-shrink: 0;">
+                    {% if product.image %}
+                        <img src="{{ asset('uploads/produit/' ~ product.image) }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #EC4899; opacity: 0.5;"><i class="fas fa-book"></i></div>
+                    {% endif %}
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 700; font-size: 0.9rem; color: #1E293B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.name }}</div>
+                    <div style="font-weight: 800; color: #EC4899; font-size: 0.95rem;">{{ product.price|number_format(2, ',', ' ') }} €</div>
+                </div>
+                <button type="button" class="cart-wishlist-add add-to-cart-from-wishlist" data-id="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.price }}"
+                        style="padding: 10px 14px; border-radius: 10px; background: #6366F1; color: white; border: none; font-weight: 700; font-size: 0.8rem; cursor: pointer; white-space: nowrap;">
+                    <i class="fas fa-cart-plus"></i>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if recommendedProducts|default([])|length > 0 %}
+<section style="margin-top: 40px;">
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: #1E293B; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-shopping-bag" style="color: #6366F1;"></i> Complétez votre panier
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+        {% for product in recommendedProducts %}
+            <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid #F1F5F9; transition: 0.3s;" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+                <div style="height: 100px; background: #F8FAFC; border-radius: 10px; margin-bottom: 12px; overflow: hidden;">
+                    {% if product.image %}
+                        <img src="{{ asset('uploads/produit/' ~ product.image) }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-book" style="font-size: 1.5rem; opacity: 0.2; color: #6366F1;"></i></div>
+                    {% endif %}
+                </div>
+                <div style="font-weight: 700; font-size: 0.9rem; color: #1E293B; margin-bottom: 4px;">{{ product.name }}</div>
+                <div style="font-weight: 800; color: #6366F1; font-size: 1rem; margin-bottom: 12px;">{{ product.price|number_format(2, ',', ' ') }} €</div>
+                <button type="button" class="add-to-cart" data-id="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.price }}"
+                        style="width: 100%; padding: 10px; border-radius: 10px; background: #6366F1; color: white; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                    <i class="fas fa-cart-plus" style="margin-right: 6px;"></i> Ajouter
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 
 {% block javascripts %}
 <script>
@@ -74,17 +349,15 @@
         cart.forEach((item, index) => {
             total += item.price;
             itemsContainer.innerHTML += `
-                <div style="display: flex; align-items: center; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid #F8FAFC;">
-                    <div style="width: 70px; height: 70px; background: #F8FAFC; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #3B49A2;">
-                        <i class="fas fa-book"></i>
-                    </div>
+                <div class="cart-item-row" data-cart-index="${index}">
+                    <div class="cart-item-icon"><i class="fas fa-book"></i></div>
                     <div style="flex: 1;">
                         <h4 style="font-weight: 700; font-size: 1rem;">${item.name}</h4>
                         <p style="color: #64748B; font-size: 0.85rem;">Quantité: 1</p>
                     </div>
                     <div style="text-align: right;">
                         <p style="font-weight: 800; color: #1E293B;">${item.price.toFixed(2)} €</p>
-                        <button onclick="removeItem(${index})" style="border: none; background: none; color: #EF4444; font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 0; margin-top: 5px;">Supprimer</button>
+                        <button type="button" class="cart-remove-btn" onclick="removeItem(${index})"><i class="fas fa-trash-alt" style="margin-right:4px;"></i>Supprimer</button>
                     </div>
                 </div>
             `;
@@ -95,11 +368,23 @@
     }
 
     function removeItem(index) {
-        let cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
-        cart.splice(index, 1);
-        localStorage.setItem('edusmart_cart', JSON.stringify(cart));
-        renderCart();
-        updateCartCount();
+        const row = document.querySelector('.cart-item-row[data-cart-index="' + index + '"]');
+        if (row) {
+            row.classList.add('removing');
+            setTimeout(function() {
+                let cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
+                cart.splice(index, 1);
+                localStorage.setItem('edusmart_cart', JSON.stringify(cart));
+                renderCart();
+                if (typeof updateCartCount === 'function') updateCartCount();
+            }, 300);
+        } else {
+            let cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
+            cart.splice(index, 1);
+            localStorage.setItem('edusmart_cart', JSON.stringify(cart));
+            renderCart();
+            if (typeof updateCartCount === 'function') updateCartCount();
+        }
     }
 
     // ── Checkout ──────────────────────────────────────────────
@@ -162,7 +447,24 @@
         document.getElementById('checkout-error').style.display = 'none';
     }
 
-    document.addEventListener('DOMContentLoaded', renderCart);
+    document.addEventListener('DOMContentLoaded', function() {
+        renderCart();
+        document.querySelectorAll('.add-to-cart, .add-to-cart-from-wishlist').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var product = { id: this.dataset.id, name: this.dataset.name, price: parseFloat(this.dataset.price) };
+                var cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
+                cart.push(product);
+                localStorage.setItem('edusmart_cart', JSON.stringify(cart));
+                if (typeof updateCartCount === 'function') updateCartCount();
+                renderCart();
+                var orig = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i> Ajouté';
+                this.style.background = '#10B981';
+                var t = this;
+                setTimeout(function() { t.innerHTML = orig; t.style.background = ''; }, 2000);
+            });
+        });
+    });
 </script>
 {% endblock %}
 {% endblock %}

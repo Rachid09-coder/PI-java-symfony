@@ -1,0 +1,16 @@
+# PHPStan - Analyse statique pour le rapport qualité (PIDEV)
+# Seuls src/ et tests/ sont analysés (jamais vendor/).
+# Snapshot "avant" : composer report:flaws → capture des défauts
+# Snapshot "après" : corriger les erreurs → relancer → capture "optimisé"
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - tests/bootstrap.php
+        - vendor/*
+        - var/*
+    ignoreErrors:
+        # Doctrine assigne l'id à la persistance ; PHPStan ne le voit pas
+        - '#Property App\\Entity\\.*::\$id \(int\|null\) is never assigned int#'

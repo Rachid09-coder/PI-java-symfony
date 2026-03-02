@@ -2,6 +2,7 @@
 
 namespace App\Controller\Student;
 
+use App\Entity\User;
 use App\Service\AiService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -33,7 +34,10 @@ class StudentAiController extends AbstractController
     public function myAnalysis(): JsonResponse
     {
         $student = $this->getUser();
-        
+        if (!$student instanceof User) {
+            return $this->json(['success' => false, 'error' => 'Non authentifié'], 401);
+        }
+
         $apiKey = $_ENV['GROQ_API_KEY'] ?? '';
         if (empty($apiKey) || $apiKey === 'your_groq_api_key_here') {
             return $this->json([
@@ -66,7 +70,10 @@ class StudentAiController extends AbstractController
     public function myRecommendations(): JsonResponse
     {
         $student = $this->getUser();
-        
+        if (!$student instanceof User) {
+            return $this->json(['success' => false, 'error' => 'Non authentifié'], 401);
+        }
+
         $apiKey = $_ENV['GROQ_API_KEY'] ?? '';
         if (empty($apiKey) || $apiKey === 'your_groq_api_key_here') {
             return $this->json([
@@ -95,7 +102,10 @@ class StudentAiController extends AbstractController
     public function chat(Request $request): JsonResponse
     {
         $student = $this->getUser();
-        
+        if (!$student instanceof User) {
+            return $this->json(['success' => false, 'error' => 'Non authentifié'], 401);
+        }
+
         $apiKey = $_ENV['GROQ_API_KEY'] ?? '';
         if (empty($apiKey) || $apiKey === 'your_groq_api_key_here') {
             return $this->json([

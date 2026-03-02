@@ -25,7 +25,7 @@
         {% set total_avg = 0 %}
         {% for b in bulletins %}
             {% if b.status == 'Publié' %}{% set published_count = published_count + 1 %}{% endif %}
-            {% set total_avg = total_avg + b.average %}
+            {% set total_avg = total_avg + (b.average ?? 0) %}
         {% endfor %}
         
         <div class="card" style="padding: 25px; text-align: center; background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); border: none;">
@@ -75,8 +75,8 @@
                     {# Average Display #}
                     <div style="text-align: center; margin-bottom: 20px; padding: 20px; background: #F8FAFC; border-radius: 15px;">
                         <div style="font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin-bottom: 5px;">Moyenne Générale</div>
-                        <div style="font-size: 3rem; font-weight: 900; color: {{ bulletin.average >= 10 ? '#10B981' : '#EF4444' }};">
-                            {{ bulletin.average|number_format(2) }}
+                        <div style="font-size: 3rem; font-weight: 900; color: {{ (bulletin.average ?? 0) >= 10 ? '#10B981' : '#EF4444' }};">
+                            {{ (bulletin.average ?? 0)|number_format(2) }}
                             <span style="font-size: 1.2rem; color: #94A3B8;">/20</span>
                         </div>
                         {% if bulletin.mention %}
@@ -110,7 +110,7 @@
                         </div>
                         
                         {% if bulletin.pdfPath and bulletin.status == 'Publié' %}
-                        <a href="{{ path('admin_bulletin_pdf', {id: bulletin.id}) }}" target="_blank" 
+                        <a href="{{ path('student_bulletin_pdf', {id: bulletin.id}) }}" target="_blank" 
                            style="display: inline-flex; align-items: center; gap: 8px; background: #EF4444; color: white; padding: 8px 16px; border-radius: 10px; text-decoration: none; font-size: 0.85rem; font-weight: 700; transition: 0.3s;"
                            onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'">
                             <i class="fas fa-file-pdf"></i> Télécharger PDF

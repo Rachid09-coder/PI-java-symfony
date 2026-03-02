@@ -150,8 +150,8 @@ class ExamAdminController extends AbstractController
     public function saveGrades(Exam $exam, Request $request, EntityManagerInterface $em): Response
     {
         $repo = $em->getRepository(\App\Entity\ExamSubmission::class);
-        $grades = $request->request->all('grades') ?? [];
-        $passed = $request->request->all('passed') ?? [];
+        $grades = $request->request->all('grades');
+        $passed = $request->request->all('passed');
         $updated = 0;
         foreach ($grades as $submissionId => $gradeStr) {
             $submission = $repo->find($submissionId);
@@ -179,7 +179,7 @@ class ExamAdminController extends AbstractController
         $submissions = $exam->getSubmissions()->toArray();
         usort($submissions, fn($a, $b) => ($b->getStartedAt() ?? $b->getSubmittedAt()) <=> ($a->getStartedAt() ?? $a->getSubmittedAt()));
 
-        $response = new StreamedResponse(function () use ($exam, $submissions) {
+        $response = new StreamedResponse(function () use ($submissions) {
             $out = fopen('php://output', 'w');
             fputcsv($out, ['Candidat', 'Email', 'Début', 'Fin / Clôture', 'Statut', 'Note', 'Validé'], ';');
             foreach ($submissions as $s) {

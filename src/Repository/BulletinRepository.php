@@ -88,11 +88,16 @@ class BulletinRepository extends ServiceEntityRepository
     /**
      * Recalcule les rangs de tous les bulletins d'une année/semestre
      */
+    /**
+     * Recalcule les rangs selon les moyennes (plus haute moyenne = rang 1).
+     * Seuls les bulletins avec une moyenne renseignée sont classés.
+     */
     public function recalculateAllRanks(string $academicYear, string $semester): void
     {
         $bulletins = $this->createQueryBuilder('b')
             ->where('b.academicYear = :year')
             ->andWhere('b.semester = :semester')
+            ->andWhere('b.average IS NOT NULL')
             ->setParameter('year', $academicYear)
             ->setParameter('semester', $semester)
             ->orderBy('b.average', 'DESC')

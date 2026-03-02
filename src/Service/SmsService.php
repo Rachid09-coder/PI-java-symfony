@@ -18,16 +18,20 @@ class SmsService
     private string $authToken;
     private string $fromNumber;
     private bool $enabled;
+    /** Indicatif pays par défaut pour numéros à 8 chiffres (ex: 216 pour Tunisie). Optionnel. */
+    private string $defaultCountryCode;
 
     public function __construct(
         string $twilioAccountSid = '',
         string $twilioAuthToken = '',
         string $twilioFromNumber = '',
+        string $twilioDefaultCountryCode = '',
         private ?LoggerInterface $logger = null
     ) {
         $this->accountSid = $twilioAccountSid ?: ($_ENV['TWILIO_ACCOUNT_SID'] ?? '');
         $this->authToken = $twilioAuthToken ?: ($_ENV['TWILIO_AUTH_TOKEN'] ?? '');
         $this->fromNumber = $twilioFromNumber ?: ($_ENV['TWILIO_FROM_NUMBER'] ?? '');
+        $this->defaultCountryCode = preg_replace('/\D/', '', $twilioDefaultCountryCode ?: ($_ENV['TWILIO_DEFAULT_COUNTRY_CODE'] ?? ''));
         $this->enabled = !empty($this->accountSid) && !empty($this->authToken) && !empty($this->fromNumber);
     }
 
@@ -102,9 +106,15 @@ class SmsService
                 'error' => $e->getMessage(),
             ]);
 
+            $message = $e->getMessage();
+            if (str_contains($message, 'Invalid') && (str_contains($message, 'To') || str_contains($message, 'Phone'))) {
+                $message = 'Numéro de téléphone invalide ou non pris en charge par le service SMS. '
+                    . 'Vérifiez que le numéro est un mobile au format international (ex: 06 12 34 56 78 pour la France).';
+            }
+
             return [
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => $message,
             ];
         }
     }
@@ -181,28 +191,56 @@ class SmsService
     }
 
     /**
-     * Formate le numéro de téléphone au format E.164
+     * Formate le numéro de téléphone au format E.164 pour Twilio.
+     * - Chiffres uniquement, préfixe national (0) après l'indicatif pays retiré.
      */
     private function formatPhoneNumber(string $phone): string
     {
-        // Supprimer les espaces, tirets, points
-        $phone = preg_replace('/[\s\-\.\(\)]/', '', $phone);
-
-        // Si le numéro commence par 0, le remplacer par +33 (France)
-        if (str_starts_with($phone, '0')) {
-            $phone = '+33' . substr($phone, 1);
-        }
-
-        // S'assurer que le numéro commence par +
-        if (!str_starts_with($phone, '+')) {
-            $phone = '+' . $phone;
-        }
-
-        // Vérifier le format basique
-        if (!preg_match('/^\+[1-9]\d{6,14}$/', $phone)) {
+        // Ne garder que les chiffres (et remplacer O/l par 0/1 pour erreurs de saisie)
+        $phone = str_replace(['O', 'o', 'l', 'I'], ['0', '0', '1', '1'], $phone);
+        $digits = preg_replace('/\D/', '', $phone);
+        if ($digits === '' || strlen($digits) < 8 || strlen($digits) > 15) {
             return '';
         }
 
-        return $phone;
+        // France : 0X XX XX XX XX -> +33 X XX XX XX XX (9 chiffres après 33)
+        if (str_starts_with($digits, '0') && strlen($digits) === 10) {
+            $digits = '33' . substr($digits, 1);
+        }
+        if (str_starts_with($digits, '0')) {
+            return '';
+        }
+
+        // Numéro à 8 chiffres sans indicatif : utiliser l'indicatif par défaut si configuré (ex: Tunisie 216)
+        if (strlen($digits) === 8 && $this->defaultCountryCode !== '') {
+            $digits = $this->defaultCountryCode . $digits;
+        }
+
+        // E.164 : pas de 0 après l'indicatif pays (préfixe national). Twilio rejette sinon.
+        // Indicatif 2 chiffres (33, 95, 44…) : retirer le 0 en 3e position si présent.
+        if (strlen($digits) >= 11 && strlen($digits) <= 15 && isset($digits[2]) && $digits[2] === '0') {
+            $digits = substr($digits, 0, 2) . substr($digits, 3);
+        }
+        // Indicatif 3 chiffres (216, 213…) : retirer le 0 en 4e position si présent.
+        if (strlen($digits) >= 11 && strlen($digits) <= 15 && isset($digits[3]) && $digits[3] === '0') {
+            $digits = substr($digits, 0, 3) . substr($digits, 4);
+        }
+
+        $e164 = '+' . $digits;
+
+        // E.164 : + suivi de 7 à 15 chiffres (indicatif pays 1–3 chiffres puis numéro)
+        if (!preg_match('/^\+[1-9]\d{6,14}$/', $e164)) {
+            return '';
+        }
+
+        return $e164;
+    }
+
+    /**
+     * Vérifie si un numéro est valide pour l'envoi SMS (sans envoyer).
+     */
+    public function isPhoneValidForSms(string $phone): bool
+    {
+        return $this->formatPhoneNumber($phone) !== '';
     }
 }

@@ -10,11 +10,20 @@
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
     {% for product in products %}
-        <div class="card" style="display: flex; flex-direction: column; transition: 0.3s; border: 1px solid #F1F5F9; background: white; padding: 20px; border-radius: 20px;" 
+        <div class="card shop-product-card" style="display: flex; flex-direction: column; transition: 0.3s; border: 1px solid #F1F5F9; background: white; padding: 20px; border-radius: 20px; position: relative;" 
              onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" 
-             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+             data-product-id="{{ product.id }}">
             
-            {# ZONE IMAGE CORRIGÉE #}
+            {% if is_granted('ROLE_USER') %}
+            <button type="button" class="shop-wishlist-btn {% if product.id in wishlistProductIds %}in-wishlist{% endif %}" 
+                    data-product-id="{{ product.id }}"
+                    title="{% if product.id in wishlistProductIds %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}"
+                    style="position: absolute; top: 24px; right: 24px; width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,0.95); box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; z-index: 2; display: flex; align-items: center; justify-content: center; color: {% if product.id in wishlistProductIds %}#EC4899{% else %}#94A3B8{% endif %}; transition: 0.2s;">
+                <i class="fas fa-heart{% if product.id not in wishlistProductIds %}-o{% endif %}"></i>
+            </button>
+            {% endif %}
+
             <div style="height: 200px; background: #F8FAFC; border-radius: 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #F1F5F9;">
                 {% if product.image %}
                     <img src="{{ asset('uploads/produit/' ~ product.image) }}" 
@@ -39,10 +48,41 @@
         </div>
     {% endfor %}
 </div>
+
+{% if recommendedProducts|default([])|length > 0 %}
+<section style="margin-top: 56px; padding-top: 40px; border-top: 1px solid #F1F5F9;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: #1E293B; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-star" style="color: #F59E0B;"></i> Recommandés pour vous
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px;">
+        {% for product in recommendedProducts %}
+            <div class="card" style="display: flex; flex-direction: column; border: 1px solid #F1F5F9; background: white; padding: 20px; border-radius: 20px; transition: 0.3s;" 
+                 onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.08)'" 
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <div style="height: 160px; background: #F8FAFC; border-radius: 12px; margin-bottom: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    {% if product.image %}
+                        <img src="{{ asset('uploads/produit/' ~ product.image) }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <i class="fas fa-book-reader" style="font-size: 2.5rem; opacity: 0.2; color: #3B49A2;"></i>
+                    {% endif %}
+                </div>
+                <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 6px; color: #1E293B;">{{ product.name }}</h4>
+                <p style="font-weight: 800; color: #6366F1; font-size: 1.2rem; margin-bottom: 16px;">{{ product.price|number_format(2, ',', ' ') }} €</p>
+                <button class="btn btn-primary add-to-cart" data-id="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.price }}"
+                        style="width: 100%; padding: 10px; border-radius: 12px; background: #3B49A2; border: none; color: white; font-weight: 700; cursor: pointer; font-size: 0.9rem;">
+                    <i class="fas fa-cart-plus" style="margin-right: 6px;"></i> Ajouter au panier
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}
 <script>
+    const wishlistToggleUrl = "{{ path('student_shop_wishlist_toggle', { id: '__ID__' }) }}";
+
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.addEventListener('click', function() {
             const product = {
@@ -50,27 +90,39 @@
                 name: this.dataset.name,
                 price: parseFloat(this.dataset.price)
             };
-            
             let cart = JSON.parse(localStorage.getItem('edusmart_cart') || '[]');
             cart.push(product);
             localStorage.setItem('edusmart_cart', JSON.stringify(cart));
-            
-            // Si tu as une fonction updateCartCount() dans ton layout, elle sera appelée ici
-            if (typeof updateCartCount === "function") {
-                updateCartCount();
-            }
-            
-            // Visual feedback
+            if (typeof updateCartCount === "function") updateCartCount();
             const originalText = this.innerHTML;
             const originalBG = this.style.background;
-            
             this.innerHTML = '<i class="fas fa-check"></i> Ajouté !';
             this.style.background = '#10B981';
-            
-            setTimeout(() => {
-                this.innerHTML = originalText;
-                this.style.background = originalBG;
-            }, 2000);
+            setTimeout(() => { this.innerHTML = originalText; this.style.background = originalBG; }, 2000);
+        });
+    });
+
+    document.querySelectorAll('.shop-wishlist-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.dataset.productId;
+            fetch(wishlistToggleUrl.replace('__ID__', id), {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const icon = this.querySelector('i');
+                if (data.inWishlist) {
+                    icon.className = 'fas fa-heart';
+                    this.style.color = '#EC4899';
+                    this.title = 'Retirer des favoris';
+                } else {
+                    icon.className = 'fas fa-heart-o';
+                    this.style.color = '#94A3B8';
+                    this.title = 'Ajouter aux favoris';
+                }
+            });
         });
     });
 </script>

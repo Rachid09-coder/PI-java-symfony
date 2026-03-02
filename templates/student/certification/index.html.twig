@@ -22,7 +22,7 @@
                         <div style="width: 50px; height: 50px; border-radius: 15px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; color: #6366F1;">
                             <i class="fas fa-clipboard-list" style="font-size: 1.4rem;"></i>
                         </div>
-                        <span style="background: {% if bulletin.status == 'PUBLISHED' %}#D1FAE5{% elseif bulletin.status == 'VALIDATED' %}#DBEAFE{% else %}#F3F4F6{% endif %}; color: {% if bulletin.status == 'PUBLISHED' %}#10B981{% elseif bulletin.status == 'VALIDATED' %}#3B82F6{% else %}#6B7280{% endif %}; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                        <span style="background: {% if bulletin.status == 'Publié' %}#D1FAE5{% elseif bulletin.status == 'Validé' %}#DBEAFE{% else %}#F3F4F6{% endif %}; color: {% if bulletin.status == 'Publié' %}#10B981{% elseif bulletin.status == 'Validé' %}#3B82F6{% else %}#6B7280{% endif %}; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
                             {{ bulletin.status }}
                         </span>
                     </div>
@@ -33,7 +33,7 @@
                     <div style="background: #F8FAFC; border-radius: 12px; padding: 15px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.85rem; font-weight: 700; color: #64748B;">Moyenne Générale</span>
-                            <span style="font-size: 1.5rem; font-weight: 800; color: {{ bulletin.average >= 10 ? '#10B981' : '#EF4444' }};">{{ bulletin.average }}/20</span>
+                            <span style="font-size: 1.5rem; font-weight: 800; color: {{ (bulletin.average ?? 0) >= 10 ? '#10B981' : '#EF4444' }};">{{ (bulletin.average ?? 0)|number_format(2) }}/20</span>
                         </div>
                     </div>
                     
@@ -76,7 +76,7 @@
                     </div>
                     
                     <div style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 15px;">
-                        <i class="far fa-calendar"></i> Délivré le {{ cert.issuedAt|date('d/m/Y') }}
+                        {% if cert.issuedAt %}<i class="far fa-calendar"></i> Délivré le {{ cert.issuedAt|date('d/m/Y') }}{% else %}—{% endif %}
                     </div>
                     
                     {% if cert.pdfPath %}

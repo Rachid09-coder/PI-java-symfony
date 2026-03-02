@@ -49,6 +49,43 @@ class ProductRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Produits recommandés pour la page boutique (exclut les ids déjà en wishlist).
+     *
+     * @param int $limit
+     * @param int[] $excludeProductIds
+     * @return Product[]
+     */
+    public function findRecommendedForShop(int $limit, array $excludeProductIds = []): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->andWhere('p.stock > 0')
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults($limit * 2);
+        if ($excludeProductIds !== []) {
+            $qb->andWhere('p.id NOT IN (:ids)')->setParameter('ids', $excludeProductIds);
+        }
+        $products = $qb->getQuery()->getResult();
+        shuffle($products);
+        return array_slice($products, 0, $limit);
+    }
+
+    /**
+     * Produits recommandés pour « Complétez votre panier ».
+     *
+     * @return Product[]
+     */
+    public function findRecommendedForCart(int $limit): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->andWhere('p.stock > 0')
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults($limit * 2);
+        $products = $qb->getQuery()->getResult();
+        shuffle($products);
+        return array_slice($products, 0, $limit);
+    }
+
     //    /**
     //     * @return Product[] Returns an array of Product objects
     //     */
